@@ -30,8 +30,11 @@
                         </div>
                         {%endfor%}
                         {% if form.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{form.errors}}
+                            <div class="form-row justify-content-center invalid-feedback d-block">
+                                {% for field, error in form.errors.items %}
+                                    {% if field != '__all__' %}{{ field }}{% endif %}
+                                    {{error}}
+                                {% endfor %}
                             </div>
                         {% endif %}
                         <div class="form-row justify-content-center">
