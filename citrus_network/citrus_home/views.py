@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -65,3 +65,11 @@ def test_sign_up(request):
             # TODO: find status code
             response.status_code = 418
             return response
+
+
+"""
+handles get requests and get profile information: username, displayname, github 
+"""
+def fetch_profile(request, id):
+    profile = get_object_or_404(CitrusUser, id=id)
+    return render(request, 'citrus_home/profile.html',{'user': profile})
