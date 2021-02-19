@@ -16,9 +16,7 @@ def index(request):
     # Render user home page if user is logged in.
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
-        print(form.is_valid())
         if (form.is_valid()):
-            print("Valid")
             response.status_code = 200
             return redirect(home_redirect)
         else:

@@ -1,5 +1,4 @@
 # ignore pycache files
 *.pyo
 *.pyc
-/venv/*
-/citrus_network/venv
+venv/
