@@ -15,9 +15,14 @@ def index(request):
     # TODO: render login.html if user is not logged in.
     # Render user home page if user is logged in.
     if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        print('username:', username, 'password:', password)
+        form = AuthenticationForm(data=request.POST)
+        print(form.is_valid())
+        if (form.is_valid()):
+            print("Valid")
+            response.status_code = 200
+            return redirect(home_redirect)
+        else:
+            return render(request, 'citrus_home/login.html', {'form':form})
     form = AuthenticationForm()
     return render(request, 'citrus_home/login.html', {'form':form})
 
