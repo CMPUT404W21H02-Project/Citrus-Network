@@ -68,6 +68,8 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'citrus_home.CitrusUser'
+
 WSGI_APPLICATION = 'citrus_network.wsgi.application'
 
 
