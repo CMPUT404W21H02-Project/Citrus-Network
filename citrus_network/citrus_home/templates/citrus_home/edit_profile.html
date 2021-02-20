@@ -8,8 +8,8 @@
 </head>
 <body>
     <h1>Editing Profile:</h1>
-
-    <form action="{% url 'edit' user.id %}" method="post">
+    <!-- Form to make changes to author profile -->
+    <form action="{% url 'profile_edit' user.id %}" method="post">
         {% csrf_token %}
         <fieldset class="edit-profile-form">
             <label for="username">Username: </label>
@@ -23,11 +23,15 @@
             <button type="submit">Edit</button>
         </div>
         <div class="edit-profile-form">
-            <button type="submit">Cancel</button>
+            <button onclick="goBack()" type="cancel">Cancel</button>
         </div>
     </form>
 </body>
-
-
 </html>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
 

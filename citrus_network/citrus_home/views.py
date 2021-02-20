@@ -72,16 +72,22 @@ def test_sign_up(request):
 
 
 """
-handles get requests with author_id and retrieve author profile information: username, displayname, github 
+handles get requests with author_id and retrieve author profile information: username, displayname, github
+if click edit button, redirect to edit profile page 
 URL:/service/author/{AUTHOR_ID}
 """
 def get_profile(request, id):
-    profile = get_object_or_404(CitrusUser, id=id)
-    return render(request, 'citrus_home/profile.html',{'user': profile})
+    if request.method == 'GET':
+        profile = get_object_or_404(CitrusUser, id=id)
+        return render(request, 'citrus_home/profile.html',{'user': profile})
+    else:
+        return HttpResponseRedirect(reverse('profile_edit',  kwargs={ 'id': str(id) }))
+
 
 """
-handles post requests with author_id and state changes to author profile information: username, displayname, github 
-URL:/service/author/{AUTHOR_ID}
+handles state changes to author profile information: username, displayname, github and redirect back to profile page
+URL:/service/author/{AUTHOR_ID}/edit
+Expected: POST - POST body = {"username": "new_username", "displayName": "new_displayName", "github":"new_github"}
 """
 def post_profile(request,id):
     # if this is a POST request we need to process the form data

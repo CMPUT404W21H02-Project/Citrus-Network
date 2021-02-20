@@ -11,6 +11,10 @@
     <p> Username: {{ user.username }}</p>
     <p> Display Name: {{ user.displayName }}</p>
     <p> Github: {{ user.github  }}</p>
+    <!-- redirect to the edit page -->
+    <form method="post">
+        {% csrf_token %}
+        <button onclick="submit">Edit</button>
     </form>
 </body>
 
