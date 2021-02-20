@@ -6,5 +6,5 @@ urlpatterns = [
   path('home/', views.home_redirect),
   path('test', views.test_sign_up),
   path('login/', views.login_redirect),
-  path('register/', views.register),
+  path('register/', views.register_redirect),
 ]

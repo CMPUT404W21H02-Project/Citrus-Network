@@ -14,6 +14,12 @@ from http import HTTPStatus
 def index(request):
     # TODO: render login.html if user is not logged in.
     # Render user home page if user is logged in.
+    return redirect(login_redirect)
+
+def home_redirect(request):
+    return render(request, 'citrus_home/index.html')
+
+def login_redirect(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
         if (form.is_valid()):
@@ -24,13 +30,7 @@ def index(request):
     form = AuthenticationForm()
     return render(request, 'citrus_home/login.html', {'form':form})
 
-def home_redirect(request):
-    return render(request, 'citrus_home/index.html')
-
-def login_redirect(request):
-    return render(request, 'citrus_home/login.html')
-
-def register(request):
+def register_redirect(request):
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
