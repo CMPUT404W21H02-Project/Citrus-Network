@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import CitrusUser
@@ -15,7 +16,25 @@ from django.urls import reverse
 
 
 def index(request):
-    print(request.method)
+    # TODO: render login.html if user is not logged in.
+    # Render user home page if user is logged in.
+    return redirect(login_redirect)
+
+def home_redirect(request):
+    return render(request, 'citrus_home/index.html')
+
+def login_redirect(request):
+    if request.method == "POST":
+        form = AuthenticationForm(data=request.POST)
+        if (form.is_valid()):
+            response.status_code = 200
+            return redirect(home_redirect)
+        else:
+            return render(request, 'citrus_home/login.html', {'form':form})
+    form = AuthenticationForm()
+    return render(request, 'citrus_home/login.html', {'form':form})
+
+def register_redirect(request):
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -38,11 +57,6 @@ def index(request):
     else:
         form = UserCreationForm()
     return render(request, 'citrus_home/register.html', {'form': form})
-
-def home_redirect(request):
-    return render(request, 'citrus_home/index.html')
-
-
 
 """
 handles post requests and checks for a username and password, if the username is not taken then a citrus user is created.
