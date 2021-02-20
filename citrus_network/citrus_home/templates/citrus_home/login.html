@@ -26,7 +26,9 @@
                         {%csrf_token%}
                         {%for field in form %}
                         <div class="form-row justify-content-center">
-                            {{field|as_crispy_field}}
+                            <div class="col-sm-8 ml-1 mr-1">
+                                {{field|as_crispy_field}}
+                            </div>
                         </div>
                         {%endfor%}
                         {% if form.errors %}
