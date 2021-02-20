@@ -45,11 +45,10 @@ def register_redirect(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             # creates the user object
-            form.save()
+            user = form.save()
             # login with newly created user
             username = request.POST.get('username')
             password = request.POST.get('password')
-            user = request.user
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(user_type="author",author_id=str(user.id), user=user)
             citrusAuthor.save()
