@@ -11,18 +11,6 @@
     <p> Username: {{ user.username }}</p>
     <p> Display Name: {{ user.displayName }}</p>
     <p> Github: {{ user.github  }}</p>
-    <p1>Editing Profile:</p1>
-    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-
-    <form action="{% url 'edit' user.id %}" method="post">
-    {% csrf_token %}
-    <label for="username">Username: </label>
-    <input name="username" id ="username" value ="{{ user.username}}">
-    <label for="username">Display Name: </label>
-    <input name="displayName" id ="displayName" value ="{{ user.displayName}}">
-    <label for="username">Github: </label>
-    <input name="github" id ="github" value ="{{ user.github}}">
-    <input type="submit" value="edit">
     </form>
 </body>
 

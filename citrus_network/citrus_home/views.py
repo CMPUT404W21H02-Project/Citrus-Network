@@ -10,6 +10,9 @@ from django.contrib.auth import authenticate
 from django.http.response import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
 from http import HTTPStatus
+from .profile_form import ProfileForm
+from django.urls import reverse
+
 
 def index(request):
     print(request.method)
@@ -80,30 +83,42 @@ def get_profile(request, id):
 handles post requests with author_id and state changes to author profile information: username, displayname, github 
 URL:/service/author/{AUTHOR_ID}
 """
-def post_profile(request, id):
-    profile = get_object_or_404(CitrusUser, id=id)
+def post_profile(request,id):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # NEED TO SANITIZE DATA AND CHECK FOR UNCHANGED INPUT
+        new_username = request.POST.get('username')
+        new_displayName = request.POST.get('displayName')
+        new_github = request.POST.get('github')
 
-    # NEED TO SANITIZE DATA AND CHECK FOR UNCHANGED INPUT
+        print(new_username,new_displayName,new_github)
 
-    # try:
-    #     new_profile = profile.choice_set.get(id=request.POST['choice'])
-    # except (KeyError, CitrusUser.DoesNotExist):
-    #     # Redisplay the question voting form.
-    #     return render(request, 'citrus_home/profile.html', {
-    #         'question': profile,
-    #         'error_message': "Something went wrong.",
-    #     })
-    # else:
-    #     profile.votes += 1
-    #     selected_choice.save()
-    #     # Always return an HttpResponseRedirect after successfully dealing
-    #     # with POST data. This prevents data from being posted twice if a
-    #     # user hits the Back button.
-    #     return HttpResponseRedirect(reverse('citrus_home/profile.html', args=(id))) # 'polls:results'
-    
-    return HttpResponseRedirect(reverse('profile', args=(profile.id,))) # 'polls:results'
+        try:
+            profile = get_object_or_404(CitrusUser, id=id)
+            profile.username = new_username
+            profile.displayName = new_displayName
+            profile.github = new_github
 
-    # profile = get_object_or_404(CitrusUser, id=id)
-    
-    # return render(request, 'citrus_home/profile.html',{'user': profile})
+            profile.save()
 
+            response = JsonResponse({
+                "message": "profile updated!"
+            })
+            response.status_code = 200
+            return HttpResponseRedirect(reverse('profile',  kwargs={ 'id': str(profile.id) }))
+
+        except (KeyError, CitrusUser.DoesNotExist):
+            # Redisplay the question voting form.
+            response = JsonResponse({
+                "message": "couldn't update profile"
+            })
+            # TODO: find status code
+            response.status_code = 418
+            return response
+    else:
+        profile = get_object_or_404(CitrusUser, id=id)
+        current_profile = { 'username': profile.username,
+                            'displayName': profile.displayName,
+                            'github': profile.github}
+        form = ProfileForm(current_profile)
+    return render(request, 'citrus_home/edit_profile.html', {'form': form, 'user': profile})
