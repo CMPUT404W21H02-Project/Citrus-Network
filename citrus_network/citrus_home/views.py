@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
-# from .models import CitrusUser
+from .models import CitrusAuthor
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -12,13 +12,10 @@ from django.http.response import JsonResponse
 from http import HTTPStatus
 from django.contrib.auth.models import User
 
-def index(request):
-    # TODO: render login.html if user is not logged in.
-    # Render user home page if user is logged in.
-    return redirect(login_redirect)
 
 def home_redirect(request):
     return render(request, 'citrus_home/index.html')
+
 
 def login_redirect(request):
     if request.method == "POST":
@@ -49,7 +46,13 @@ def register_redirect(request):
         if form.is_valid():
             # creates the user object
             form.save()
-            username = form.cleaned_data.get('username')
+            # login with newly created user
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = request.user
+            # create CitrusAuthor
+            citrusAuthor = CitrusAuthor.objects.create(user_type="author",author_id=str(user.id), user=user)
+            citrusAuthor.save()
             return redirect(home_redirect) 
     
     # return form with user input if not valid
