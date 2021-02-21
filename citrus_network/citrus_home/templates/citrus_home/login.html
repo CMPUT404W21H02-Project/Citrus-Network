@@ -11,6 +11,7 @@
         <title>Citrus Network</title>
     </head>
     <body>
+        {% include "navbar.html" %}
         {% load crispy_forms_tags %}  
         <div class="row mt-5"></div>
         <div class="row justify-content-center">
@@ -18,7 +19,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="ml-3">
-                            The Citrus Network
+                            Welcome
                         </h2>
                     </div>
                     {% block content %}
