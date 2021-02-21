@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+</head>
+<body>
+    <h1>Profile Page</h1>
+    <p> Username: {{ user.user }}</p>
+    <p> Display Name: {{ user.displayName }}</p>
+    <p> Github: {{ user.github  }}</p>
+    <!-- redirect to the edit page -->
+    <br>
+    <h1>Editing Profile:</h1>
+    <!-- Form to make changes to author profile -->
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="edit-profile-form">
+            <label for="username">Username: </label>
+            {{form.username}} <br>
+            <label for="displayName">Display Name: </label>
+            {{form.displayName}} <br>
+            <label for="github">Github: </label>
+            {{form.github}} <br>
+        </fieldset>
+        <div class="edit-profile-form">
+            <button type="submit">Edit</button>
+        </div>
+
+</body>
+
+
+</html>
+
