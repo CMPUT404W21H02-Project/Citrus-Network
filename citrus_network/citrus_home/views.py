@@ -14,7 +14,7 @@ from http import HTTPStatus
 from .profile_form import ProfileForm
 from django.urls import reverse
 from django.contrib.auth.models import User
-
+import uuid
 
 def home_redirect(request):
     return render(request, 'citrus_home/index.html')
@@ -53,7 +53,7 @@ def register_redirect(request):
             username = request.POST.get('username')
             password = request.POST.get('password')
             # create CitrusAuthor
-            citrusAuthor = CitrusAuthor.objects.create(user_type="author",author_id=str(user.id), user=user)
+            citrusAuthor = CitrusAuthor.objects.create(user_type="author",author_id=str(uuid.uuid4()), user=user,display_name=str(user.username))
             citrusAuthor.save()
             return redirect(home_redirect) 
     
