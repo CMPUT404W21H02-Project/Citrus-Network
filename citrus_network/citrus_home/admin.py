@@ -3,6 +3,6 @@ from .models import CitrusAuthor
 
 
 class CitrusAuthorAdmin(admin.ModelAdmin):
-    list_display = ('author_id', 'user_type', 'user', 'host', 'display_name', 'github',)
+    list_display = ('id', 'type', 'user', 'host', 'displayName', 'github',)
 
 admin.site.register(CitrusAuthor, CitrusAuthorAdmin)
