@@ -1,6 +1,0 @@
-# ignore pycache files
-*.pyo
-*.pyc
-venv/
-__pycache__/
-db.sqlite3
