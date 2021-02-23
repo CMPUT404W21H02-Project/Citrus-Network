@@ -6,33 +6,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 </head>
+    <style>
+        body{
+            background-image:url("https://media2.giphy.com/media/TnoOTgvto0VTE7EbLm/giphy.gif?cid=ecf05e47upk1epve4dnktzuk1vc59qd7z3agigx1m4tbgzve&rid=giphy.gif") ;
+        }
+        h1{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: gainsboro
+        }
+        p{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: gainsboro
+        }
+        .control-label-col-sm-2{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: gainsboro;
+            border-radius: 10px;
+        }
+        .overlay{
+            height: 80em;
+            margin-right: 3.5em;
+            margin-left: 3.5em;
+            margin-bottom: 3.5em;
+            margin-top: 3.5em;
+            background:#008dd5;
+            border-radius: 15px;
+        }
+        .profile_info{
+            display: flex;
+            flex-direction: column;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            text-align: center;
+        }
+        .profile_edit{
+            display: flex;
+            flex-direction: column;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            text-align: center;
+        }
+        .yellow{
+            color: #deb301;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: x-large;
+        }
+        button{
+            background-color: #deb301;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: large;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 15px
+        }
+        input:invalid {
+            border: 2px dashed red;
+        }
+        input:invalid:required {
+            background-image: linear-gradient(to right, rgb(60, 36, 194), rgb(196, 204, 85));
+        }
+        .red{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: rgb(211, 16, 16);
+            font-weight: bold;
+        }
+    </style>
+
 
 <body>
-    {% include "navbar.html" %}
-    <h1>Profile Page</h1>
-    <p> Username: {{ user.user }}</p>
-    <p> Display Name: {{ user.displayName }}</p>
-    <p> Github: {{ user.github  }}</p>
-    <!-- redirect to the edit page -->
-    <br>
-    <h1>Editing Profile:</h1>
-    <!-- Form to make changes to author profile -->
-    <form method="post">
-        {% csrf_token %}
-        <fieldset class="edit-profile-form">
-            <label for="username">Username: </label>
-            {{form.username}} <br>
-            <label for="displayName">Display Name: </label>
-            {{form.displayName}} <br>
-            <label for="github">Github: </label>
-            {{form.github}} <br>
-        </fieldset>
-        <div class="edit-profile-form">
-            <button type="submit">Edit</button>
+    <div class = "overlay">
+        <div class = "profile_info">
+            <h1>
+                YOUR PROFILE INFORMATION!!!!
+            </h1>
+            <div class="yellow"> Username</div>
+            <p> {{ user.user }}</p>
+            <div  class="yellow"> Display Name</div>
+            <p> {{ user.displayName }}</p>
+            <div  class="yellow"> Github</div>
+            <p> {{ user.github  }}</p>
         </div>
 
+        <br>
+
+        <div class = "profile_edit">
+            <h1>EDIT YOUR PROFILE???</h1>
+
+            <!-- Form to make changes to author profile -->
+            <form class="form-horizontal" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="control-label-col-sm-2" for="username">Username: </label><br> 
+                    {{form.username}}<div class = "red">{{form_errors.usernameError}}<br><br></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label-col-sm-2" for="displayName">Display Name:</label><br> 
+                    {{form.displayName}}<br><div class = "red">{{form_errors.displayNameError}}<br><br></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label-col-sm-2" for="github">Github:</label><br> 
+                    {{form.github}}<br><div class = "red">{{form_errors.githubNameError}}<br><br></div>
+                </div>  
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2-col-sm-10">
+                        <button type="submit" class="btn btn-default">Edit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
-
-
 </html>
+
+
 
