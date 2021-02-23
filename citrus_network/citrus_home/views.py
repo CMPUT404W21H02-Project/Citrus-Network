@@ -17,6 +17,8 @@ from django.contrib.auth.models import User
 import uuid
 import requests
 import re
+from django import forms
+
 
 def home_redirect(request):
     if request.method == 'GET':
@@ -168,6 +170,7 @@ Expected: POST - POST body = {"username": "new_username", "displayName": "new_di
 URL:/service/author/{AUTHOR_ID}
 """
 def manage_profile(request, id):
+
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
         current_profile = { 'username': profile.user,
@@ -180,12 +183,17 @@ def manage_profile(request, id):
     # if this is a POST request we need to process the form data
     elif request.method == 'POST':
         # NEED TO SANITIZE DATA AND CHECK FOR UNCHANGED INPUT
+        
         new_username = request.POST.get('username')
         new_displayName = request.POST.get('displayName')
         new_github = request.POST.get('github')
 
         try:
             profile = get_object_or_404(CitrusAuthor, id=id)
+
+            sanitize_username(profile, new_username)
+            sanitize_displayName(profile,new_displayName)
+            
             profile.user.username = new_username
             profile.displayName = new_displayName
             profile.github = new_github
@@ -213,6 +221,43 @@ def manage_profile(request, id):
         response.status_code = 405
         return response
 
+
+def sanitize_username(profile, new_username):
+    print("HERE IS USERS PROFILE NAME")
+
+    #cant query for username attributes from Citrus Author object
+    if User.objects.filter(username=new_username).exists():
+        existing_user = User.objects.get(username=new_username) 
+        
+        print(profile.user.id)  #not same as primary key
+        print(existing_user.id) #not the same as primary key
+
+        if  existing_user.id != profile.user.id:
+            print("username is not available, someone who is not you has it")
+            raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
+        else:
+            print("you did not change your username - this one is already yours")
+            return True
+    else:
+        print("username is available - no one had it yet")
+        return True
+
+
+def sanitize_displayName(profile, new_displayName):
+    print("HERE IS USERS DISPLAY NAME")
+    if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
+        existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
+
+        if existing_user.id != profile.id:
+            print("display name is not available, someone who is not you has it")
+            return False
+        else:
+            print("you did not change your display name - this one is already yours")
+            return True
+    else:
+        print("display name is available - no one had it yet")
+        return True
+        
 """
 retrieve github username from github url 
 """

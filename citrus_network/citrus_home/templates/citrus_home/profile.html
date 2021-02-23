@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 </head>
+
 <body>
+    {% include "navbar.html" %}
     <h1>Profile Page</h1>
     <p> Username: {{ user.user }}</p>
     <p> Display Name: {{ user.displayName }}</p>
