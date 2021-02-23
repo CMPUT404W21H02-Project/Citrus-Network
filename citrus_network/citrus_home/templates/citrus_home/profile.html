@@ -105,17 +105,17 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label class="control-label-col-sm-2" for="username">Username: </label><br> 
-                    {{form.username}}<div class = "red">{{form_errors.usernameError}}<br><br></div>
+                    {{form.username}}<div class = "red">{{pf_form_errors.usernameError}}<br><br></div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label-col-sm-2" for="displayName">Display Name:</label><br> 
-                    {{form.displayName}}<br><div class = "red">{{form_errors.displayNameError}}<br><br></div>
+                    {{form.displayName}}<br><div class = "red">{{pf_form_errors.displayNameError}}<br><br></div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label-col-sm-2" for="github">Github:</label><br> 
-                    {{form.github}}<br><div class = "red">{{form_errors.githubNameError}}<br><br></div>
+                    {{form.github}}<br><div class = "red">{{pf_form_errors.githubNameError}}<br><br></div>
                 </div>  
 
                 <div class="form-group">

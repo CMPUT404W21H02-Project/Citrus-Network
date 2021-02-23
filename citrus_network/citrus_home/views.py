@@ -191,20 +191,16 @@ def manage_profile(request, id):
         try:
             profile = get_object_or_404(CitrusAuthor, id=id)
 
+            field_validities = setFormErrors(profile,new_username,new_displayName,new_github)
+            pf_form_errors = ProfileFormError(field_validities[0],field_validities[1],field_validities[2])
             try:
-                #check to see if field are not in use by other users
-                validate_username(profile, new_username)
-                validate_displayName(profile,new_displayName)
-                validate_github(profile,new_github)
+                validate_fields(field_validities)
             except forms.ValidationError:
-                #if the github, username, or display name exists and was someone elses
-                #return the users original information
+                #if the github, username, or display name exists and was someone elses return the users original information
                 current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
-                form = ProfileForm(current_profile) 
-                pf_form_errors = ProfileFormError()
-
-                return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'form_errors':pf_form_errors})
-            
+                form = ProfileForm(current_profile)
+                
+                return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'pf_form_errors':pf_form_errors})
             
             profile.user.username = new_username
             profile.displayName = new_displayName
@@ -233,6 +229,19 @@ def manage_profile(request, id):
         response.status_code = 405
         return response
 
+def setFormErrors(profile,new_username,new_displayName,new_github):
+    u_valid = validate_username(profile, new_username)
+    d_valid = validate_displayName(profile,new_displayName)
+    g_valid = validate_github(profile,new_github)
+    
+    return [u_valid,d_valid,g_valid] 
+
+def validate_fields(field_validities):
+    print(field_validities)
+    if False in field_validities:
+        raise forms.ValidationError(u'one of three fields  are already in use.')
+    else:
+        return
 
 def validate_username(profile, new_username):
     #cant query for username attributes from Citrus Author object
@@ -241,7 +250,8 @@ def validate_username(profile, new_username):
         
         if  existing_user.id != profile.user.id:
             print("username is not available, someone who is not you has it")
-            raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
+            return False
+            #raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
         else:
             print("you did not change your username - this one is already yours")
             return True
@@ -256,7 +266,8 @@ def validate_displayName(profile, new_displayName):
         existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
         if existing_user.id != profile.id:
             print("display name is not available, someone who is not you has it")
-            raise forms.ValidationError(u'Display Name "%s" is already in use.' % new_displayName)
+            return False
+            #raise forms.ValidationError(u'Display Name "%s" is already in use.' % new_displayName)
         else:
             print("you did not change your display name - this one is already yours")
             return True
@@ -270,7 +281,8 @@ def validate_github(profile,  new_github):
         existing_user = CitrusAuthor.objects.get(github=new_github)
         if existing_user.id != profile.id:
             print("display name is not available, someone who is not you has it")
-            raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
+            return False
+            #raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
         else:
             print("you did not change your display name - this one is already yours")
             return True
