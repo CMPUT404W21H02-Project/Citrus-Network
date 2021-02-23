@@ -178,8 +178,8 @@ def manage_profile(request, id):
                             'github': profile.github}
         form = ProfileForm(current_profile)
 
-        return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile})
-    
+        return render(request, 'citrus_home/profile.html/',{'form': form, 'user': profile})
+        
     # if this is a POST request we need to process the form data
     elif request.method == 'POST':
         # NEED TO SANITIZE DATA AND CHECK FOR UNCHANGED INPUT
@@ -191,6 +191,7 @@ def manage_profile(request, id):
         try:
             profile = get_object_or_404(CitrusAuthor, id=id)
 
+            # set which fields are valid/invalid for the html
             field_validities = setFormErrors(profile,new_username,new_displayName,new_github)
             pf_form_errors = ProfileFormError(field_validities[0],field_validities[1],field_validities[2])
             try:
@@ -199,9 +200,10 @@ def manage_profile(request, id):
                 #if the github, username, or display name exists and was someone elses return the users original information
                 current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
                 form = ProfileForm(current_profile)
-                
+
                 return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'pf_form_errors':pf_form_errors})
             
+            #if fields were valid, assign them to user
             profile.user.username = new_username
             profile.displayName = new_displayName
             profile.github = new_github
