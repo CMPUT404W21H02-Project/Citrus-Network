@@ -263,7 +263,7 @@ def validate_username(profile, new_username):
 
 
 def validate_displayName(profile, new_displayName):
-    print("HERE IS USERS DISPLAY NAME")
+  
     if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
         existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
         if existing_user.id != profile.id:
@@ -278,18 +278,18 @@ def validate_displayName(profile, new_displayName):
         return True
 
 def validate_github(profile,  new_github):
-    print("HERE IS USERS DISPLAY NAME")
+   
     if CitrusAuthor.objects.filter(github=new_github).exists():
         existing_user = CitrusAuthor.objects.get(github=new_github)
         if existing_user.id != profile.id:
-            print("display name is not available, someone who is not you has it")
+            print("github uri is not available, someone who is not you has it")
             return False
             #raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
         else:
-            print("you did not change your display name - this one is already yours")
+            print("you did not change your github uri - this one is already yours")
             return True
     else:
-        print("display name is available - no one had it yet")
+        print("github uri is available - no one had it yet")
         return True
         
 """
