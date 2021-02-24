@@ -3,11 +3,8 @@
 
 name: Python package
 
-on:
-  push:
-    branches: [ test-dev-unit-tests ]
-  pull_request:
-    branches: [ dev ]
+on: [push, pull_request]
+
 
 jobs:
   build:
