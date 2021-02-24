@@ -21,6 +21,7 @@ class CitrusAuthorTestCase(TestCase):
         #check that displayName when provided is set to desired name instead of username
         testUser =  CitrusAuthor.objects.get(displayName="coolTestGuy")
         self.assertEqual(testUser.displayName, "coolTestGuy")
+        self.assertEqual(testUser.type, "Author")
       
 
 
