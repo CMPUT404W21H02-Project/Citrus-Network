@@ -1,5 +1,5 @@
 from django.test import TestCase
-
+from citrus_home.models import CitrusAuthor
 from django.contrib.auth.models import User
 import uuid
 from django.test import Client
