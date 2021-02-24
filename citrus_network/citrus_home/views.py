@@ -11,12 +11,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.http.response import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
 from http import HTTPStatus
-from .profile_form import ProfileForm
+from .profile_form import ProfileForm, ProfileFormError
 from django.urls import reverse
 from django.contrib.auth.models import User
 import uuid
 import requests
 import re
+from django import forms
+
 
 def home_redirect(request):
     if request.method == 'GET':
@@ -168,6 +170,7 @@ Expected: POST - POST body = {"username": "new_username", "displayName": "new_di
 URL:/service/author/{AUTHOR_ID}
 """
 def manage_profile(request, id):
+
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
         current_profile = { 'username': profile.user,
@@ -175,17 +178,32 @@ def manage_profile(request, id):
                             'github': profile.github}
         form = ProfileForm(current_profile)
 
-        return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile})
-    
+        return render(request, 'citrus_home/profile.html/',{'form': form, 'user': profile})
+        
     # if this is a POST request we need to process the form data
     elif request.method == 'POST':
         # NEED TO SANITIZE DATA AND CHECK FOR UNCHANGED INPUT
+        
         new_username = request.POST.get('username')
         new_displayName = request.POST.get('displayName')
         new_github = request.POST.get('github')
 
         try:
             profile = get_object_or_404(CitrusAuthor, id=id)
+
+            # set which fields are valid/invalid for the html
+            field_validities = setFormErrors(profile,new_username,new_displayName,new_github)
+            pf_form_errors = ProfileFormError(field_validities[0],field_validities[1],field_validities[2])
+            try:
+                validate_fields(field_validities)
+            except forms.ValidationError:
+                #if the github, username, or display name exists and was someone elses return the users original information
+                current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
+                form = ProfileForm(current_profile)
+
+                return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'pf_form_errors':pf_form_errors})
+            
+            #if fields were valid, assign them to user
             profile.user.username = new_username
             profile.displayName = new_displayName
             profile.github = new_github
@@ -213,6 +231,67 @@ def manage_profile(request, id):
         response.status_code = 405
         return response
 
+def setFormErrors(profile,new_username,new_displayName,new_github):
+    u_valid = validate_username(profile, new_username)
+    d_valid = validate_displayName(profile,new_displayName)
+    g_valid = validate_github(profile,new_github)
+    
+    return [u_valid,d_valid,g_valid] 
+
+def validate_fields(field_validities):
+    print(field_validities)
+    if False in field_validities:
+        raise forms.ValidationError(u'one of three fields  are already in use.')
+    else:
+        return
+
+def validate_username(profile, new_username):
+    #cant query for username attributes from Citrus Author object
+    if User.objects.filter(username=new_username).exists():
+        existing_user = User.objects.get(username=new_username) 
+        
+        if  existing_user.id != profile.user.id:
+            print("username is not available, someone who is not you has it")
+            return False
+            #raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
+        else:
+            print("you did not change your username - this one is already yours")
+            return True
+    else:
+        print("username is available - no one had it yet")
+        return True
+
+
+def validate_displayName(profile, new_displayName):
+  
+    if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
+        existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
+        if existing_user.id != profile.id:
+            print("display name is not available, someone who is not you has it")
+            return False
+            #raise forms.ValidationError(u'Display Name "%s" is already in use.' % new_displayName)
+        else:
+            print("you did not change your display name - this one is already yours")
+            return True
+    else:
+        print("display name is available - no one had it yet")
+        return True
+
+def validate_github(profile,  new_github):
+   
+    if CitrusAuthor.objects.filter(github=new_github).exists():
+        existing_user = CitrusAuthor.objects.get(github=new_github)
+        if existing_user.id != profile.id:
+            print("github uri is not available, someone who is not you has it")
+            return False
+            #raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
+        else:
+            print("you did not change your github uri - this one is already yours")
+            return True
+    else:
+        print("github uri is available - no one had it yet")
+        return True
+        
 """
 retrieve github username from github url 
 """

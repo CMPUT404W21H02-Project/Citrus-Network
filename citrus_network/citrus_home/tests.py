@@ -60,8 +60,4 @@ class LoginTestCase(TestCase):
     def tearDown(self):
         self.nervousTestMan.delete()
 
-      
-
-
-       
 
