@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import CitrusAuthor
+from .models import CitrusAuthor, Post
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 import uuid
 
 def home_redirect(request):
+    
     return render(request, 'citrus_home/index.html')
 
 def login_redirect(request):
@@ -54,6 +55,8 @@ def register_redirect(request):
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
             citrusAuthor.save()
+            post = Post.objects.create(id="1", title="alex", description="myfirstpost", content="should work", author=citrusAuthor,commonmark=False, visibility='PVA')
+            post.save()
             return redirect(home_redirect) 
     
     # return form with user input if not valid
