@@ -18,8 +18,9 @@ import uuid
 import requests
 import re
 from django import forms
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def home_redirect(request):
     if request.method == 'GET':
         mock_response = [
@@ -121,9 +122,11 @@ def home_redirect(request):
         
         return render(request, 'citrus_home/index.html', {'json_list': mock_response})
 
+"""
+comment
+"""
 def login_redirect(request):
     if request.method == "POST":
-        print("here")
         username = request.POST.get('username')
         password = request.POST.get('password')
         form = AuthenticationForm(data=request.POST)
@@ -131,19 +134,31 @@ def login_redirect(request):
             user = authenticate(username=username, password=password)
             # login the current user
             login(request,user)
-            # print out the ID of the current user
-            print("ID: ",request.user.id)
-            logout(request)
             return redirect(home_redirect)
 
         # if the user is not authenticated return the same html page 
         else:
             return render(request, 'citrus_home/login.html', {'form':form})
 
+    # check if user is still logged in then redirect to home page:
+    if request.user.is_authenticated:
+        return redirect(home_redirect)
+    
     form = AuthenticationForm()
     return render(request, 'citrus_home/login.html', {'form':form})
 
+"""
+require authorization, log out current user, redirect to the home page
+"""
+@login_required
+def logout_redirect(request):
+    if request.method == "GET":
+        logout(request)   
+        return redirect(login_redirect)
 
+"""
+comment
+"""
 def register_redirect(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -164,13 +179,27 @@ def register_redirect(request):
     return render(request, 'citrus_home/register.html', {'form': form})
 
 """
+render edit_profile html page
+require authentication by successfully logging in
+"""
+@login_required
+def render_profile(request):    
+    if request.method == 'GET':
+        print(request.user.username)
+        if User.objects.filter(username=request.user.username).exists():
+            profile = User.objects.get(username=request.user.username)
+            print(profile.id) 
+        
+        return render(request, 'citrus_home/profile.html')
+
+"""
 handles get requests with id and retrieve author profile information: username, displayname, github
 handles post requests to state changes to author profile information: username, displayname, github 
 Expected: POST - POST body = {"username": "new_username", "displayName": "new_displayName", "github":"new_github"} 
 URL:/service/author/{AUTHOR_ID}
 """
+@login_required
 def manage_profile(request, id):
-
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
         current_profile = { 'username': profile.user,
@@ -262,8 +291,7 @@ def validate_username(profile, new_username):
         return True
 
 
-def validate_displayName(profile, new_displayName):
-  
+def validate_displayName(profile, new_displayName):  
     if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
         existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
         if existing_user.id != profile.id:
@@ -305,6 +333,7 @@ Expected:
 URL:/service/author/{AUTHOR_ID}/github
 reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity-stream-with-github-api-d1e9f5831d88
 """
+@login_required
 def get_github_events(request, id):
     if request.method == 'GET':
         # look up user by their id, if not exist, return 404 response
