@@ -179,14 +179,23 @@ def register_redirect(request):
     return render(request, 'citrus_home/register.html', {'form': form})
 
 """
+get the uuid of a logged in user
+"""
+@login_required
+def get_uuid(request):
+    profiles = get_list_or_404(CitrusAuthor,user = request.user.id)
+    uuid = profiles[0].id
+    return uuid
+
+"""
 render edit_profile html page
 require authentication by successfully logging in
+send them uuid of the author
 """
 @login_required
 def render_profile(request):    
     if request.method == 'GET':
-        profiles = get_list_or_404(CitrusAuthor,user = request.user.id)
-        uuid = profiles[0].id
+        uuid = get_uuid(request)
         form = ProfileForm()
 
         return render(request, 'citrus_home/profile.html',{"uuid":uuid, 'form':form})
@@ -201,10 +210,6 @@ URL:/service/author/{AUTHOR_ID}
 def manage_profile(request, id):
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
-        # current_profile = { 'username': profile.user,
-        #                     'displayName': profile.displayName,
-        #                     'github': profile.github}
-
         response = JsonResponse({'username': str(profile.user),
                                 'displayName': str(profile.displayName),
                                 'github': str(profile.github)})
