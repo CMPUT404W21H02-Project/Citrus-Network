@@ -28,7 +28,7 @@ class Post(models.Model):
     content             = models.CharField(max_length=400)
     author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     origin              = models.CharField(max_length=300)
-    commonmark          = models.BooleanField(default=True)
+    commonmark          = models.BooleanField(default=False)
     # image           = models.ImageField()
     # parse this and return as list for GET request
     categories          = models.CharField(max_length=400)

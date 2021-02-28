@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from django.contrib.auth.models import User
-from .models import CitrusAuthor, Post
+# from django.contrib.auth.models import User
+from .models import CitrusAuthor, Post, Comment
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -17,12 +17,113 @@ from django.contrib.auth.models import User
 import uuid
 import requests
 import re
+from rest_framework.decorators import api_view
 from django import forms
+from .serializers import AuthorSerializer
+from django.urls import resolve
 
 
 def home_redirect(request):
-    
-    return render(request, 'citrus_home/index.html')
+    if request.method == 'GET':
+        # get current user and create a post and comment
+        mock_response = [
+            {
+                'type':"post",
+                'title':"A post title about a post about web dev",
+                'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
+                'source':"http://lastplaceigotthisfrom.com/posts/yyyyy",
+                'origin':"http://whereitcamefrom.com/posts/zzzzz",
+                'description':"This post discusses stuff -- brief",
+                'contentType':"text/plain",
+                'content':"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
+                # the author has an ID where by authors can be disambiguated
+                'author':{
+                    'type':"author",
+                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+                    'host':"http://127.0.0.1:5454/",
+                    'displayName':"Lara Croft",
+                    'url':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+                    'github': "http://github.com/laracroft"
+                },
+                'categories':["web","tutorial"],
+                'count': 1023,
+                'size': 50,
+                'comments':[
+                    {
+                        'type':"comment",
+                        'author':{
+                            'type':"author",
+                            # ID of the Author (UUID)
+                            'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
+                            # url to the authors information
+                            'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
+                            'host':"http://127.0.0.1:5454/",
+                            "displayName":"Greg Johnson",
+                            # HATEOS url for Github API
+                            'github': "http://github.com/gjohnson"
+                        },
+                        'comment':"Sick Olde English",
+                        'contentType':"text/markdown",
+                        # ISO 8601 TIMESTAMP
+                        'published':"2015-03-09T13:07:04+00:00",
+                        # ID of the Comment (UUID)
+                        'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
+                    }
+                ],
+                'published':"2015-03-09T13:07:04+00:00",
+                'visibility':"PUBLIC",
+                'unlisted': False,
+            },
+            {
+                'type':"post",
+                'title':"How to work on Django",
+                'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
+                'source':"http://lastplaceigotthisfrom.com/posts/yyyyy",
+                'origin':"http://heroku.com/posts/aaaa",
+                'description':"This post discusses stuff -- brief",
+                'contentType':"text/plain",
+                'content':"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
+                # the author has an ID where by authors can be disambiguated
+                'author':{
+                    'type':"author",
+                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+                    'host':"http://127.0.0.1:5454/",
+                    'displayName':"Craft Smith",
+                    'url':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+                    'github': "http://github.com/laracroft"
+                },
+                'categories':["web","tutorial"],
+                'count': 1023,
+                'size': 50,
+                'comments':[
+                    {
+                        'type':"comment",
+                        'author':{
+                            'type':"author",
+                            # ID of the Author (UUID)
+                            'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
+                            # url to the authors information
+                            'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
+                            'host':"http://127.0.0.1:5454/",
+                            "displayName":"Greg Johnson",
+                            # HATEOS url for Github API
+                            'github': "http://github.com/gjohnson"
+                        },
+                        'comment':"Sick Olde English",
+                        'contentType':"text/markdown",
+                        # ISO 8601 TIMESTAMP
+                        'published':"2015-03-09T13:07:04+00:00",
+                        # ID of the Comment (UUID)
+                        'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
+                    }
+                ],
+                'published':"2012-03-09T13:07:04+00:00",
+                'visibility':"PUBLIC",
+                'unlisted': False,
+            },
+        ]
+        
+        return render(request, 'citrus_home/index.html', {'json_list': mock_response})
 
 def login_redirect(request):
     if request.method == "POST":
@@ -36,7 +137,8 @@ def login_redirect(request):
             login(request,user)
             # print out the ID of the current user
             print("ID: ",request.user.id)
-            logout(request)
+            # logout user 
+            # logout(request)
             return redirect(home_redirect)
 
         # if the user is not authenticated return the same html page 
@@ -59,8 +161,8 @@ def register_redirect(request):
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
             citrusAuthor.save()
-            post = Post.objects.create(id="1", title="alex", description="myfirstpost", content="should work", author=citrusAuthor,commonmark=False, visibility='PVA')
-            post.save()
+            # post = Post.objects.create(id="1", title="alex", description="myfirstpost", content="should work", author=citrusAuthor,commonmark=False, visibility='PVA')
+            # post.save()
             return redirect(home_redirect) 
     
     # return form with user input if not valid
@@ -277,4 +379,148 @@ def get_github_events(request, id):
         response = JsonResponse({'events':results})
         response.status_code = 200
         return response
+
+"""
+handle the creation of a new post object
+GET Requests:
+URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID} will get you the post of that author with up to 5 comments
+POST Requests:
+URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID=null} will create the post for that author.
+POST Body: {
+    "title": "second post",
+    "description": "description of the second post -> caruso is the goat",
+    "categories": "fitness, travel, compsci",
+    "content": "long detailed content of the post",
+    "origin": "local host:9900"
+} 
+
+"""
+# the csrf_exempt token is there if you're testing with postman
+@csrf_exempt
+def manage_post(request, id, **kwargs):
+    pid = kwargs.get('pid')
+    print(request.method)
+    if request.method == "POST":
+        # load post body
+        body = json.loads(request.body)
+        author = CitrusAuthor.objects.get(id=id)
+
+        # if the post is private to a particular author
+        if body['private_to_author'] == 'True':
+            # the post that is being created is private to the authors specified
+            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], private_to_author=True, public=False, shared_with=body['shared_with'])
+            response = JsonResponse({
+                "success": "post created"
+            }, status=200)
+            return response
+
+        # if the post is private only to friends  
+        if body['private_to_friend'] == 'True':
+                # the post that is being created is private to the authors specified
+            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], private_to_friend=True, public=False, shared_with=body['shared_with'])
+            response = JsonResponse({
+                "success": "post created"
+            }, status=200)
+            return response
+
+        # public post
+        else:
+            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'])
+            response = JsonResponse({
+                "success": "post created"
+                }, status=200)
+            return response
+    
+    elif request.method == 'DELETE':
+        posts = Post.objects.get(id=pid)
+        posts.delete()
+        return JsonResponse({
+            "message": "post deleted"
+        }, status=200)
+
+    # update an existing post made by the user
+    elif request.method == "PUT":
+        # check if form is valid here
+        body = json.loads(request.body)
+        author = CitrusAuthor.objects.get(id=id)
+        post = Post.objects.get(id=pid)
+        # this code only works on posts where private to author is true. 
+        # update fields of the post object
+        post.title = body['title']
+        post.description = body['description']
+        post.content = body['content']
+        post.categories = body['categories']
+        post.private_to_friend = body['private_to_author'] 
+        post.public = body['public'] 
+        post.shared_with = body['shared_with']
+        post.save()
+        
+        return JsonResponse({
+            "message": "post updated"
+        }, status=200)
+
+ 
+    elif request.method == "GET":
+        # potentially check if the user is authenticated
+        author = CitrusAuthor.objects.get(id=id)
+        posts = Post.objects.get(id=pid)
+        comments = Comment.objects.filter(post=posts)
+        comments_arr = []
+        comment_count = 0
+        for comment in comments:
+            if comment_count < 5:
+                # get the author of the comment
+                author = CitrusAuthor.objects.get(id=comment.author.id)
+                comment_data = {
+                    "type": "comment", 
+                    "author": {
+                        "type": author.type,
+                        "id": author.id,
+                        "host": author.host,
+                        "displayName": author.displayName,
+                        "url": "somerandomUrl for now",
+                        "github": author.github
+                    },
+                    "comment": comment.comment,
+                    "contentType": "text/markdown",
+                    "published": comment.published,
+                    "id": comment.id,
+                }
+                comment_count += 1
+                comments_arr.append(comment_data)
+        comment_count = 0
+        author_data = {
+            "type": author.type,
+            "id": author.id,
+            "host": author.host,
+            "displayName": author.displayName,
+            "url": "somerandomUrl for now",
+            "github": author.github
+        }
+        # check for post categories and put them into an array
+        categories = posts.categories.split()
+        return_data = {
+            "type": "post",
+            "title": posts.title,
+            "id": posts.id,
+            "source": "localhost:8000/some_random_source",
+            "origin": posts.origin,
+            "description": posts.description,
+            "contentType": "text/plain",
+            "content": posts.content,
+            # probably serialize author here and call it
+            "author": author_data,
+            "categories": categories,
+            "count": comments.count(),
+            "comments": comments_arr, 
+            "published": posts.created,
+            "visibility": "PUBLIC",
+            "unlisted": "false"
+        }
+        return JsonResponse(return_data, status=200)
+    
+    else:
+        return JsonResponse({
+            "message": "method not supported"
+        }, status=400)
 
