@@ -80,6 +80,10 @@ def home_redirect(request):
         
         return render(request, 'citrus_home/index.html', {'inbox': mock_response})
 
+def make_post_redirect(request):
+    if request.method == 'GET':
+        return render(request, 'citrus_home/make_post.html')
+
 def stream_redirect(request):
     if request.method == 'GET':
         mock_response = [
