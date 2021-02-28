@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
@@ -185,12 +185,11 @@ require authentication by successfully logging in
 @login_required
 def render_profile(request):    
     if request.method == 'GET':
-        print(request.user.username)
-        if User.objects.filter(username=request.user.username).exists():
-            profile = User.objects.get(username=request.user.username)
-            print(profile.id) 
-        
-        return render(request, 'citrus_home/profile.html')
+        profiles = get_list_or_404(CitrusAuthor,user = request.user.id)
+        uuid = profiles[0].id
+        form = ProfileForm()
+
+        return render(request, 'citrus_home/profile.html',{"uuid":uuid, 'form':form})
 
 """
 handles get requests with id and retrieve author profile information: username, displayname, github
@@ -202,12 +201,15 @@ URL:/service/author/{AUTHOR_ID}
 def manage_profile(request, id):
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
-        current_profile = { 'username': profile.user,
-                            'displayName': profile.displayName,
-                            'github': profile.github}
-        form = ProfileForm(current_profile)
+        # current_profile = { 'username': profile.user,
+        #                     'displayName': profile.displayName,
+        #                     'github': profile.github}
 
-        return render(request, 'citrus_home/profile.html/',{'form': form, 'user': profile})
+        response = JsonResponse({'username': str(profile.user),
+                                'displayName': str(profile.displayName),
+                                'github': str(profile.github)})
+        response.status_code = 200
+        return response
         
     # if this is a POST request we need to process the form data
     elif request.method == 'POST':
