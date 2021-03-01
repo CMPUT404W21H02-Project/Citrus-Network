@@ -38,7 +38,7 @@
                                     <a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">{{ tag }}</a>
                                 {% endfor %}
                             </div>
-                            <a class="card-body card-link" href="{% url 'post_url' %}">
+                            <a class="card-body card-link" href="{% url 'view_post_url' %}">
                                     <h6 class="font-weight-bold">{{ post.title }}</h6>
                                     <img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/{{ post.origin }}.svg"/>
                                     <p>{{ post.content }}</p>

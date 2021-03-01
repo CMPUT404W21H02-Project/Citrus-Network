@@ -29,7 +29,7 @@
                             <a class="card-link" href="#author">
                                 <img class="round-circle author-img" height="30" width="30" style="border-radius: 50%;" src="https://avatars.dicebear.com/v2/initials/{{ post.author.displayName }}.svg"/>
                             </a>
-                            <a class="card-link" href="#post">
+                            <a class="card-link" href="#author">
                                 <p style="margin: 0;"><strong>{{ post.author.displayName }}</strong></p>
                                 <p style="margin: 0;">{{ post.published }} | {{ post.origin }}</p>
                             </a>
@@ -37,7 +37,7 @@
                                 <a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">{{ tag }}</a>
                             {% endfor %}
                         </div>
-                        <a class="card-body card-link" href="{% url 'post_url' %}">
+                        <a class="card-body card-link" href="{% url 'view_post_url' %}">
                                 <h6 class="font-weight-bold">{{ post.title }}</h6>
                                 <img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/{{ post.origin }}.svg"/>
                                 <p>{{ post.content }}</p>
