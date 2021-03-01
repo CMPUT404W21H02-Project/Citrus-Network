@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - test-dev-unit-tests
+      - be-feature-friend-api-nhan
       - dev
   pull_request:
       branches:
@@ -18,6 +19,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6,3.7, 3.8, 3.9]
+        # python-version: [3.6]
 
     steps:
     - uses: actions/checkout@v2
@@ -43,3 +45,19 @@ jobs:
         python manage.py makemigrations
         python manage.py migrate
         python manage.py test
+    - name: Run code coverage and generate report
+      working-directory: ./citrus_network
+      run: |
+        python -m coverage erase
+        python -m coverage run manage.py test citrus_home
+        python -m coverage report
+        python -m coverage xml
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV }} # not required for public repos
+        files: ./citrus_network/coverage.xml # path to report file
+        fail_ci_if_error: true
+
+      
+
