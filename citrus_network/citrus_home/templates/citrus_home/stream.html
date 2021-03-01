@@ -32,7 +32,7 @@
                                 <a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">{{ tag }}</a>
                             {% endfor %}
                         </div>
-                        <a class="card-body card-link" href="#post">
+                        <a class="card-body card-link" href="{% url 'post_url' %}">
                             <h6 class="font-weight-bold">{{ post.title }}</h6>
                             <p>{{ post.content }}</p>
                         </a>
