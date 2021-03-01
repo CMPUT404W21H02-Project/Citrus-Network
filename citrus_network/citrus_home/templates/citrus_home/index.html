@@ -16,7 +16,9 @@
     <div class="container">
         <div class="row mt-5 justify-content-end">
             <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 col-3">
-                <a href="#" class="btn btn-success">Post</a>
+                <a class="nav-link" href="{% url 'make_post_url'%}">
+                    <button type="button" class="btn btn-success">Post</button>
+                </a>
             </div>
         </div>
         {% for item in inbox %}
@@ -26,6 +28,9 @@
                         <div class="card">
                             <div class="card-header">
                                 <a class="card-link" href="#author">
+                                    <img class="round-circle author-img" height="30" width="30" style="border-radius: 50%;" src="https://avatars.dicebear.com/v2/initials/{{ post.author.displayName }}.svg"/>
+                                </a>
+                                <a class="card-link" href="#post">
                                     <p style="margin: 0;"><strong>{{ post.author.displayName }}</strong></p>
                                     <p style="margin: 0;">{{ post.published }} | {{ post.origin }}</p>
                                 </a>
@@ -33,8 +38,9 @@
                                     <a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">{{ tag }}</a>
                                 {% endfor %}
                             </div>
-                            <a class="card-body card-link" href="{% url 'post_url' %}">
+                            <a class="card-body card-link" href="{% url 'view_post_url' %}">
                                     <h6 class="font-weight-bold">{{ post.title }}</h6>
+                                    <img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/{{ post.origin }}.svg"/>
                                     <p>{{ post.content }}</p>
                             </a>
                         </div>
