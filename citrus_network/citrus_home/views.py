@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import CitrusAuthor
+from .models import CitrusAuthor, Friend, Follower
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -13,12 +13,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from http import HTTPStatus
 from .profile_form import ProfileForm, ProfileFormError
 from django.urls import reverse
-from django.contrib.auth.models import User
 import uuid
 import requests
 import re
 from django import forms
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 
 @login_required
 def home_redirect(request):
@@ -616,11 +616,40 @@ URL: ://service/author/{AUTHOR_ID}/followers
 """
 @login_required
 def get_followers(request, author_id):
+    print("here1")
     if request.method == 'GET':
-        print(author_id)
-        # if foreign_author_id:
-        #     print(foreign_author_id)
-        response = JsonResponse({"results":"hello"})
+        # check for list of followers of author_id
+        try:
+            print("here2")
+            # followers = get_object_or_404(Follower, uuid=author_id)
+            followers = Follower.objects.get(uuid=author_id)
+            print("here3")
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"no followers found or incorrect id of author"})
+            response.status_code = 404
+            return response
+
+        # generate json response for list of followers
+        items = []
+        for uuid in followers.followers_uuid.split(","):
+            uuid = uuid.strip() # remove any whitespace
+
+            # get the follower profile info
+            author = CitrusAuthor.objects.get(id = uuid)
+            
+            json = {
+                "type": "Author",
+                "id": str(uuid),
+                "host": str(author.host),
+                "displayName": str(author.displayName),
+                "github": str(author.github),
+            }
+            items.append(json)
+
+        results = { "type": "followers",      
+                    "items":items}
+
+        response = JsonResponse(results)
         response.status_code = 200
         return response
 
