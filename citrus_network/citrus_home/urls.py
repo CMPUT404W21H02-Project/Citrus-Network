@@ -12,4 +12,5 @@ urlpatterns = [
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/github$',views.get_github_events, name='github'),
   path('stream/', views.stream_redirect, name='stream_url'),
   path('post/', views.make_post_redirect, name='make_post_url'),
+  path('post/', views.post_redirect, name='post_url'),
 ]
