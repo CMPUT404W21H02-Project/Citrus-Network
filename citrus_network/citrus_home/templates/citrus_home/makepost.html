@@ -14,7 +14,7 @@
   </head>
   <body>
     {% include '../navbar.html' %}
-    <div class="container">
+    <div class="container pt-5">
         <div class="row justify-content-center mt-5 mb-2">
             <div class="col-md-6 col-sm-12 col-10">
                 <input type="text" class="form-control" id="recipient-name" placeholder="Title">
@@ -23,7 +23,10 @@
                 <div class="dropdown">
                     <select class="form-select" aria-label="Default select example">
                         <option value="public">Public</option>
+                        <option value="friends">Friends</option>
                         <option value="private">Private</option>
+                        <option value="friendtofriend">Friend to Friend</option>
+                        <option value="serveronly">Server Only</option>
                     </select>
                 </div>
             </div>
