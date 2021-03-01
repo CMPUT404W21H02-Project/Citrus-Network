@@ -10,11 +10,11 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-    <title>{{ post.title }}</title>
+    <title>Citrus Network</title>
   </head>
 
   <body>
-    {% include "navbar.html" %}
+    {% include "navbar-logged-in.html" %}
     <div class="container">
       <div class="row justify-content-center mt-1 mb-1">
         <div class="col-md-10 col-sm-12 position-relative">
@@ -31,13 +31,13 @@
             <div class="card-body">
               <h6 class="font-weight-bold">{{ post.title }}</h6>
               <p>{{ post.content }}</p>
-              <button type="button" class="btn btn-light btn-lg rounded-pill">
+              <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
                 <span class="like-icon"></span>
               </button>
               <br>
               <br>
               {% for comment in post.comments %}
-              <div class="card">
+              <div class="card mt-1 mb-1">
                 <div class="card-header">
                   <a class="card-link" href="#commentauthor">
                     <p style="margin: 0;"><strong>{{ comment.author.displayName }}</strong> {{ comment.published }}</p>
@@ -45,7 +45,7 @@
                 </div>
                 <div class="card-body">
                   <p>{{comment.comment}}</p>
-                  <button type="button" class="btn btn-light btn-sm rounded-pill">
+                  <button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">
                     <span class="like-icon-comment"></span>
                   </button>
                 </div>
@@ -57,7 +57,7 @@
                 <div class="invalid-feedback">
                   Cannot post a blank comment.
                 </div>
-                <button class="btn btn-primary btn-sm mt-3" type="submit">Post</button>
+                <button class="btn btn-primary btn-sm mt-3 ml-3" type="submit">Post</button>
               </form>
             </div>
           </div>
@@ -78,8 +78,8 @@
       background-image: url('https://pics.freeicons.io/uploads/icons/png/18609881301579252554-512.png');
       background-size: cover;
       display: block;
-      height: 15px;
-      width: 15px;
+      height: 17px;
+      width: 17px;
     }
     a.card-link {
       color: inherit;
@@ -106,3 +106,4 @@
       }, false);
     })();
   </script>
+</html>
