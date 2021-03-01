@@ -29,19 +29,33 @@
                         </div>
                         <img class="card-img" src="https://image.freepik.com/free-photo/lemon_1205-1667.jpg" alt="">
                         <div class="card-body">
-                            <p> THIS IS UUID: {{ uuid }}</p>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Username</div>
-                                    <p id = "currentUsername"></p>
+                                    <p id = "currentUsername">{{profile.username}} {{profile.user.username}}</p>
+                                    {% if pf_form_errors.usernameError %}
+                                    <div class="invalid-feedback d-block mb-3">
+                                        {{pf_form_errors.usernameError}}
+                                    </div>
+                                    {% endif %}    
                                 </li>
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Display Name</div>
-                                    <p id = "currentDisplayName"></p>
+                                    <p id = "currentDisplayName">{{profile.displayName}}</p>
+                                    {% if pf_form_errors.displayNameError %}
+                                    <div class="invalid-feedback d-block mb-3">
+                                        {{pf_form_errors.displayNameError}}
+                                    </div>
+                                    {% endif %}    
                                 </li>
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Github</div>
-                                    <p id = "currentGithub"></p>
+                                    <p id = "currentGithub">{{profile.github}}</p>
+                                    {% if pf_form_errors.githubError %}
+                                    <div class="invalid-feedback d-block mb-3">
+                                        {{pf_form_errors.githubError}}
+                                    </div>
+                                    {% endif %}    
                                 </li>
                             </ul>
                         </div>
@@ -115,33 +129,33 @@
     //         swapProfileMode();
     //     }
     // })
-    window.onload = getProfile;
+    // window.onload = getProfile;
     
-    // make request and get json response
-    function fetchJSON(url) {
-        var request = new Request(url);
-        return fetch(request).then((response) => {
-            if (response.status === 200) { // OK
-            return response.json(); // return a Promise
-            } else {
-            alert("Something went wrong: " + response.status);
-            }
-        });
-    }
+    // // make request and get json response
+    // function fetchJSON(url) {
+    //     var request = new Request(url);
+    //     return fetch(request).then((response) => {
+    //         if (response.status === 200) { // OK
+    //         return response.json(); // return a Promise
+    //         } else {
+    //         alert("Something went wrong: " + response.status);
+    //         }
+    //     });
+    // }
 
-    // make a get request to profile info
-    function getProfile() {
-        var uuid = "{{uuid}}";
-        var pre_url = "http://localhost:8000/service/author/" //NEED CONFIGURATION
-        var url = pre_url + uuid // :service/author/{AUTHOR_ID}
-        fetchJSON(url).then((json) => { // another callback
-            console.log(json); // browser turned the JSON into an object
-            // text = json.message; // it has properties
-            document.querySelector("#currentUsername").innerText = json.username;
-            document.querySelector("#currentDisplayName").innerText = json.displayName;
-            document.querySelector("#currentGithub").innerText = json.github;
-        });
-    }
+    // // make a get request to profile info
+    // function getProfile() {
+    //     var uuid = "{{uuid}}";
+    //     var pre_url = "http://localhost:8000/service/author/" //NEED CONFIGURATION
+    //     var url = pre_url + uuid // :service/author/{AUTHOR_ID}
+    //     fetchJSON(url).then((json) => { // another callback
+    //         console.log(json); // browser turned the JSON into an object
+    //         // text = json.message; // it has properties
+    //         document.querySelector("#currentUsername").innerText = json.username;
+    //         document.querySelector("#currentDisplayName").innerText = json.displayName;
+    //         document.querySelector("#currentGithub").innerText = json.github;
+    //     });
+    // }
 </script>
 </html>
 
