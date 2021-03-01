@@ -608,3 +608,38 @@ def get_github_events(request, id):
         response = JsonResponse({'events':results})
         response.status_code = 200
         return response
+
+"""
+handles GET request: get a list of authors who are their followers
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/followers
+"""
+@login_required
+def get_followers(request, author_id):
+    if request.method == 'GET':
+        print(author_id)
+        # if foreign_author_id:
+        #     print(foreign_author_id)
+        response = JsonResponse({"results":"hello"})
+        response.status_code = 200
+        return response
+
+
+"""
+handles these requests:
+    DELETE: remove a follower
+    PUT: Add a follower (must be authenticated)
+    GET check if follower
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+"""
+@login_required
+def edit_followers(request, author_id, foreign_author_id):
+    if request.method == 'GET':
+        print(author_id, foreign_author_id)
+        # if foreign_author_id:
+        #     print(foreign_author_id)
+        response = JsonResponse({"results":"hello"})
+        response.status_code = 200
+        return response
+

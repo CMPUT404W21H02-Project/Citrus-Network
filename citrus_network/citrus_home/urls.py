@@ -12,5 +12,7 @@ urlpatterns = [
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/github$',views.get_github_events, name='github'),
   path('stream/', views.stream_redirect, name='stream_url'),
   path('post/', views.post_redirect, name='post_url'),
-  # url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/followers$',views.manage_followers, name='followers_api'),
+  # https://stackoverflow.com/questions/32950432/django-urls-uuid-not-working/47948076
+  path('service/author/<uuid:author_id>/followers', views.get_followers),
+  path('service/author/<uuid:author_id>/followers/<uuid:foreign_author_id>', views.edit_followers)
 ]
