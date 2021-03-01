@@ -32,30 +32,15 @@
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Username</div>
-                                    <p id = "currentUsername">{{profile.username}} {{profile.user.username}}</p>
-                                    {% if pf_form_errors.usernameError %}
-                                    <div class="invalid-feedback d-block mb-3">
-                                        {{pf_form_errors.usernameError}}
-                                    </div>
-                                    {% endif %}    
+                                    <p id = "currentUsername">{{profile.username}}</p>  
                                 </li>
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Display Name</div>
                                     <p id = "currentDisplayName">{{profile.displayName}}</p>
-                                    {% if pf_form_errors.displayNameError %}
-                                    <div class="invalid-feedback d-block mb-3">
-                                        {{pf_form_errors.displayNameError}}
-                                    </div>
-                                    {% endif %}    
                                 </li>
                                 <li class="list-group-item">
                                     <div class="font-weight-bold">Github</div>
                                     <p id = "currentGithub">{{profile.github}}</p>
-                                    {% if pf_form_errors.githubError %}
-                                    <div class="invalid-feedback d-block mb-3">
-                                        {{pf_form_errors.githubError}}
-                                    </div>
-                                    {% endif %}    
                                 </li>
                             </ul>
                         </div>
@@ -121,14 +106,6 @@
             edit.attr('hidden', 'true');
         }
     }
-
-    // Doesn't work until we get data sent as a json serialized object  
-    // $(window).on('load', function() {
-    //     x = {{pf_form_errors}}
-    //     if (x) {
-    //         swapProfileMode();
-    //     }
-    // })
     // window.onload = getProfile;
     
     // // make request and get json response
@@ -157,6 +134,11 @@
     //     });
     // }
 </script>
+{% if pf_form_errors.usernameError or pf_form_errors.displayNameError or pf_form_errors.githubError %}
+    <script>
+        swapProfileMode()
+    </script>
+{% endif %}
 </html>
 
 

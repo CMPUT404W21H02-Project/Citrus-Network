@@ -272,7 +272,7 @@ def render_profile(request):
             current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
             form = ProfileForm(current_profile)
 
-            return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'pf_form_errors':pf_form_errors})
+            return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile, 'pf_form_errors':pf_form_errors})
         
         #if fields were valid, assign them to user
         profile.user.username = str(new_username)
@@ -291,7 +291,7 @@ def render_profile(request):
         })
         response.status_code = 200
         # return HttpResponseRedirect(reverse('profile',  kwargs={ 'id': str(profile.id) }))
-        return render(request, 'citrus_home/profile.html',{'form': form, 'profile': profile, 'response':response, 'pf_form_errors':pf_form_errors }) 
+        return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile, 'response':response, 'pf_form_errors':pf_form_errors }) 
 
 
     # handle not POST OR GET (to-do)
