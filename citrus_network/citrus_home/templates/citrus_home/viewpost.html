@@ -10,6 +10,7 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
     <title>Citrus Network</title>
   </head>
 
@@ -31,8 +32,13 @@
             <div class="card-body">
               <h6 class="font-weight-bold">{{ post.title }}</h6>
               <p>{{ post.content }}</p>
+              <!-- Button if liked -->
               <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
-                <span class="like-icon"></span>
+                <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
+              </button>
+              <!-- Button if not liked yet -->
+              <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
+                <em class="bi-hand-thumbs-up-fill"></em>
               </button>
               <br>
               <br>
@@ -45,8 +51,13 @@
                 </div>
                 <div class="card-body">
                   <p>{{comment.comment}}</p>
+                  <!-- Button if liked -->
                   <button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">
-                    <span class="like-icon-comment"></span>
+                    <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
+                  </button>
+                  <!-- Button if not liked yet -->
+                  <button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">
+                    <em class="bi-hand-thumbs-up-fill"></em>
                   </button>
                 </div>
               </div>
@@ -67,20 +78,6 @@
   </body>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
   <style>
-    .like-icon {
-      background-image: url('https://pics.freeicons.io/uploads/icons/png/18609881301579252554-512.png');
-      background-size: cover;
-      display: block;
-      height: 20px;
-      width: 20px;
-    }
-    .like-icon-comment {
-      background-image: url('https://pics.freeicons.io/uploads/icons/png/18609881301579252554-512.png');
-      background-size: cover;
-      display: block;
-      height: 17px;
-      width: 17px;
-    }
     a.card-link {
       color: inherit;
       text-decoration: inherit;
