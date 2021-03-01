@@ -13,7 +13,7 @@
     <body>
         <nav class="navbar sticky-top navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
-                <a class="navbar-brand mr-5" href="#">
+                <a class="navbar-brand mr-5" href="{% url 'home_url'%}">
                     <em class="orange"></em>
                     <em>The Citrus Network</em>
                 </a>
@@ -23,11 +23,11 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="{% url 'home_url'%}">
                                 <em class="lemon"></em>Home</a>
                             </li>
                         <li class="nav-item active">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{% url 'stream_url'%}">
                             <em class="lime"></em>Stream</a>
                         </li>
                     </ul>
@@ -53,7 +53,7 @@
             box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
         }
         .nav-item >.nav-link:hover{
-            box-shadow: 0 2px 2px 0 rgba(65, 64, 64, 0.24), 0 2px 2px 0 rgba(65,64,64,0.24);
+            box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
             border-radius: 2px;
         }
         .navbar-brand{

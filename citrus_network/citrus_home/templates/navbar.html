@@ -13,7 +13,7 @@
     <body>
         <nav class="navbar sticky-top navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
-                <a class="navbar-brand mr-5" href="#">
+                <a class="navbar-brand mr-5" href="{% url 'login_url'%}">
                     <em class="orange"></em>
                     <em>The Citrus Network</em>
                 </a>
@@ -45,7 +45,7 @@
             box-shadow: 0 20px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
         }
         .nav-item >.nav-link:hover{
-            box-shadow: 0 2px 2px 0 rgba(65, 64, 64, 0.24), 0 2px 2px 0 rgba(65,64,64,0.24);
+            box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
             border-radius: 2px;
         }
         .navbar-brand{
