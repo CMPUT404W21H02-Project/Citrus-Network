@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
-# @login_required
+@login_required
 def home_redirect(request):
     if request.method == 'GET':
         mock_response = [
@@ -307,7 +307,7 @@ def login_redirect(request):
 """
 require authorization, log out current user, redirect to the home page
 """
-# @login_required
+@login_required
 def logout_redirect(request):
     if request.method == "GET":
         logout(request)   
@@ -348,7 +348,7 @@ def get_uuid(request):
 render edit_profile html page
 require authentication by successfully logging in
 """
-# @login_required
+@login_required
 def render_profile(request):
     if request.method == 'POST':
         # get uuid from logged in user
@@ -547,7 +547,7 @@ Expected:
 URL:/service/author/{AUTHOR_ID}/github
 reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity-stream-with-github-api-d1e9f5831d88
 """
-# @login_required
+@login_required
 def get_github_events(request, id):
     if request.method == 'GET':
         # look up user by their id, if not exist, return 404 response
@@ -622,7 +622,7 @@ format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers
 """
-# @login_required
+@login_required
 def get_followers(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
@@ -675,7 +675,7 @@ handles these requests:
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
-# @login_required
+@login_required
 @csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
     # special case:
