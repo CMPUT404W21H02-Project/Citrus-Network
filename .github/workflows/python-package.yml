@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - test-dev-unit-tests
+      - be-feature-friend-api-nhan
       - dev
   pull_request:
       branches:
