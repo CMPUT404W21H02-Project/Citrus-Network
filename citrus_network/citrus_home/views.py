@@ -674,7 +674,12 @@ URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 # @login_required
 @csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
-    if request.method == 'DELETE':
+    # special case:
+    if author_id == foreign_author_id:
+        response = JsonResponse({"message":"author id and foreign author id are the same"})
+        response.status_code = 400
+        return response        
+    elif request.method == 'DELETE':
         # validate author id in model
         try:
             result = Follower.objects.get(uuid=author_id)
@@ -711,7 +716,7 @@ def edit_followers(request, author_id, foreign_author_id):
         
         # validate foregin id in model:
         try:
-            foregin_id = Follower.objects.get(uuid=foreign_author_id)
+            foregin_id = CitrusAuthor.objects.get(id=foreign_author_id)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"invalid foreign id"})
             response.status_code = 404
