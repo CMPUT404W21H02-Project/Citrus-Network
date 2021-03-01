@@ -131,7 +131,7 @@
 
     // make a get request to profile info
     function getProfile() {
-        var uuid = "{{uuid}}";
+        var uuid = "{{ uuid }}";
         var pre_url = "http://localhost:8000/service/author/" //NEED CONFIGURATION
         var url = pre_url + uuid // :service/author/{AUTHOR_ID}
         fetchJSON(url).then((json) => { // another callback
