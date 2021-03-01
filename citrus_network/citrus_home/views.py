@@ -746,7 +746,7 @@ def edit_followers(request, author_id, foreign_author_id):
             response.status_code = 404
             return response
         
-        response = JsonResponse({"results":"success"})
+        response = JsonResponse({"results":"found"})
         response.status_code = 200
         return response
     else:
