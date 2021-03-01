@@ -253,16 +253,65 @@ def get_uuid(request):
 """
 render edit_profile html page
 require authentication by successfully logging in
-send them uuid of the author
 """
 @login_required
-def render_profile(request):    
-    if request.method == 'GET':
+def render_profile(request):
+    if request.method == 'POST':
+        # get uuid from logged in user
         uuid = get_uuid(request)
-        form = ProfileForm()
+        profile = get_object_or_404(CitrusAuthor, id=uuid)
 
-        return render(request, 'citrus_home/profile.html',{"uuid":uuid, 'form':form})
+        #new data     
+        new_username = request.POST.get('username')
+        new_displayName = request.POST.get('displayName')
+        new_github = request.POST.get('github')
 
+        # set which fields are valid/invalid for the html
+        field_validities = setFormErrors(profile,new_username,new_displayName,new_github)
+        pf_form_errors = ProfileFormError(field_validities[0],field_validities[1],field_validities[2])
+        try:
+            validate_fields(field_validities)
+        except forms.ValidationError:
+            #if the github, username, or display name exists and was someone elses return the users original information
+            current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
+            form = ProfileForm(current_profile)
+
+            return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile, 'pf_form_errors':pf_form_errors})
+        
+        #if fields were valid, assign them to user
+        profile.user.username = str(new_username)
+        profile.displayName = str(new_displayName)
+        profile.github = str(new_github)
+        profile.user.save()
+        profile.save()
+
+        # set up Django form
+        print(profile.user, profile.github,profile.displayName)
+        current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
+        form = ProfileForm(current_profile)
+
+        response = JsonResponse({
+            "message": "profile updated!"
+        })
+        response.status_code = 200
+        # return HttpResponseRedirect(reverse('profile',  kwargs={ 'id': str(profile.id) }))
+        return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile, 'response':response, 'pf_form_errors':pf_form_errors }) 
+
+
+    # handle not POST OR GET (to-do)
+    uuid = get_uuid(request)
+    profile = get_object_or_404(CitrusAuthor, id=uuid)
+    current_profile = { 'username': profile.user,
+                        'displayName': profile.displayName,
+                        'github': profile.github}
+    response = JsonResponse({'username': str(profile.user),
+                            'displayName': str(profile.displayName),
+                            'github': str(profile.github)})
+    response.status_code = 200
+    form = ProfileForm(current_profile)
+    return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile})
+    
+    
 """
 handles get requests with id and retrieve author profile information: username, displayname, github
 handles post requests to state changes to author profile information: username, displayname, github 
@@ -297,10 +346,11 @@ def manage_profile(request, id):
                 validate_fields(field_validities)
             except forms.ValidationError:
                 #if the github, username, or display name exists and was someone elses return the users original information
-                current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
-                form = ProfileForm(current_profile)
-
-                return render(request, 'citrus_home/profile.html',{'form': form, 'user': profile, 'pf_form_errors':pf_form_errors})
+                response = JsonResponse({
+                    "message": "couldn't update profile"
+                })
+                response.status_code = 400
+                return response
             
             #if fields were valid, assign them to user
             profile.user.username = new_username
@@ -313,7 +363,7 @@ def manage_profile(request, id):
                 "message": "profile updated!"
             })
             response.status_code = 200
-            return HttpResponseRedirect(reverse('profile',  kwargs={ 'id': str(profile.id) }))
+            return response
 
         except (KeyError, CitrusAuthor.DoesNotExist):
             response = JsonResponse({
