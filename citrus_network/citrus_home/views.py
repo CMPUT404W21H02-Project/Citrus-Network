@@ -473,9 +473,9 @@ def get_github_events(request, id):
         results = []
         
         event_actions = {
-            'WatchEvent': 'starred', 
-            'PushEvent': 'pushed to', 
-            'CreateEvent': "created", 
+            'WatchEvent': 'starred',
+            'PushEvent': 'pushed to',
+            'CreateEvent': "created",
             'DeleteEvent':'deleted',
             'ForkEvent':'forked',
             'CommitCommentEvent':'committed comment on',
@@ -517,4 +517,3 @@ def get_github_events(request, id):
         response = JsonResponse({'events':results})
         response.status_code = 200
         return response
-
