@@ -463,7 +463,7 @@ def manage_profile(request, id):
             response = JsonResponse({
                 "message": "couldn't update profile"
             })
-            response.status_code = 418
+            response.status_code = 500
             return response
     #not POST AND GET SO return sth else 
     else:
@@ -700,7 +700,7 @@ def edit_followers(request, author_id, foreign_author_id):
         followers = str(author.followers_uuid)
         if str(foreign_author_id) not in followers:
             response = JsonResponse({"results":"foreign id is not a follower"})
-            response.status_code = 404
+            response.status_code = 304
             return response
         
         # unfollow that person
@@ -821,6 +821,13 @@ def edit_followers(request, author_id, foreign_author_id):
                 response = JsonResponse({"results":"success, added as friends and followers"})
                 response.status_code = 200
                 return response
+        
+        # check if foreign id is already a follower
+        followers = str(result.followers_uuid)
+        if str(foreign_author_id) in followers:
+            response = JsonResponse({"results":"foreign id is already a follower"})
+            response.status_code = 304
+            return response
         
         # add foreign id 
         followers = str(result.followers_uuid)+CONST_SEPARATOR+str(foreign_author_id)
