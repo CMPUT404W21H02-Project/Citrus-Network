@@ -1,4 +1,5 @@
 from django.test import TestCase
+from requests.api import request
 from citrus_home.models import CitrusAuthor
 from django.contrib.auth.models import User
 import uuid
@@ -60,4 +61,77 @@ class LoginTestCase(TestCase):
     def tearDown(self):
         self.nervousTestMan.delete()
 
+# HTTP Based Tests
+class ViewsGETTestCase(TestCase):
+    def test_index_get(self):
+        resp = self.client.get('/home/')
+        self.assertEqual(resp.status_code, 200)
+    
+    def test_makepost_get(self):
+        resp = self.client.get('/post/')
+        self.assertEqual(resp.status_code, 200)
+    
+    def test_viewpost_get(self):
+        resp = self.client.get('/view-post/')
+        self.assertEqual(resp.status_code, 200)
+    
+    def test_stream_get(self):
+        resp = self.client.get('/stream/')
+        self.assertEqual(resp.status_code, 200)
+    
+class ViewsLOGINTestCase(TestCase):
+    def setUp(self):
+        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc')
+        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id=str(uuid.uuid4()), user=user,displayName="nervousMan")
+        self.nervousTestMan.save()
+        c = Client()
+        self.client_object = c.login(username="test", password="abc@=1234abc")
+
+    def test_login_post_authenticated(self):
+        request_body = {
+            'username': 'test',
+            'password': 'abc@=1234abc'
+        }
+        response = self.client.post (
+            '', request_body
+        )
+        self.assertEqual(response.status_code, 302)
+    
+    def test_logout(self):
+        resp = self.client.get('/logout/')
+        self.assertEqual(resp.status_code, 302)
+    
+    def tearDown(self):
+        self.nervousTestMan.delete()
+
+class ViewsRegisterTestCase(TestCase):
+    def test_registration(self):
+        request_body = {
+            'username': 'test',
+            'password': 'abc@=1234abc'
+        }
+        
+        response = self.client.post (
+            '/register/', request_body
+        )
+        self.assertEqual(response.status_code, 200)
+
+class ViewsProfileTestCase(TestCase):
+    def setUp(self):
+        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc')
+        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id=str(uuid.uuid4()), user=user,displayName="nervousMan")
+        self.nervousTestMan.save()
+    
+    def test_post_profile(self):
+        request_body = {
+            'username': 'test',
+            'displayName': 'nervousMan',
+            'github': 'https://github.com/test/tester'
+        }
+        response = self.client.post (
+            '/profile/', request_body
+        )
+        print("TESGYHH")
+        print(response)
+        self.assertEqual(response.status_code, 200)
 
