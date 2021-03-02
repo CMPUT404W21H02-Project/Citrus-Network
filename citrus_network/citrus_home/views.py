@@ -673,8 +673,8 @@ def get_followers(request, author_id):
 
 """
 handles these requests:
-    DELETE: remove a follower
-    PUT: Add a follower (must be authenticated)
+    DELETE: remove a follower, if friend also then unfriend and unfollow that person
+    PUT: Add a follower (must be authenticated) or accept friend request to befriend and follow foreign_author_id
     GET check if follower
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
@@ -690,27 +690,55 @@ def edit_followers(request, author_id, foreign_author_id):
     elif request.method == 'DELETE':
         # validate author id in model
         try:
-            result = Follower.objects.get(uuid=author_id)
+            author = Follower.objects.get(uuid=author_id)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"author has no followers or incorrect id of author"})
             response.status_code = 404
             return response
         
         # validate foregin id in list of followers:
-        followers = str(result.followers_uuid)
+        followers = str(author.followers_uuid)
         if str(foreign_author_id) not in followers:
             response = JsonResponse({"results":"foreign id is not a follower"})
             response.status_code = 404
             return response
         
-        # remove that foreign id from the string
+        # unfollow that person
         followers = followers.replace(str(foreign_author_id),"")
-        result.followers_uuid = followers
+        author.followers_uuid = followers
+        author.save()
+
+        # check if they're also friend                
+        # validate author id in model
+        try:
+            result = Friend.objects.get(uuid=author_id)
+        except ObjectDoesNotExist: # they are not friend because author has no friend
+            response = JsonResponse({"results":"unfollow success"})
+            response.status_code = 200
+            return response        
+        # validate foregin id in list of friends:
+        friends = str(result.friends_uuid)
+        if str(foreign_author_id) not in friends:
+            response = JsonResponse({"results":"unfollow success"})
+            response.status_code = 200
+            return response
+        
+        # unfriend foreign_author_id
+        friends = friends.replace(str(foreign_author_id),"")
+        result.friends_uuid = friends
         result.save()
 
-        response = JsonResponse({"results":"success"})
+        # unfriend author_id also meaning remove author_id from foreign_author_id friend list 
+        foreign_author = Friend.objects.get(uuid=foreign_author_id)
+        friends = str(foreign_author.friends_uuid)
+        friends = friends.replace(str(author_id),"")
+        foreign_author.friends_uuid = friends
+        foreign_author.save()
+
+        response = JsonResponse({"results":"unfollow and unfriend success"})
         response.status_code = 200
         return response
+
     elif request.method == 'PUT':
         # DO I VERIFY FOREIGN AUTHOR ID, I.E IF IT'S FROM OTHER SERVER ???
 
@@ -722,7 +750,7 @@ def edit_followers(request, author_id, foreign_author_id):
             response.status_code = 404
             return response
 
-        # validate foregin id in model:
+        # validate foregin id in citrus_author model:
         try:
             foregin_id = CitrusAuthor.objects.get(id=foreign_author_id)
         except ObjectDoesNotExist:
@@ -731,29 +759,131 @@ def edit_followers(request, author_id, foreign_author_id):
             return response
 
         # validate author id in follower model
+        # uuid need to be a CitrusAuthor instance
         try:
-            result = Follower.objects.get(uuid=author_id)
+            result = Follower.objects.get(uuid=author)
         except ObjectDoesNotExist:
-            # add foreign id 
             followers = str(foreign_author_id)
             # create instance of the follower with uuid to author_id
             new_follower_object = Follower(uuid = author,followers_uuid= followers)
             new_follower_object.save()
             print("created",new_follower_object.uuid)
 
-            response = JsonResponse({"results":"success"})
-            response.status_code = 200
-            return response
-        
+            # check if foreign_author_id also follow author_id
+            try:
+                foreign_author = Follower.objects.get(uuid=foregin_id)
+            except ObjectDoesNotExist: # foreign_author_id has no followers
+                response = JsonResponse({"results":"success"})
+                response.status_code = 200
+                return response
+            else:
+                followers = str(foreign_author.followers_uuid)
+                # foreign_author_id doesnt follow author_id
+                if str(author_id) not in followers:
+                    response = JsonResponse({"results":"success"})
+                    response.status_code = 200
+                    return response
+
+                # foreign_author_id also follow author_id
+                # add both of them as friend of each other in Friend model
+
+                # check author_id exist in friend model:
+                try:
+                    author_id_friends = Friend.objects.get(uuid=author)
+                except ObjectDoesNotExist: # author id is not in friend model
+                    # create instance of the follower with uuid to author_id
+                    friend = str(foreign_author_id)
+                    new_friend_object = Friend(uuid = author,friends_uuid= friend)
+                    new_friend_object.save()
+                    print("created",new_friend_object.uuid)
+                else:
+                    # add foreign id 
+                    friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
+                    author_id_friends.friends_uuid = friends
+                    author_id_friends.save()
+
+                # check foreign_author_id exist in friend model:
+                try:
+                    foreign_author_id_friends = Friend.objects.get(uuid=foregin_id)
+                except ObjectDoesNotExist: # author id is not in friend model
+                    # create instance of the follower with uuid to foreign_author_id
+                    friend = str(author_id)
+                    new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
+                    new_friend_object.save()
+                    print("created",new_friend_object.uuid)
+                else:
+                    # add author id 
+                    friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
+                    foreign_author_id_friends.friends_uuid = friends
+                    foreign_author_id_friends.save()
+                    
+
+                response = JsonResponse({"results":"success, added as friends and followers"})
+                response.status_code = 200
+                return response
         
         # add foreign id 
         followers = str(result.followers_uuid)+CONST_SEPARATOR+str(foreign_author_id)
         result.followers_uuid = followers
         result.save()
 
-        response = JsonResponse({"results":"success"})
+        # check if foreign_author_id also follow author_id
+        try:
+            foreign_author = Follower.objects.get(uuid=foregin_id)
+        except ObjectDoesNotExist: # foreign_author_id has no followers
+            response = JsonResponse({"results":"success"})
+            response.status_code = 200
+            return response
+        else:
+            followers = str(foreign_author.followers_uuid)
+            # foreign_author_id doesnt follow author_id
+            if str(author_id) not in followers:
+                response = JsonResponse({"results":"success"})
+                response.status_code = 200
+                return response
+
+            # foreign_author_id also follow author_id
+            # add both of them as friend of each other in Friend model
+
+            # check author_id exist in friend model:
+            try:
+                author_id_friends = Friend.objects.get(uuid=author)
+            except ObjectDoesNotExist: # author id is not in friend model
+                # create instance of the follower with uuid to author_id
+                friend = str(foreign_author_id)
+                new_friend_object = Friend(uuid = author,friends_uuid= friend)
+                new_friend_object.save()
+                print("created",new_friend_object.uuid)
+            else:
+                # add foreign id 
+                friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
+                author_id_friends.friends_uuid = friends
+                author_id_friends.save()
+
+            # check foreign_author_id exist in friend model:
+            try:
+                foreign_author_id_friends = Friend.objects.get(uuid=foregin_id)
+            except ObjectDoesNotExist: # author id is not in friend model
+                # create instance of the follower with uuid to foreign_author_id
+                friend = str(author_id)
+                new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
+                new_friend_object.save()
+                print("created",new_friend_object.uuid)
+            else:
+                # add author id 
+                friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
+                foreign_author_id_friends.friends_uuid = friends
+                foreign_author_id_friends.save()
+                
+
+            response = JsonResponse({"results":"success, added as friends and followers"})
+            response.status_code = 200
+            return response
+
+        response = JsonResponse({"results":"success, added as friends and followers"})
         response.status_code = 200
         return response
+
     elif request.method == 'GET':
         # validate author id in model
         try:
@@ -777,17 +907,6 @@ def edit_followers(request, author_id, foreign_author_id):
         response = JsonResponse({"message":"Method not Allowed"})
         response.status_code = 405
         return response
-
-"""
-handles these requests:
-    POST author_id to follow foreign_author_id
-Expected: 
-URL: ://service/author/{AUTHOR_ID}/friendrequests/{FOREIGN_AUTHOR_ID}
-"""
-# @login_required
-@csrf_exempt
-def get_friend_requests(request, author_id):
-    return None
 
 """
 handles these requests:
@@ -846,7 +965,6 @@ def get_friends(request, author_id):
 
 """
 handles these requests:
-    DELETE: remove a friend
     GET check if friend
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/friends/{FOREIGN_AUTHOR_ID}
@@ -859,30 +977,6 @@ def edit_friends(request, author_id, foreign_author_id):
         response = JsonResponse({"message":"author id and foreign author id are the same"})
         response.status_code = 400
         return response        
-    elif request.method == 'DELETE':
-        # validate author id in model
-        try:
-            result = Friend.objects.get(uuid=author_id)
-        except ObjectDoesNotExist:
-            response = JsonResponse({"results":"author has no friends or incorrect id of author"})
-            response.status_code = 404
-            return response
-        
-        # validate foregin id in list of friends:
-        friends = str(result.friends_uuid)
-        if str(foreign_author_id) not in friends:
-            response = JsonResponse({"results":"foreign id is not a friend"})
-            response.status_code = 404
-            return response
-        
-        # remove that foreign id from the string
-        friends = friends.replace(str(foreign_author_id),"")
-        result.friends_uuid = friends
-        result.save()
-
-        response = JsonResponse({"results":"success"})
-        response.status_code = 200
-        return response
     elif request.method == 'GET':
         # validate author id in model
         try:
