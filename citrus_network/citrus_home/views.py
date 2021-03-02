@@ -393,7 +393,23 @@ POST Body: {
     "content": "long detailed content of the post",
     "origin": "local host:9900"
 } 
-
+PUT Requests:
+URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID}
+PUT Body: {
+    {
+    "title": "goat post",
+    "description": "Caruso is the goat",
+    "categories": "fitness, travel, compscience",
+    "content": "first post with new API",
+    "origin": "local host:9900",
+    "private_to_author": "True",
+    "public": "False",
+    "private_to_friend": "False",
+    "shared_with": "alex"
+}
+}
+DELETE Requests:
+URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID} -> this will delete the post with the id you provided. 
 """
 # the csrf_exempt token is there if you're testing with postman
 @csrf_exempt
@@ -401,42 +417,16 @@ def manage_post(request, id, **kwargs):
     pid = kwargs.get('pid')
     print(request.method)
     if request.method == "POST":
-        # load post body
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
+        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
+        return returnJsonResponse(specific_message="post created", status_code=200)
 
-        # if the post is private to a particular author
-        if body['private_to_author'] == 'True':
-            # the post that is being created is private to the authors specified
-            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], private_to_author=True, public=False, shared_with=body['shared_with'])
-            response = JsonResponse({
-                "success": "post created"
-            }, status=200)
-            return response
-
-        # if the post is private only to friends  
-        if body['private_to_friend'] == 'True':
-                # the post that is being created is private to the authors specified
-            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], private_to_friend=True, public=False, shared_with=body['shared_with'])
-            response = JsonResponse({
-                "success": "post created"
-            }, status=200)
-            return response
-
-        # public post
-        else:
-            post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'])
-            response = JsonResponse({
-                "success": "post created"
-                }, status=200)
-            return response
     
     elif request.method == 'DELETE':
         posts = Post.objects.get(id=pid)
         posts.delete()
-        return JsonResponse({
-            "message": "post deleted"
-        }, status=200)
+        return returnJsonResponse(specific_message="post deleted", status_code=200)
 
     # update an existing post made by the user
     elif request.method == "PUT":
@@ -449,15 +439,11 @@ def manage_post(request, id, **kwargs):
         post.title = body['title']
         post.description = body['description']
         post.content = body['content']
-        post.categories = body['categories']
-        post.private_to_friend = body['private_to_author'] 
-        post.public = body['public'] 
+        post.visibility = body['visibility']
         post.shared_with = body['shared_with']
         post.save()
         
-        return JsonResponse({
-            "message": "post updated"
-        }, status=200)
+        return returnJsonResponse(specific_message="post updated", status_code=200)
 
  
     elif request.method == "GET":
@@ -465,38 +451,8 @@ def manage_post(request, id, **kwargs):
         author = CitrusAuthor.objects.get(id=id)
         posts = Post.objects.get(id=pid)
         comments = Comment.objects.filter(post=posts)
-        comments_arr = []
-        comment_count = 0
-        for comment in comments:
-            if comment_count < 5:
-                # get the author of the comment
-                author = CitrusAuthor.objects.get(id=comment.author.id)
-                comment_data = {
-                    "type": "comment", 
-                    "author": {
-                        "type": author.type,
-                        "id": author.id,
-                        "host": author.host,
-                        "displayName": author.displayName,
-                        "url": "somerandomUrl for now",
-                        "github": author.github
-                    },
-                    "comment": comment.comment,
-                    "contentType": "text/markdown",
-                    "published": comment.published,
-                    "id": comment.id,
-                }
-                comment_count += 1
-                comments_arr.append(comment_data)
-        comment_count = 0
-        author_data = {
-            "type": author.type,
-            "id": author.id,
-            "host": author.host,
-            "displayName": author.displayName,
-            "url": "somerandomUrl for now",
-            "github": author.github
-        }
+        comments_arr = create_comment_list(posts)
+        author_data = convertAuthorObj(author)
         # check for post categories and put them into an array
         categories = posts.categories.split()
         return_data = {
@@ -514,13 +470,107 @@ def manage_post(request, id, **kwargs):
             "count": comments.count(),
             "comments": comments_arr, 
             "published": posts.created,
-            "visibility": "PUBLIC",
+            "visibility": posts.visibility,
             "unlisted": "false"
         }
         return JsonResponse(return_data, status=200)
     
     else:
-        return JsonResponse({
-            "message": "method not supported"
-        }, status=400)
+        return returnJsonResponse(specific_message="method not supported", status_code=400)
 
+"""
+handles GET & POST requests for comments
+"""
+@csrf_exempt
+def handle_comment(request, id, pid):
+    if request.method == "POST":
+        print("inside handle comments")
+        # create a comment and attach it to the post matching the provided post id
+        body, post, author = setup(request, id, pid)
+        Comment.objects.create(author=author, post=post, comment=body['comment'], id=uuid.uuid4()).save()
+        return returnJsonResponse(specific_message="comment added", status_code=200)
+    
+    elif request.method == "GET":
+        # check the request to see if there's a specified indices of comments requested. 
+        post = Post.objects.get(id=pid)
+        comment_arr = create_comment_list(post)
+        return JsonResponse({
+            "comments": comment_arr
+        }, status=200)
+
+    else:
+        return returnJsonResponse(specific_message="method not available", status_code=400)
+
+
+"""
+arguments: takes in a post object and optionally a start and end index
+return: a list of comments for the specified post
+"""
+def create_comment_list(post, **kwargs):
+    # if start index and end index arguemnts provided return specified indices
+    if "start_index" and "end_index" in kwargs:
+        start_index = kwargs.get('start_index')
+        end_index = kwargs.get('end_index')
+        # get all comments associated with this post and sort by most recently published
+        comments = Comment.objects.filter(post=post).order_by('-published')[start_index:end_index+1]
+    else:
+        comments = Comment.objects.filter(post=post).order_by('-published')[:5]
+    comments_arr = []
+    for comment in comments:
+            # get the author of the comment
+        author = CitrusAuthor.objects.get(id=comment.author.id)
+        comment_data = {
+            "type": "comment", 
+            "author": convertAuthorObj(author),
+            "comment": comment.comment,
+            "contentType": "text/markdown",
+            "published": comment.published,
+            "id": comment.id,
+        }
+        comments_arr.append(comment_data)
+    return comments_arr
+
+
+"""
+arguments: request, author id, post id
+returns: returns the body of the request, the CitrusAuthor object associated with the id and the Post object associated with the pid
+"""
+def setup(request, id, pid):
+        return json.loads(request.body), Post.objects.get(id=pid), CitrusAuthor.objects.get(id=id)
+
+
+"""
+arguments: message, status_code
+return: custom json response
+"""
+def returnJsonResponse(specific_message, status_code):
+    return JsonResponse({
+        "message": specific_message
+    }, status=status_code)
+
+
+"""
+arguments: CitrusAuthor object
+return: dictionary with CitrusAuthor fields
+"""
+def convertAuthorObj(author):
+        author_data = {
+            "type": author.type,
+            "id": author.id,
+            "host": author.host,
+            "displayName": author.displayName,
+            "url": "somerandomUrl for now",
+            "github": author.github
+        }
+        return author_data
+
+
+"""
+arguments: string that reads true or false
+return: boolean value of string
+"""
+def stringToBool(value):
+    if value == "True": 
+        return True
+    elif value == "False":
+        return False

@@ -3,14 +3,14 @@ from .models import CitrusAuthor, Post, Comment
 
 
 class CitrusAuthorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'user', 'host', 'displayName', 'github',)
+    list_display = ('id', 'type', 'user', 'host', 'displayName','url', 'github',)
 
 
 # class CitrusPostAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'title', 'description', 'content', 'author', 'commonmark', 'visibility',)
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id','title','description','content','author','origin','commonmark','categories','public','private_to_author','private_to_friend','shared_with','created' )
+    list_display = ('id','title','description','content','author','origin','commonmark','categories','visibility','created' )
 
 
 class CommentAdmin(admin.ModelAdmin):

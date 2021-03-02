@@ -11,6 +11,7 @@ class CitrusAuthor(models.Model):
     host            = models.CharField(max_length=200, default="http://localhost:8000/")
     displayName     = models.CharField(max_length=300, default=f"{str(user)}")
     github          = models.CharField(max_length=300, default="", null=True)
+    url             = models.CharField(max_length=300, default="http://localhost:8000/", null=True)
     profile_picture = models.ImageField(null=True, blank=True, upload_to="images/")
 
 
@@ -33,9 +34,12 @@ class Post(models.Model):
     # parse this and return as list for GET request
     categories          = models.CharField(max_length=400)
     # if visibility option is not provided the default will be public
-    public              = models.BooleanField(default=True, blank=True)
-    private_to_author   = models.BooleanField(default=False, blank=True)
-    private_to_friend   = models.BooleanField(default=False, blank=True)
+    visibility_choices  = [
+        ("PUBLIC", "public"),
+        ("PRIVATE_TO_AUTHOR", "private to author"),
+        ("PRIVATE_TO_FRIEND", "private to friends")
+    ]
+    visibility          = models.CharField(max_length=50, choices=visibility_choices, default="PUBLIC")
     # if private to author or private to friends is true add usernames to shared_with
     shared_with         = models.CharField(max_length=600)
     created             = models.DateTimeField(auto_now_add=True)
