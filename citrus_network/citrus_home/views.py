@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
-@login_required
+# @login_required
 def home_redirect(request):
     if request.method == 'GET':
         mock_response = [
@@ -307,7 +307,7 @@ def login_redirect(request):
 """
 require authorization, log out current user, redirect to the home page
 """
-@login_required
+# @login_required
 def logout_redirect(request):
     if request.method == "GET":
         logout(request)   
@@ -348,7 +348,7 @@ def get_uuid(request):
 render edit_profile html page
 require authentication by successfully logging in
 """
-@login_required
+# @login_required
 def render_profile(request):
     if request.method == 'POST':
         # get uuid from logged in user
@@ -547,7 +547,7 @@ Expected:
 URL:/service/author/{AUTHOR_ID}/github
 reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity-stream-with-github-api-d1e9f5831d88
 """
-@login_required
+# @login_required
 def get_github_events(request, id):
     if request.method == 'GET':
         # look up user by their id, if not exist, return 404 response
@@ -622,7 +622,7 @@ format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers
 """
-@login_required
+# @login_required
 def get_followers(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
@@ -665,6 +665,10 @@ def get_followers(request, author_id):
         response = JsonResponse(results)
         response.status_code = 200
         return response
+    else:
+        response = JsonResponse({"results":"method not allowed"})
+        response.status_code = 405
+        return response
 
 
 """
@@ -675,7 +679,7 @@ handles these requests:
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
-@login_required
+# @login_required
 @csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
     # special case:
@@ -710,14 +714,14 @@ def edit_followers(request, author_id, foreign_author_id):
     elif request.method == 'PUT':
         # DO I VERIFY FOREIGN AUTHOR ID, I.E IF IT'S FROM OTHER SERVER ???
 
-        # validate author id in model
+        # validate author id in citrus_author model:
         try:
-            result = Follower.objects.get(uuid=author_id)
+            author = CitrusAuthor.objects.get(id=author_id)
         except ObjectDoesNotExist:
-            response = JsonResponse({"results":"author has no followers or incorrect id of author"})
+            response = JsonResponse({"results":"author_id doesnt exist"})
             response.status_code = 404
             return response
-        
+
         # validate foregin id in model:
         try:
             foregin_id = CitrusAuthor.objects.get(id=foreign_author_id)
@@ -725,6 +729,22 @@ def edit_followers(request, author_id, foreign_author_id):
             response = JsonResponse({"results":"invalid foreign id"})
             response.status_code = 404
             return response
+
+        # validate author id in follower model
+        try:
+            result = Follower.objects.get(uuid=author_id)
+        except ObjectDoesNotExist:
+            # add foreign id 
+            followers = str(foreign_author_id)
+            # create instance of the follower with uuid to author_id
+            new_follower_object = Follower(uuid = author,followers_uuid= followers)
+            new_follower_object.save()
+            print("created",new_follower_object.uuid)
+
+            response = JsonResponse({"results":"success"})
+            response.status_code = 200
+            return response
+        
         
         # add foreign id 
         followers = str(result.followers_uuid)+CONST_SEPARATOR+str(foreign_author_id)
@@ -758,5 +778,132 @@ def edit_followers(request, author_id, foreign_author_id):
         response.status_code = 405
         return response
 
+"""
+handles these requests:
+    POST author_id to follow foreign_author_id
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/friendrequests/{FOREIGN_AUTHOR_ID}
+"""
+# @login_required
+@csrf_exempt
+def get_friend_requests(request, author_id):
+    return None
 
-       
+"""
+handles these requests:
+    GET get all friends
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/friends/
+"""
+# @login_required
+# @csrf_exempt
+def get_friends(request, author_id):
+    if request.method == 'GET':
+        # check for list of followers of author_id
+        try:
+            result = Friend.objects.get(uuid=author_id)
+            print(result)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"no friends found or incorrect id of author"})
+            response.status_code = 404
+            return response
+
+        # generate json response for list of followers
+        items = []
+        for uuid in result.friends_uuid.split(CONST_SEPARATOR):
+            # make sure it is uuid not any blank space
+            if uuid:
+                uuid = uuid.strip() # remove any whitespace
+
+                # get the follower profile info
+                author = CitrusAuthor.objects.get(id = uuid)
+                
+                json = {
+                    "type": "Author",
+                    "id": str(uuid),
+                    "host": str(author.host),
+                    "displayName": str(author.displayName),
+                    "github": str(author.github),
+                }
+                items.append(json)
+
+        # check to see nothing is in items list
+        if len(items) == 0:
+            response = JsonResponse({"results":"no friends found or incorrect id of author"})
+            response.status_code = 404
+            return response
+
+        results = { "type": "friends",      
+                    "items":items}
+
+        response = JsonResponse(results)
+        response.status_code = 200
+        return response
+    else:
+        response = JsonResponse({"results":"method not allowed"})
+        response.status_code = 405
+        return response
+
+"""
+handles these requests:
+    DELETE: remove a friend
+    GET check if friend
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/friends/{FOREIGN_AUTHOR_ID}
+"""
+# @login_required
+@csrf_exempt
+def edit_friends(request, author_id, foreign_author_id):
+    # special case:
+    if author_id == foreign_author_id:
+        response = JsonResponse({"message":"author id and foreign author id are the same"})
+        response.status_code = 400
+        return response        
+    elif request.method == 'DELETE':
+        # validate author id in model
+        try:
+            result = Friend.objects.get(uuid=author_id)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"author has no friends or incorrect id of author"})
+            response.status_code = 404
+            return response
+        
+        # validate foregin id in list of friends:
+        friends = str(result.friends_uuid)
+        if str(foreign_author_id) not in friends:
+            response = JsonResponse({"results":"foreign id is not a friend"})
+            response.status_code = 404
+            return response
+        
+        # remove that foreign id from the string
+        friends = friends.replace(str(foreign_author_id),"")
+        result.friends_uuid = friends
+        result.save()
+
+        response = JsonResponse({"results":"success"})
+        response.status_code = 200
+        return response
+    elif request.method == 'GET':
+        # validate author id in model
+        try:
+            result = Friend.objects.get(uuid=author_id)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"author has no friends or incorrect id of author"})
+            response.status_code = 404
+            return response
+        
+        # validate foregin id in list of friends:
+        friends = str(result.friends_uuid)
+        if str(foreign_author_id) not in friends:
+            response = JsonResponse({"results":"foreign id is not a friend"})
+            response.status_code = 404
+            return response
+        
+        response = JsonResponse({"results":"found"})
+        response.status_code = 200
+        return response
+    else:
+        response = JsonResponse({"message":"Method not Allowed"})
+        response.status_code = 405
+        return response
+
