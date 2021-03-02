@@ -18,4 +18,5 @@ urlpatterns = [
   path('view-post/', views.post_redirect, name='view_post_url'),
   path('service/author/<uuid:author_id>/friends/', views.get_friends),
   path('service/author/<uuid:author_id>/friends/<uuid:foreign_author_id>/', views.edit_friends),
+  path('service/author/<uuid:author_id>/nonfollowers/', views.get_not_followers),
 ]

@@ -617,6 +617,62 @@ def get_github_events(request, id):
         return response
 
 """
+handles GET request: get a list of authors who are not their followers or friends
+Expected: 
+URL: ://service/authors/{AUTHOR_ID}/nonfollowers
+"""
+@login_required
+def get_not_followers(request,author_id):
+    if request.method == 'GET':
+        author = get_object_or_404(CitrusAuthor, id=author_id)
+        followers = Follower.objects.get(uuid = author).followers_uuid
+        all_user = CitrusAuthor.objects.all()
+
+        # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
+        not_followers = []
+        for user in all_user:
+            if (str(user.id) not in str(followers) and str(user.id) != str(author_id)):
+                not_followers.append(user)
+
+        if len(not_followers)==0:
+            response = JsonResponse({"results":"no non-followers found"})
+            response.status_code = 200
+            return response
+
+
+        # generate json response for list of not followers
+        items = []
+        for user in not_followers:
+            # get the follower profile info
+            json = {
+                "type": "Author",
+                "id": str(user.id),
+                "host": str(user.host),
+                "displayName": str(user.displayName),
+                "github": str(user.github),
+            }
+            items.append(json)
+
+        # check to see nothing is in items list
+        if len(items) == 0:
+            response = JsonResponse({"results":"no non-followers found"})
+            response.status_code = 200
+            return response
+
+        results = { "type": "non-follower",      
+                    "items":items}
+
+        response = JsonResponse(results)
+        response.status_code = 200
+        return response
+        
+
+    else:
+        response = JsonResponse({'message':'method not allowed'})
+        response.status_code = 405
+        return response
+
+"""
 handles GET request: get a list of authors who are their followers
 format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
@@ -645,7 +701,7 @@ def get_followers(request, author_id):
                 author = CitrusAuthor.objects.get(id = uuid)
                 
                 json = {
-                    "type": "Author",
+                    "type": "author",
                     "id": str(uuid),
                     "host": str(author.host),
                     "displayName": str(author.displayName),
@@ -659,7 +715,7 @@ def get_followers(request, author_id):
             response.status_code = 404
             return response
 
-        results = { "type": "followers",      
+        results = { "type": "follower",      
                     "items":items}
 
         response = JsonResponse(results)
@@ -945,7 +1001,7 @@ def get_friends(request, author_id):
                 author = CitrusAuthor.objects.get(id = uuid)
                 
                 json = {
-                    "type": "Author",
+                    "type": "author",
                     "id": str(uuid),
                     "host": str(author.host),
                     "displayName": str(author.displayName),
@@ -959,7 +1015,7 @@ def get_friends(request, author_id):
             response.status_code = 404
             return response
 
-        results = { "type": "friends",      
+        results = { "type": "friend",      
                     "items":items}
 
         response = JsonResponse(results)
