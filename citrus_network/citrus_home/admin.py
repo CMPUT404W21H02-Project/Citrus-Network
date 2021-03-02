@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import CitrusAuthor, Post, Comment
-
+from .models import CitrusAuthor, Post, Comment,Friend,Follower
 
 class CitrusAuthorAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'user', 'host', 'displayName','url', 'github',)
@@ -17,8 +16,18 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('author', 'post', 'comment', 'published', 'id')
 
 
-admin.site.register(CitrusAuthor, CitrusAuthorAdmin)
-admin.site.register(Post, PostAdmin)
-admin.site.register(Comment, CommentAdmin)
-# admin.site.register(Post, CitrusPostAdmin)
+class FriendAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'friends_uuid',)
 
+class FollowerAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'followers_uuid',)
+
+admin.site.register(CitrusAuthor, CitrusAuthorAdmin,)
+
+admin.site.register(Friend, FriendAdmin,)
+
+admin.site.register(Follower, FollowerAdmin,)
+
+admin.site.register(Post, PostAdmin)
+
+admin.site.register(Comment, CommentAdmin)

@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import User
 from django_unixdatetimefield import UnixDateTimeField
+from django.core.validators import int_list_validator
 
 
 class CitrusAuthor(models.Model):
@@ -58,4 +59,11 @@ class Comment(models.Model):
 
 
 
+# https://stackoverflow.com/questions/1429293/storing-an-integer-array-in-a-django-database
+class Friend(models.Model):
+    uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
+    friends_uuid    = models.TextField(validators=[int_list_validator])
 
+class Follower(models.Model):
+    uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
+    followers_uuid  = models.TextField(validators=[int_list_validator])
