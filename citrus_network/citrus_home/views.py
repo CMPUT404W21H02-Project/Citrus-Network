@@ -321,6 +321,7 @@ def logout_redirect(request):
 
 """
 comment
+LEAH: MARCH 2 - i dont think whenever you register for first time user is saved properly
 """
 def register_redirect(request):
     if request.method == "POST":
@@ -331,6 +332,7 @@ def register_redirect(request):
             # login with newly created user
             username = request.POST.get('username')
             password = request.POST.get('password')
+            login(request,user)
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
             citrusAuthor.save()
