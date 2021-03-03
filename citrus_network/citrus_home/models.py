@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import User
-from django_unixdatetimefield import UnixDateTimeField
 from django.core.validators import int_list_validator
 
 
