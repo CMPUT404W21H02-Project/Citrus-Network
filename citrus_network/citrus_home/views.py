@@ -333,7 +333,15 @@ def register_redirect(request):
             password = request.POST.get('password')
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
-            citrusAuthor.save()
+            result = citrusAuthor.save()
+            
+            #log them in and redirect
+            username = request.POST['username']
+            password = request.POST['password1']
+            #authenticate user then login
+            user = authenticate(username=username, password=password)
+            login(request, user)
+
             return redirect(home_redirect) 
     
     # return form with user input if not valid
