@@ -12,28 +12,6 @@
     <title>Citrus Network</title>
   </head>
   <body>
-<<<<<<< HEAD
-    {% include '../navbar.html' %}
-    <div class="container">
-        <div class="row mt-3 justify-content-end">
-            <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 col-3">
-                <a href="#" class="btn btn-success">Post</a>
-            </div>
-        </div>
-        {% for post in json_list %}
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-10 col-sm-12 border-bottom position-relative">
-                <p style="margin: 0;"><strong>{{ post.author.displayName }}</strong></p>
-                <p style="margin: 0;">{{ post.published }} | {{ post.origin }}</p>
-                {% for tag in post.categories %}
-                    <p class="btn mt-1 btn-sm btn-outline-info rounded-pill">{{ tag }}</p>
-                {% endfor %}
-                <h6>{{ post.title }}</h6>
-                <p>{{ post.content }}</p>
-                <a class="stretched-link" href="#"></a>
-            </div>
-        </div>
-=======
     {% include '../navbar-logged-in.html' %}
     <div class="container">
         <div class="row mt-5 justify-content-end">
@@ -69,14 +47,10 @@
                     </div>
                 </div>
             {% endfor %}
->>>>>>> ab1dd7a978683077f0b215563d8edb60b3cbdf22
         {% endfor %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
   </body>
-<<<<<<< HEAD
-</html>
-=======
 </html>
 <style>
     a.card-link {
@@ -84,4 +58,3 @@
         text-decoration: inherit;
     }
 </style>
->>>>>>> ab1dd7a978683077f0b215563d8edb60b3cbdf22
