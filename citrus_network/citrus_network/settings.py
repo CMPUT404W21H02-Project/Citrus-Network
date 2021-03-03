@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'citrus_home',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -125,3 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+MEDIA_URL = '/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR,"static/images")
