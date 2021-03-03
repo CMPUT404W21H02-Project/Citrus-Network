@@ -1,5 +1,6 @@
 from django.test import TestCase
-from citrus_home.models import CitrusAuthor
+from requests.api import request
+from citrus_home.models import CitrusAuthor, Friend, Follower
 from django.contrib.auth.models import User
 import uuid
 from django.test import Client
@@ -11,7 +12,6 @@ from django.contrib.auth import authenticate
 
 #TEST DONT PULL FROM YOUR DB, BUT FROM A MOCK DB
 #DJANGO WILL RUN TESTS THAT START WITH THE WORD "TEST"
-
 
 class CitrusAuthorTestCase(TestCase):
     def setUp(self):
@@ -33,7 +33,6 @@ class CitrusAuthorTestCase(TestCase):
     
     def tearDown(self):
         self.testUser.delete()
-
 
 class LoginTestCase(TestCase):
         
@@ -59,5 +58,3 @@ class LoginTestCase(TestCase):
 
     def tearDown(self):
         self.nervousTestMan.delete()
-
-
