@@ -283,28 +283,7 @@ def stream_redirect(request):
         print(curr_uuid)
         return render(request, 'citrus_home/stream.html', {'json_list': mock_response, 'uuid':curr_uuid})
 
-def github_redirect(request):
-    if request.method == "GET":
-        mock_response = [{
-            "type": "CreateEvent",
-            "name": "leah-is-offline",
-            "action": "created",
-            "repo": "CMPUT404W21H02-Project/CMPUT404-project-socialdistribution",
-            "time": "2021-03-01T20:31:35Z"
-        },
-        {
-            "type": "DeleteEvent",
-            "name": "leah-is-offline",
-            "action": "deleted",
-            "repo": "CMPUT404W21H02-Project/CMPUT404-project-socialdistribution",
-            "time": "2021-03-01T20:31:04Z"
-        }]
-        
 
-        curr_uuid = get_uuid(request)
-        print("CURRENT USER ID")
-        print(curr_uuid)
-        return render(request, 'citrus_home/githubActivity.html', {'uuid':curr_uuid, 'mock_response':mock_response})
 
 """
 comment
