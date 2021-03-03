@@ -83,6 +83,7 @@ def home_redirect(request):
         
         return render(request, 'citrus_home/index.html', {'inbox': mock_response})
 
+
 def make_post_redirect(request):
     if request.method == 'GET':
         return render(request, 'citrus_home/makepost.html')
@@ -276,8 +277,13 @@ def stream_redirect(request):
                 'unlisted': False,
             },
         ]
-        
-        return render(request, 'citrus_home/stream.html', {'json_list': mock_response})
+
+        curr_uuid = get_uuid(request)
+        print("CURRENT USER ID")
+        print(curr_uuid)
+        return render(request, 'citrus_home/stream.html', {'json_list': mock_response, 'uuid':curr_uuid})
+
+
 
 """
 comment

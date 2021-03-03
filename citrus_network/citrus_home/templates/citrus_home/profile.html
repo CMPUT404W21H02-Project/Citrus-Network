@@ -142,9 +142,9 @@
                                     </div>
                                 {% endif %}
                                 {{form.github|as_crispy_field}}
-                                {% if pf_form_errors.githubError %}
+                                {% if pf_form_errors.githubNameError %}
                                     <div class="invalid-feedback d-block mb-3">
-                                        {{pf_form_errors.githubError}}
+                                        {{pf_form_errors.githubNameError}}
                                     </div>
                                 {% endif %}
                                 <div class="form-row justify-content-center">
