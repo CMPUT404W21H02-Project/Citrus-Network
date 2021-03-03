@@ -5,10 +5,7 @@ on:
   push:
     branches:
       - test-dev-unit-tests
-<<<<<<< HEAD
-=======
       - be-feature-friend-api-nhan
->>>>>>> ab1dd7a978683077f0b215563d8edb60b3cbdf22
       - dev
   pull_request:
       branches:
@@ -22,10 +19,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6,3.7, 3.8, 3.9]
-<<<<<<< HEAD
-=======
         # python-version: [3.6]
->>>>>>> ab1dd7a978683077f0b215563d8edb60b3cbdf22
 
     steps:
     - uses: actions/checkout@v2
@@ -50,9 +44,6 @@ jobs:
         cd citrus_network
         python manage.py makemigrations
         python manage.py migrate
-<<<<<<< HEAD
-        python manage.py test
-=======
         python manage.py test
     - name: Run code coverage and generate report
       working-directory: ./citrus_network
@@ -70,4 +61,3 @@ jobs:
 
       
 
->>>>>>> ab1dd7a978683077f0b215563d8edb60b3cbdf22
