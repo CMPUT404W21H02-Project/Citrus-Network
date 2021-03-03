@@ -49,12 +49,106 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'citrus_home/profile.html')
     
-    # def test_manage_profile(self):
-    #     response = self.c.get(reverse('profile_api'), args=[self.mockuuid])
-    #     print("TESTTYSH")
-    #     print(response)
-    #     self.assertEquals(response.status_code, 200)
+    def test_manage_profile_GET(self):
+        response = self.c.get(reverse('profile_api', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+
+    def test_manage_profile_POST(self):
+        request_body = {
+            'username': 'test1',
+            'displayName': 'nervousManTest',
+            'github': 'https://github.com/'
+        }
+        response = self.c.post(reverse('profile_api', args=[self.mockuuid]), request_body)
+        self.assertEquals(response.status_code, 200)
     
+    def test_manage_profile_form_error_OTHER(self):
+        request_body = {
+            'username': 'test1',
+            'displayName': 'nervousMan',
+            'github': 'https://github.com/'
+        }
+        response = self.c.put(reverse('profile_api', args=[self.mockuuid]), request_body)
+        self.assertEquals(response.status_code, 405)
+    
+    def test_github_events_wrong_url_GET(self):
+        response = self.c.get(reverse('github', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_github_events_GET(self):
+        request_body = {
+            'username': 'test1',
+            'displayName': 'nervousManTest',
+            'github': 'https://github.com/abramhindle'
+        }
+        response = self.c.post(reverse('profile_api', args=[self.mockuuid]), request_body)
+        self.assertEquals(response.status_code, 200)
+        response = self.c.get(reverse('github', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+    
+    #TODO test GET get_not_followers
+    # def test_get_not_followers_GET(self):
+
+    def test_get_not_followers_OTHER(self):
+        response = self.c.put(reverse('not_followers', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 405)
+    
+    def test_get_followers_none_GET(self):
+        response = self.c.get(reverse('followers', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 404)
+
+    def test_get_followers_OTHER(self):
+        response = self.c.put(reverse('followers', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 405)
+    
+
+    def test_edit_followers_none_same(self):
+        response = self.c.put(reverse('edit_followers', args=[self.mockuuid, self.mockuuid]))
+        self.assertEquals(response.status_code, 400)
+
+    def test_edit_followers_none_DELETE(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.delete(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_followers_none_PUT(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.put(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_followers_none_GET(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.get(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_followers_none_OTHER(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.post(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 405)
+    
+    def test_get_friends_empty_GET(self):
+        response = self.c.get(reverse('get_friends', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 404)
+
+    def test_get_friends_OTHER(self):
+        response = self.c.delete(reverse('get_friends', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 405)
+    
+
+    def test_edit_friends_none_same(self):
+        response = self.c.put(reverse('edit_friends', args=[self.mockuuid, self.mockuuid]))
+        self.assertEquals(response.status_code, 400)
+
+    def test_edit_friends_none_GET(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.get(reverse('edit_friends', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_friends_none_OTHER(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.post(reverse('edit_friends', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 405)
+
     def tearDown(self):
         self.nervousTestMan.delete()
 
@@ -113,12 +207,5 @@ class TestViewsRegistration(TestCase):
         self.client_object = c.login(username="test1", password="abc@=1234abc")
         self.assertEqual(response.status_code, 200)
     
-    #TODO FIX
-    # def test_uuid(self):
-    #     mock_uuid = str(uuid.uuid4())
-    #     user = User.objects.create_user('test1', 'man@nervous.com', 'abc@=1234abc')
-    #     self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id=mock_uuid, user=user,displayName="nervousMan")
-    #     self.nervousTestMan.save()
-    #     self.assertEqual(mock_uuid, user.get_uuid())
-    #     self.nervousTestMan.delete()
+    
         

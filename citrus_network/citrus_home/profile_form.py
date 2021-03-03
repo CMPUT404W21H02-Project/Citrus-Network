@@ -1,6 +1,4 @@
 from django import forms
-from . import views
-from .models import CitrusAuthor
  
 # Form containing all editable profile information: username, displayName, github
 class ProfileForm(forms.Form):
