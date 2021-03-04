@@ -15,7 +15,6 @@ urlpatterns = [
   path("profile/",views.render_profile,name="profile"),
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',views.manage_profile, name='profile_api'),
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/github$',views.get_github_events, name='github'),
-  path('stream/', views.stream_redirect, name='stream_url'),
   # https://stackoverflow.com/questions/32950432/django-urls-uuid-not-working/47948076
   path('service/author/<uuid:author_id>/followers/', views.get_followers, name='followers'),
   path('service/author/<uuid:author_id>/followers/<uuid:foreign_author_id>/', views.edit_followers, name='edit_followers'),
@@ -24,6 +23,6 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/friends/', views.get_friends, name='get_friends'),
   path('service/author/<uuid:author_id>/friends/<uuid:foreign_author_id>/', views.edit_friends, name='edit_friends'),
   path('service/author/<uuid:author_id>/nonfollowers/', views.get_not_followers, name='not_followers'),
-  path('home-test/', views.handleStream),
+  path('home-test/', views.handleStream, name='get_stream'),
 ]
 
