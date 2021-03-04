@@ -11,66 +11,114 @@
 
     <title>Citrus Network</title>
   </head>
+
   <body>
     {% include '../navbar-logged-in.html' %}
-    <div class="container">
-
-        <!--HEADER-->
-        <div class="row justify-content-center mt-1 mb-1" id = 'githubActivity' style="display:none;">
+    <div class="container"> 
+        <!--
+        <div class="row justify-content-center mt-1 mb-1">
             <div class="col-md-10 col-sm-12 position-relative">
-                <div class="card">
-                        <div class="card-header" id = "github-header">
-                            <img class="round-circle author-img" height="40" width="40" style="border-radius: 50%;" src="https://pics.freeicons.io/uploads/icons/png/9484177861548141924-512.png"/>
-                            <a style="margin: 0" id = "gitHubName" href = "#"></a>
-                        </div>
-                        <div>
-                            <div class="card-body card-link">
-                                <p style="margin: 0" id = "githubBody" class ="github-activity"></p>
-                                <a id = "profileref" href = "{% url 'profile' %}" style="display:none;" >Check your GitHub in your profile</a>
-                            </div>
-                        </div>
+                <div class="button-nav">
+                    <div class = "header-buttons">
+                        <a class = "nav-link"><button id = "edit-friends" type="button" class="nav-button" onclick="">Edit Friends</button></a>
+                    </div>
                 </div>
             </div>
         </div>
+        -->
 
+        <div class="row justify-content-center mt-1 mb-1">
+            <div class="col-md-10 col-sm-12 position-relative" id = "card_parent" >
+               
+            </div>
+        </div>
+    </div>
+    
     <script 
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
     </script>
 
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+    </script>
+
     <script>
-        window.onload = getNonFollowers;
+        window.onload = getFriends;
 
         function fetchJSON(url) {
             var request = new Request(url);
             return fetch(request).then((response) => {
-                if (response.status === 200 || response.status === 404) { // OK
+                if (response.status === 200 || response.status == 404) { 
                     return response.json(); // return a Promise
                 } else {
                     alert("Something went wrong: " + response.status);
                 }});
             }
 
-        function getNonFollowers() {
+        function getFriends() {
             var uuid = "{{uuid}}";
+            console.log(uuid);
             var pre_url = "http://localhost:8000/service/author/" //NEED CONFIGURATION
-            var url = pre_url + uuid + "/nonfollowers" // service/authors/{AUTHOR_ID}/nonfollowers
+            var url = pre_url + uuid + "/friends/" // service/authors/{AUTHOR_ID}/nonfollowers
+            console.log(url);
             fetchJSON(url).then((json) => { // another callback
                 console.log(json)
-                document.querySelector("#follower-name").innerText = json.text;
+                try{
+                    //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
+                    for (var i = 0; i < json.items.length; i++) { 
+                        console.log(json.items[i])
+                        $("#card_parent") 
+                        .append('<div class="card">'+
+                                '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                '<div class="card-body" id = "card_body">'+
+                                    '<button id = "'+json.items[i].id+'" onClick="removeFriend(this)">Remove Friend</button>'+
+                                    '</div>'+
+                                '</div>'); 
+                        } 
+                    }catch(err){
+                        $("#card_parent") 
+                        .append('<div class="card"><div class="card-header" id = "card_header">You Have No Friends!'+
+                                '</div><div class="card-body" id = "card_body"><br></div></div>');
+                }
             });
         }
 
+        function removeFriend(button){
+            var uuid = "{{uuid}}";
+            var base_url = "/service/author/"
+            var url = base_url + button.id + "/followers/" + uuid + "/" // button.id is the author  the current user is now  follow back (making them friends)
+            remove(url)
+
+            /*set elements after following back*/
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "Friend Succesfully Removed";
+        }
+        
+        function remove(url){
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                contentType: "application/json",
+                success: function(result) {
+                    console.log(result)
+                }})
+        }
+
+        
     </script>
   </body>
 </html>
 
 <style>
+    div.container{
+        margin-top: 2em;
+    }
     a.card-link {
         color: inherit;
         text-decoration: inherit;
-    }
-    p.github-activity{
-        font-size: x-small;
     }
     div.header-buttons{
         display: flex;
@@ -78,35 +126,26 @@
         align-items: center;
         flex-direction: row;
     }
-    div.button-nav{
-        margin-top: 3em;
-        margin-bottom:1em ;
-    }
     a.nav-link{
         width: 100%;
     }
-    #post-button{
-        background-color: rgb(31, 173, 31);
-        border-color: rgb(7, 128, 7) ;
-    }
-    #github-button{
-        background-color: #3962a5;
-        border-color: #6789be;
-    }
-    .header-buttons .nav-button{
+    
+    button{
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        color: rgb(34, 32, 32);
+        background-color: #da2222;
+        border-color:#830f0f; 
+        color: white;
         width: 100%;
         height: 100%;
         border-radius: 5px;
-        border-width: 3px;
+        border-width: 2px;
         font-size: large;
     }
-    .header-buttons .nav-button:hover{
-       
+    button:hover{
         box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
-        border-radius: 5px;
+        border-radius: 2px;
     }
-    
-    
+    .card-header{
+        font-size: x-large;
+    }
 </style>

@@ -740,7 +740,8 @@ def get_followers(request, author_id):
             response.status_code = 404
             return response
 
-        results = { "type": "follower",      
+        #LEAH MARCH 4 - THIS IS MISSING AN "S" FROM SPEC lol. change to "type":"followers"
+        results = { "type": "followers",      
                     "items":items}
 
         response = JsonResponse(results)
@@ -750,6 +751,7 @@ def get_followers(request, author_id):
         response = JsonResponse({"results":"method not allowed"})
         response.status_code = 405
         return response
+
 
 
 def render_followers_page(request):
@@ -1099,15 +1101,7 @@ def edit_friends(request, author_id, foreign_author_id):
 
 def render_friends_page(request):
     uuid = get_uuid(request)
-    response = get_friends(request,uuid)
-    body = response.content.decode()
-    body_dict = ast.literal_eval(body)
-    if 'results' in body_dict:
-       if body_dict["results"] == "no friends found or incorrect id of author":
-           print("no friends found")
-    
-    print(body_dict)
-    return render(request, 'citrus_home/friends.html', {'uuid':uuid,'friends_list':body_dict})
+    return render(request, 'citrus_home/friends.html', {'uuid':uuid})
 
 def render_find_friends_page(request):
     print("in find render friend")
