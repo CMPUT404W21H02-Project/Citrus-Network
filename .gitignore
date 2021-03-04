@@ -133,3 +133,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+citrus_network/db.sqlite3
+citrus_network/citrus_home/migrations/0001_initial.py

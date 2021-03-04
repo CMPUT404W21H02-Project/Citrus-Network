@@ -409,6 +409,8 @@ def render_profile(request):
     # handle not POST OR GET (to-do)
     uuid = get_uuid(request)
     profile = get_object_or_404(CitrusAuthor, id=uuid)
+    print(uuid)
+
     current_profile = { 'username': profile.user,
                         'displayName': profile.displayName,
                         'github': profile.github}
@@ -639,7 +641,15 @@ URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 def get_not_followers(request,author_id):
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-        followers = Follower.objects.get(uuid = author).followers_uuid
+        # validate if the user has any followers
+        try: 
+            result = Follower.objects.get(uuid = author)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"no non-followers found"})
+            response.status_code = 200
+            return response
+
+        followers = result.followers_uuid
         all_user = CitrusAuthor.objects.all()
 
         # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
