@@ -19,7 +19,7 @@ import re
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-
+import ast
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -279,8 +279,6 @@ def stream_redirect(request):
         ]
 
         curr_uuid = get_uuid(request)
-        print("CURRENT USER ID")
-        print(curr_uuid)
         return render(request, 'citrus_home/stream.html', {'json_list': mock_response, 'uuid':curr_uuid})
 
 
@@ -321,7 +319,6 @@ def logout_redirect(request):
 
 """
 comment
-LEAH: MARCH 2 - i dont think whenever you register for first time user is saved properly
 """
 def register_redirect(request):
     if request.method == "POST":
@@ -482,13 +479,25 @@ def manage_profile(request, id):
         response.status_code = 405
         return response
 
+'''
+Helper function to get the booleans that will be used to 
+set custom form errors for the user editing their profile
+PARAMS: profile - current users information,
+        new_username - requested new username,
+        new_displayName - requested new display name,
+        new_github - requested new github.
+RETURN: list of three booleans
+'''
 def setFormErrors(profile,new_username,new_displayName,new_github):
     u_valid = validate_username(profile, new_username)
     d_valid = validate_displayName(profile,new_displayName)
     g_valid = validate_github(profile,new_github)
     
     return [u_valid,d_valid,g_valid] 
-
+'''
+Helper function that raises and error if one of the fields is not available
+PARAMS: field validites - a list of booleans
+'''
 def validate_fields(field_validities):
     print(field_validities)
     if False in field_validities:
@@ -496,50 +505,53 @@ def validate_fields(field_validities):
     else:
         return
 
+'''
+Function to validate a requested username
+PARAMS: profile - current users profile,
+        new_username - requested username
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_username(profile, new_username):
     #cant query for username attributes from Citrus Author object
     if User.objects.filter(username=new_username).exists():
         existing_user = User.objects.get(username=new_username) 
-        
         if  existing_user.id != profile.user.id:
-            print("username is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
         else:
-            print("you did not change your username - this one is already yours")
             return True
     else:
-        print("username is available - no one had it yet")
         return True
 
-
+'''
+Function to validate a requested displayName
+PARAMS: profile - current users profile,
+        new_displayName - requested displayName
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_displayName(profile, new_displayName):  
     if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
         existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
         if existing_user.id != profile.id:
-            print("display name is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'Display Name "%s" is already in use.' % new_displayName)
         else:
-            print("you did not change your display name - this one is already yours")
             return True
     else:
-        print("display name is available - no one had it yet")
         return True
 
+'''
+Function to validate a requested github
+PARAMS: profile - current users profile,
+        new_github - requested github
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_github(profile,  new_github):
-   
     if CitrusAuthor.objects.filter(github=new_github).exists():
         existing_user = CitrusAuthor.objects.get(github=new_github)
         if existing_user.id != profile.id:
-            print("github uri is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
         else:
-            print("you did not change your github uri - this one is already yours")
             return True
     else:
-        print("github uri is available - no one had it yet")
         return True
         
 """
@@ -631,9 +643,15 @@ URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 """
 @login_required
 def get_not_followers(request,author_id):
+    print(author_id)
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-        followers = Follower.objects.get(uuid = author).followers_uuid
+        
+        try:
+            followers = Follower.objects.get(uuid = author).followers_uuid #err if query is empty
+        except:
+            followers = []
+
         all_user = CitrusAuthor.objects.all()
 
         # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
@@ -674,7 +692,6 @@ def get_not_followers(request,author_id):
         response.status_code = 200
         return response
         
-
     else:
         response = JsonResponse({'message':'method not allowed'})
         response.status_code = 405
@@ -734,6 +751,14 @@ def get_followers(request, author_id):
         response.status_code = 405
         return response
 
+
+def render_followers_page(request):
+    uuid = get_uuid(request)
+    followers_response = get_followers(request,uuid)
+    body = followers_response.content.decode()
+    body_dict = ast.literal_eval(body)
+    print(body_dict)
+    return render(request,'citrus_home/followers.html', {'uuid':uuid})
 
 """
 handles these requests:
@@ -1071,6 +1096,33 @@ def edit_friends(request, author_id, foreign_author_id):
         response = JsonResponse({"message":"Method not Allowed"})
         response.status_code = 405
         return response
+
+def render_friends_page(request):
+    uuid = get_uuid(request)
+    response = get_friends(request,uuid)
+    body = response.content.decode()
+    body_dict = ast.literal_eval(body)
+    if 'results' in body_dict:
+       if body_dict["results"] == "no friends found or incorrect id of author":
+           print("no friends found")
+    
+    print(body_dict)
+    return render(request, 'citrus_home/friends.html', {'uuid':uuid,'friends_list':body_dict})
+
+def render_find_friends_page(request):
+    print("in find render friend")
+    uuid = get_uuid(request)
+    print("got uuid")
+    '''
+    response = get_not_followers(request,uuid)
+    body = response.content.decode()
+    body_dict = ast.literal_eval(body)
+    #need error checking here for if no other user exists
+    if 'items' in body_dict:
+        body_dict = body_dict['items']
+    print(body_dict)
+        '''
+    return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
 """
 handle the creation of a new post object
