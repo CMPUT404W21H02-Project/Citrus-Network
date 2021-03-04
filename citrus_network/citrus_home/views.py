@@ -1125,6 +1125,7 @@ def manage_post(request, id, **kwargs):
     pid = kwargs.get('pid')
     print(request.method)
     if request.method == "POST":
+        # 
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
         post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
@@ -1138,18 +1139,25 @@ def manage_post(request, id, **kwargs):
 
     # update an existing post made by the user
     elif request.method == "PUT":
-        # check if form is valid here
-        body = json.loads(request.body)
+        # verify that the owner of the post is trying to change the post
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.get(id=pid) 
-        # update fields of the post object
-        post.title = body['title']
-        post.description = body['description']
-        post.content = body['content']
-        post.visibility = body['visibility']
-        post.shared_with = body['shared_with']
-        post.save()
-        return returnJsonResponse(specific_message="post updated", status_code=200)
+        posts = Post.objects.get(id=pid)
+        post_author = posts.author
+        if author == post_author:
+        # check if form is valid here
+            body = json.loads(request.body)
+            author = CitrusAuthor.objects.get(id=id)
+            post = Post.objects.get(id=pid) 
+            # update fields of the post object
+            post.title = body['title']
+            post.description = body['description']
+            post.content = body['content']
+            post.visibility = body['visibility']
+            post.shared_with = body['shared_with']
+            post.save()
+            return returnJsonResponse(specific_message="post updated", status_code=200)
+        else:
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
 
  
     elif request.method == "GET":
@@ -1280,3 +1288,61 @@ def stringToBool(value):
         return True
     elif value == "False":
         return False
+
+
+"""
+If a user is signed in a GET request to localhost:8000/home-test/ will return a list of posts of all
+friends of the signed in user (most recent posts first that are all public)
+"""
+def handleStream(request):
+    # get current user and find corresponding citrus author
+    if request.method == "GET":
+        current_user = request.user
+        citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # find friends of the citrus author and get their posts
+        friends = Friend.objects.filter(uuid=citrus_author)
+        friends_arr = []
+        for friend in friends:
+            author = CitrusAuthor.objects.get(id=friend.friends_uuid)
+            friends_arr.append(author)
+        # now you have a list of authors that are friends of the signed in user find the posts and return them
+        # append current user's posts also (user story i want to post to my stream)
+        friends_arr.append(citrus_author)
+        posts_arr = []
+        # for now we are only looking for public posts this will later be extended to private to author and private to friends
+        posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+        json_posts = []
+        for post in posts:
+            author = post.author
+            comments = Comment.objects.filter(post=post)
+            comments_arr = create_comment_list(post)
+            author_data = convertAuthorObj(author)
+            categories = post.categories.split()
+            return_data = {
+                "type": "post",
+                "title": post.title,
+                "id": post.id,
+                "source": "localhost:8000/some_random_source",
+                "origin": post.origin,
+                "description": post.description,
+                "contentType": "text/plain",
+                "content": post.content,
+                # probably serialize author here and call it
+                "author": author_data,
+                "categories": categories,
+                "count": comments.count(),
+                "comments": comments_arr, 
+                "published": post.created,
+                "visibility": post.visibility,
+                "unlisted": "false"
+            }
+            json_posts.append(return_data)
+        
+        return JsonResponse({
+            "posts": json_posts
+        },status=200)
+    
+    else:
+        return returnJsonResponse(specific_message="method not available", status_code=40)
+        
+    
