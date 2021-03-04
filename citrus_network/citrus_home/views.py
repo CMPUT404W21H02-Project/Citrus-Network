@@ -333,7 +333,8 @@ def register_redirect(request):
             password = request.POST.get('password')
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
-            citrusAuthor.save()
+            result = citrusAuthor.save()
+
             return redirect(home_redirect) 
     
     # return form with user input if not valid
@@ -386,7 +387,6 @@ def render_profile(request):
         profile.save()
 
         # set up Django form
-        print(profile.user, profile.github,profile.displayName)
         current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
         form = ProfileForm(current_profile)
 
@@ -401,6 +401,7 @@ def render_profile(request):
     # handle not POST OR GET (to-do)
     uuid = get_uuid(request)
     profile = get_object_or_404(CitrusAuthor, id=uuid)
+
     current_profile = { 'username': profile.user,
                         'displayName': profile.displayName,
                         'github': profile.github}
@@ -631,7 +632,15 @@ URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 def get_not_followers(request,author_id):
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-        followers = Follower.objects.get(uuid = author).followers_uuid
+        # validate if the user has any followers
+        try: 
+            result = Follower.objects.get(uuid = author)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"no non-followers found"})
+            response.status_code = 200
+            return response
+
+        followers = result.followers_uuid
         all_user = CitrusAuthor.objects.all()
 
         # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
@@ -690,7 +699,6 @@ def get_followers(request, author_id):
         # check for list of followers of author_id
         try:
             result = Follower.objects.get(uuid=author_id)
-            print(result)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"no followers found or incorrect id of author"})
             response.status_code = 404
@@ -829,7 +837,6 @@ def edit_followers(request, author_id, foreign_author_id):
             # create instance of the follower with uuid to author_id
             new_follower_object = Follower(uuid = author,followers_uuid= followers)
             new_follower_object.save()
-            print("created",new_follower_object.uuid)
 
             # check if foreign_author_id also follow author_id
             try:
@@ -857,7 +864,6 @@ def edit_followers(request, author_id, foreign_author_id):
                     friend = str(foreign_author_id)
                     new_friend_object = Friend(uuid = author,friends_uuid= friend)
                     new_friend_object.save()
-                    print("created",new_friend_object.uuid)
                 else:
                     # add foreign id 
                     friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
@@ -872,7 +878,6 @@ def edit_followers(request, author_id, foreign_author_id):
                     friend = str(author_id)
                     new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
                     new_friend_object.save()
-                    print("created",new_friend_object.uuid)
                 else:
                     # add author id 
                     friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
@@ -922,7 +927,6 @@ def edit_followers(request, author_id, foreign_author_id):
                 friend = str(foreign_author_id)
                 new_friend_object = Friend(uuid = author,friends_uuid= friend)
                 new_friend_object.save()
-                print("created",new_friend_object.uuid)
             else:
                 # add foreign id 
                 friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
@@ -937,7 +941,6 @@ def edit_followers(request, author_id, foreign_author_id):
                 friend = str(author_id)
                 new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
                 new_friend_object.save()
-                print("created",new_friend_object.uuid)
             else:
                 # add author id 
                 friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
@@ -990,7 +993,6 @@ def get_friends(request, author_id):
         # check for list of followers of author_id
         try:
             result = Friend.objects.get(uuid=author_id)
-            print(result)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"no friends found or incorrect id of author"})
             response.status_code = 404
