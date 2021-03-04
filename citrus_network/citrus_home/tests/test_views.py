@@ -17,7 +17,7 @@ class TestViews(TestCase):
     def test_home_redirect_GET(self):
         response = self.c.get(reverse('home_url'))
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'citrus_home/index.html')
+        self.assertTemplateUsed(response, 'citrus_home/stream.html')
     
     def test_make_post_redirect_GET(self):
         response = self.c.get(reverse('make_post_url'))
@@ -28,11 +28,6 @@ class TestViews(TestCase):
         response = self.c.get(reverse('view_post_url'))
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'citrus_home/viewpost.html')
-    
-    def test_stream_GET(self):
-        response = self.c.get(reverse('stream_url'))
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'citrus_home/stream.html')
     
     def test_render_profile_new_POST(self):
         request_body = {
