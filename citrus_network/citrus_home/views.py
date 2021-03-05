@@ -52,8 +52,7 @@ def post_redirect(request, author_id, post_id):
 
         # get uuid from logged in user
         uuid = get_uuid(request)
-        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id}
-
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
 
 """
 comment
