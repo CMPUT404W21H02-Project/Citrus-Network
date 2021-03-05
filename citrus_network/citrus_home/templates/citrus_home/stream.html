@@ -89,8 +89,11 @@
             fetchJSON("{% url 'get_stream' %}").then((json) => {
                 console.log(json.posts);
                 for(var i in json.posts){
-                    var postHtml = '<div class="col-md-10 col-sm-12 mt-1 mb-1 position-relative"><div class="card">' + 
-                        '<div class="card-header"><a class="card-link" href="#author">' + 
+                    var newElement = document.createElement('div');
+                    var classAttr = document.createAttribute("class");
+                    classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
+                    newElement.setAttributeNode(classAttr);
+                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="#author">' + 
                         '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
                         '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
                         '</a>';
@@ -103,9 +106,11 @@
                         '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>' + 
                         // '<img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/' + 
                         // json.posts[i].origin + '.svg"/>' + 
-                        '<p>' + json.posts[i].content + '</p>'
+                        '<p>' + json.posts[i].content + '</p>';
+                    
+                    newElement.innerHTML = postHtml;
 
-                    document.querySelector(".stream-post").innerHTML += postHtml;
+                    document.querySelector(".stream-post").appendChild(newElement);
                 }
             });
         }
