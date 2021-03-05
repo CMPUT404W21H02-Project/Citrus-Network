@@ -1164,8 +1164,9 @@ def handleStream(request):
             # append current user's posts also (user story i want to post to my stream)
             friends_arr.append(citrus_author)
             posts_arr = []
+            visibility_list=['PUBLIC', 'PRIVATE_TO_FRIENDS']
             # for now we are only looking for public posts this will later be extended to private to author and private to friends
-            posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+            posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-created')
             json_posts = []
             for post in posts:
                 author = post.author
@@ -1203,7 +1204,8 @@ def handleStream(request):
                 friends_arr.append(citrus_author)
                 posts_arr = []
                 # for now we are only looking for public posts this will later be extended to private to author and private to friends
-                posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+                visibility_list=['PUBLIC']
+                posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-created')
                 json_posts = []
                 for post in posts:
                     author = post.author
