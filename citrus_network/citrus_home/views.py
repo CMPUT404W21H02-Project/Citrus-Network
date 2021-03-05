@@ -424,13 +424,47 @@ def get_not_followers(request,author_id):
         #except:
             #followers = []
 
-        # validate if the user has any followers
+        
         try: 
             result = Follower.objects.get(uuid = author)
         except ObjectDoesNotExist:
-            response = JsonResponse({"results":"no non-followers found"})
+            all_user = CitrusAuthor.objects.all()
+            not_followers = []
+            for user in all_user:
+                if (str(user.id) != str(author_id)):
+                    not_followers.append(user)
+
+            if len(not_followers)==0:
+                response = JsonResponse({"results":"no non-followers found"})
+                response.status_code = 200
+                return response
+
+            # generate json response for list of not followers
+            items = []
+            for user in not_followers:
+                # get the follower profile info
+                json = {
+                    "type": "Author",
+                    "id": str(user.id),
+                    "host": str(user.host),
+                    "displayName": str(user.displayName),
+                    "github": str(user.github),
+                }
+                items.append(json)
+
+            # check to see nothing is in items list
+            if len(items) == 0:
+                response = JsonResponse({"results":"no non-followers found"})
+                response.status_code = 200
+                return response
+
+            results = { "type": "non-follower",
+                        "items":items}
+
+            response = JsonResponse(results)
             response.status_code = 200
             return response
+ 
 
         followers = result.followers_uuid
 
@@ -1103,11 +1137,13 @@ def handleStream(request):
         current_user = request.user
         citrus_author = CitrusAuthor.objects.get(user=current_user)
         # find friends of the citrus author and get their posts
-        friends = Friend.objects.filter(uuid=citrus_author)
+        friends = Friend.objects.filter(uuid=citrus_author) 
+        print(type(friends))
         friends_arr = []
         for friend in friends:
             author = CitrusAuthor.objects.get(id=friend.friends_uuid)
             friends_arr.append(author)
+
         # now you have a list of authors that are friends of the signed in user find the posts and return them
         # append current user's posts also (user story i want to post to my stream)
         friends_arr.append(citrus_author)

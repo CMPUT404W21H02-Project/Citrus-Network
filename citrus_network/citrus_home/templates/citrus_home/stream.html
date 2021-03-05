@@ -87,7 +87,8 @@
         function getStream() {
             var uuid = "{{uuid}}";
             fetchJSON("{% url 'get_stream' %}").then((json) => {
-                console.log(json.posts);
+                //console.log(json.posts);
+                console.log(json)
                 for(var i in json.posts){
                     var newElement = document.createElement('div');
                     var classAttr = document.createAttribute("class");
