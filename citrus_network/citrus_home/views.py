@@ -32,7 +32,8 @@ def home_redirect(request):
         print("CURRENT USER ID")
         print(uuid)
         return render(request, 'citrus_home/stream.html', {'uuid':uuid})
-
+        
+@login_required(login_url='login_url')
 def make_post_redirect(request):
     if request.method == 'GET':
         # get uuid from logged in user
