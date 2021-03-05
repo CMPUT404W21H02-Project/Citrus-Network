@@ -180,6 +180,7 @@
                                 url: "/service/author/{{uuid}}/posts/{{post_id}}/comment/",
                                 type: "POST",
                                 dataType: 'json',
+                                contentType: "application/json",
                                 data: JSON.stringify(comment),
                                 success: function(data) {
                                     $.ajax({
