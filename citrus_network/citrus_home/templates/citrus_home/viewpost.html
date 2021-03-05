@@ -11,12 +11,106 @@
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <title>Citrus Network</title>
     </head>
 
     <body>
     {% include "navbar-logged-in.html" %}
         <div class="container">
+            <!-- Allow user to edit post only if they are the author -->
+            {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Edit Post</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row justify-content-center">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <input type="text" class="form-control" id="title-name" placeholder="Title">
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <div class="dropdown">
+                                        <select class="form-select" aria-label="Default select example" id="post-visibility">
+                                            <option value="PUBLIC">Public</option>
+                                            <option value="FRIENDS">Friends</option>
+                                            <option value="PRIVATE">Private</option>
+                                            <option value="FRIENDTOFRIEND">Friend to Friend</option>
+                                            <option value="SERVERONLY">Server Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="group-type">
+                                        <input type="radio" class="btn-check" name="btnradio" value="false" id="btnradio1" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="btnradio1">Plain Text</label>
+                                    
+                                        <input type="radio" class="btn-check" name="btnradio" value="true" id="btnradio2" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="btnradio2">Markdown</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <textarea class="form-control" id="post-textarea" rows="3" placeholder="Enter body post here"></textarea>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <input type="text" class="form-control" id="categories" placeholder="Categories" hidden="true">
+                                    <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
+                                        <span class="material-icons">
+                                            add_circle_outline
+                                        </span>
+                                        Category
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <div class="dropdown">
+                                        <select class="form-select" aria-label="Default select example" id="friends-select">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3 mb-5">
+                                <div class="col-md-12 col-sm-12 col-10">
+                                    <button type="button" class="btn btn-outline-primary" disabled>
+                                        <span class="material-icons">
+                                            insert_photo
+                                        </span>
+                                        Add Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-success" onClick="updatePost()">Save changes</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center mt-1">
+                    <div class="col-md-10 col-sm-12 position-relative">
+                        <div class="button-nav">
+                            <div class = "header-buttons">
+                                <a  class=  "nav-link"><button id = "post-button" type="button" class="nav-button" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="row justify-content-center mt-1 mb-1">
                 <div class="col-md-10 col-sm-12 position-relative">
                     <div class="card mt-5 mb-5">
@@ -160,4 +254,132 @@
             }, false);
         })();
     </script>
+    <!-- Allow user to edit post only if they are the author -->
+    {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
+        <script>
+            window.onload = getFriends;
+
+            //Function that will hide category input, depending on if users choses to add categories.
+            function hideCategory() {
+                var view = $("#categories");
+                if (view.is(":visible")){
+                    view.attr('hidden', 'true');
+                }else {
+                    view.removeAttr('hidden');
+                }
+            }
+
+            //Get the JSON response from given url.
+            function fetchJSON(url) {
+                var request = new Request(url);
+                return fetch(request).then((response) => {
+                    if (response.status === 200 || response.status == 404) { 
+                        return response.json(); // return a Promise
+                    } else {
+                        alert("Something went wrong: " + response.status);
+                    }});
+            }
+
+            //Function that gets all friends a user has.
+            function getFriends() {
+                var uuid = "{{uuid}}";
+                var pre_url = "/service/author/"
+                var url = pre_url + uuid + "/friends/" 
+                fetchJSON(url).then((json) => { //another callback
+                    try{
+                        //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
+                        for (var i = 0; i < json.items.length; i++) { 
+                            // console.log(json.items[i].displayName)
+                            // console.log(json.items[i].id)
+                            $("#friends-select")
+                            .append('<option value="'+ json.items[i].id +'">' + json.items[i].displayName + '</option>');
+                            } 
+                        }catch(err){
+                            // console.log(uuid)
+                            $("#friends-select") 
+                            .append('<option value="public">Public</option>');
+                        }
+                    });
+            }
+            //Update an existing post by sending a PUT request.
+            function updatePost() {
+                var uuid = "{{ uuid }}";
+                var pre_url = "/service/author/";
+                var url = pre_url + uuid + "/posts/";
+                url += "{{ post_id }}/";
+                var title = document.getElementById("title-name").value;
+                var content = document.getElementById("post-textarea").value;
+                if (title === ""){
+                    alert("Don't submit an empty post");
+                    return false;
+                }
+                var visibility = document.getElementById("post-visibility").value;
+                var markdown;
+                if(document.getElementById('btnradio1').checked){
+                    markdown = document.getElementById('btnradio1').value;
+                }
+                if(document.getElementById('btnradio2').checked){
+                    markdown = document.getElementById('btnradio2').value;
+                }
+                markdown = "false";
+                var shared = document.getElementById("friends-select").value;
+                var categories_field = $("#categories");
+                var categories;
+                if (categories_field.is(":hidden")){
+                    categories = "";
+                } else {
+                    categories = document.getElementById('categories').value;
+                }
+
+                var mJson = {
+                        title: title,
+                        description: "mock desc",
+                        categories: categories,
+                        content: content,
+                        origin: window.location.origin,
+                        visibility: visibility,
+                        shared_with: shared,
+                };
+                $.ajax({
+                    type: 'PUT',
+                    url: url,
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(mJson),
+                    success: function(result) {
+                        location.reload();
+                    }
+                });
+            }
+        </script>
+    {% endif %}
 </html>
+<style>
+     a.card-link {
+        color: inherit;
+        text-decoration: inherit;
+    }
+    div.button-nav{
+        margin-top: 3em;
+    }
+    a.nav-link{
+        width: 100%;
+    }
+    #post-button{
+        background-color:transparent;
+        border-color: rgb(7, 128, 7) ;
+    }
+    .header-buttons .nav-button{
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        color: rgb(34, 32, 32);
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+        border-width: 3px;
+        font-size: large;
+    }
+    .header-buttons .nav-button:hover{
+        box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
+        border-radius: 5px;
+    }
+</style>

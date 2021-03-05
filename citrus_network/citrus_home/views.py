@@ -38,6 +38,12 @@ def make_post_redirect(request):
         # get uuid from logged in user
         uuid = get_uuid(request)
         return render(request, 'citrus_home/makepost.html', {'uuid':uuid})
+    else:
+        response = JsonResponse({
+            "message": "Method Not Allowed. Only support GET."
+        })
+        response.status_code = 405
+        return response
 
 @login_required(login_url='login_url')
 def post_redirect(request, author_id, post_id): 

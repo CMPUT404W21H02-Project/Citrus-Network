@@ -15,6 +15,7 @@
   <body>
     {% include '../navbar-logged-in.html' %}
     <div class="container pt-5">
+        <h1>Make a Post</h1>
         <div class="row justify-content-center mt-5 mb-2">
             <div class="col-md-6 col-sm-12 col-10">
                 <input type="text" class="form-control" id="title-name" placeholder="Title">
@@ -37,7 +38,7 @@
                   
                     <input type="radio" class="btn-check" name="btnradio" value="true" id="btnradio2" autocomplete="off">
                     <label class="btn btn-outline-primary" for="btnradio2">Markdown</label>
-                  </div>
+                </div>
             </div>
         </div>
         <div class="row justify-content-center mb-4">
@@ -70,13 +71,16 @@
             <div class="col-md-4">
                 <div class="dropdown">
                     <select class="form-select" aria-label="Default select example" id="friends-select">
+                        <option></option>
                     </select>
                 </div>
             </div>
         </div>
         <div class="row justify-content-center mt-4 mb-2">
             <div class="col-md-2 col-4">
-                <button type="button" class="btn btn-outline-danger">Cancel</button>
+                <a href="{% url 'home_url'%}">
+                    <button type="button" class="btn btn-outline-danger">Cancel</button>
+                </a>
             </div>
             <div class="col-md-2 col-4">
                 <button type="button" onClick="makePost()" class="btn btn-outline-success">Post</button>
@@ -91,6 +95,9 @@
     </script>
     <script>
         window.onload = getFriends;
+        /**
+         * Function that will hide category input, depending on if users choses to add categories.
+        **/
         function hideCategory() {
             var view = $("#categories");
             if (view.is(":visible")){
@@ -100,6 +107,9 @@
             }
         }
         
+        /**
+         * Get the JSON response from given url.
+        **/
         function fetchJSON(url) {
             var request = new Request(url);
             return fetch(request).then((response) => {
@@ -110,6 +120,9 @@
                 }});
         }
 
+        /**
+         * Function that gets all friends a user has.
+        **/
         function getFriends() {
             var uuid = "{{uuid}}";
             var pre_url = "/service/author/"
@@ -131,6 +144,9 @@
                 });
         }
 
+        /**
+         * Send a POST request to make a new post, redirect user to stream page after.
+        **/
         function makePost() {
             var uuid = "{{ uuid }}";
             var pre_url = "/service/author/";
@@ -175,7 +191,7 @@
                 contentType: "application/json",
                 data: JSON.stringify(mJson),
                 success: function(result) {
-                    console.log(result)
+                    window.location.href = "{% url 'home_url'%}"
                 }
             });
         }
