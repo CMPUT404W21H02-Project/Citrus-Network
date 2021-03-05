@@ -50,12 +50,7 @@ def post_redirect(request, author_id, post_id):
     if request.method == 'GET':
         # get uuid from logged in user
         uuid = get_uuid(request)
-        # View page only
-        if str(uuid) != str(author_id):
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
-        # Edit and View page
-        else:
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
         
         
 
