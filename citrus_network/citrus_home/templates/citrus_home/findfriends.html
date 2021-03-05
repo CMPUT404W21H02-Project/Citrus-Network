@@ -17,7 +17,7 @@
     <div class="container"> 
         <div class="row justify-content-center mt-1 mb-1">
             <div class="col-md-10 col-sm-12 position-relative" id = "card_parent" >
-               
+               <!--appending div elements here-->
             </div>
         </div>
     </div>
@@ -42,46 +42,46 @@
                     return response.json(); // return a Promise
                 } else {
                     alert("Something went wrong: " + response.status);
-                }});
-            }
+                }
+            });
+        }
 
+        /*** function to retrieve a list of people you may follow/ who have no accepted follow request**/
         function getNonFollowers() {
             var uuid = "{{uuid}}";
-            var pre_url = "/service/author/" //NEED CONFIGURATION
-            var url = pre_url + uuid + "/nonfollowers/" 
+            var url = "/service/author/"  + uuid + "/nonfollowers/" 
             fetchJSON(url).then((json) => { //another callback
+                //try because json.items is not present in response where status code != 200
                 try{
-                    //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
                     for (var i = 0; i < json.items.length; i++) { 
-                        console.log(json.items[i].displayName)
-                        console.log(json.items[i].id)
                         $("#card_parent") 
                         .append('<div class="card"><div class="card-header" id ="card_header">'+
                                 json.items[i].displayName+'</div><div class="card-body" id="card_body">'+
                                 '<button id="'+json.items[i].id+'" onClick="followNonFollower(this)">Follow</button>'+
                                 '</div></div>');
-                        } 
-                    }catch(err){
+                    } 
+                }catch(err){
+                        //if no list of people to follow - let user know they have followed everyone available
                         $("#card_parent") 
                         .append('<div class="card"><div class="card-header" id = "card_header">You Have Followed Everyone Available!'+
                                 '</div><div class="card-body" id = "card_body"><br></div></div>');
-                    }
-                });
-            }
+                }
+            });
+        }
 
+        /**function called when clicking on button "follow"**/
         function followNonFollower(button){
-
-            var uuid = "{{uuid}}";
-            var base_url = "/service/author/" 
-            var url = base_url + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
+            var uuid = "{{uuid}}"; 
+            var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
             follow(url)
 
-            /*set elements after following*/
+            //set elements after following
             button.style.background = "transparent";
             button.style.color = "black";
             button.innerText = "Followed!";
         }
 
+        /**need error handling here - Leah march 5**/
         function follow(url){
             $.ajax({
                 url: url,
@@ -90,9 +90,9 @@
                 success: function(result) {
                     console.log(result)
                     return result;
-                }})
+                }
+            })
         }
-
     </script>
   </body>
 </html>
