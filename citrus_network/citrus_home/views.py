@@ -23,264 +23,36 @@ import ast
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
-# @login_required
+@login_required(login_url='login_url')
 def home_redirect(request):
     if request.method == 'GET':
-        mock_response = [
-            {
-                "type":"inbox",
-                "author":"http://127.0.0.1:5454/author/c1e3db8ccea4541a0f3d7e5c75feb3fb",
-                "items":[
-                    {
-                        "type":"post",
-                        "title":"A Friendly post title about a post about web dev",
-                        "id":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
-                        "source":"http://lastplaceigotthisfrom.com/posts/yyyyy",
-                        "origin":"http://whereitcamefrom.com/posts/zzzzz",
-                        "description":"This post discusses stuff -- brief",
-                        "contentType":"text/plain",
-                        "content":"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
-                        "author":{
-                            "type":"author",
-                            "id":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                            "host":"http://127.0.0.1:5454/",
-                            "displayName":"Lara Croft",
-                            "url":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                            "github": "http://github.com/laracroft"
-                        },
-                        "categories":["web","tutorial"],
-                        "comments":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments",
-                        "published":"2015-03-09T13:07:04+00:00",
-                        "visibility":"FRIENDS",
-                        "unlisted":False
-                    },
-                    {
-                        "type":"post",
-                        "title":"DID YOU READ MY POST YET?",
-                        "id":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/999999983dda1e11db47671c4a3bbd9e",
-                        "source":"http://lastplaceigotthisfrom.com/posts/yyyyy",
-                        "origin":"http://whereitcamefrom.com/posts/aaaa",
-                        "description":"Whatever",
-                        "contentType":"text/plain",
-                        "content":"Are you even reading my posts Arjun?",
-                        "author":{
-                            "type":"author",
-                            "id":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                            "host":"http://127.0.0.1:5454/",
-                            "displayName":"Lara Croft",
-                            "url":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                            "github": "http://github.com/laracroft"
-                        },
-                        "categories":["web","tutorial"],
-                        "comments":"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments",
-                        "published":"2015-03-09T13:07:04+00:00",
-                        "visibility":"FRIENDS",
-                        "unlisted":False
-                    }
-                ]
-            }
-        ]
+
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        print("CURRENT USER ID")
+        print(uuid)
+        return render(request, 'citrus_home/stream.html', {'uuid':uuid})
         
-        return render(request, 'citrus_home/index.html', {'inbox': mock_response})
-
-
+@login_required(login_url='login_url')
 def make_post_redirect(request):
     if request.method == 'GET':
-        return render(request, 'citrus_home/makepost.html')
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/makepost.html', {'uuid':uuid})
+    else:
+        response = JsonResponse({
+            "message": "Method Not Allowed. Only support GET."
+        })
+        response.status_code = 405
+        return response
 
-def post_redirect(request): 
+@login_required(login_url='login_url')
+def post_redirect(request, author_id, post_id): 
     if request.method == 'GET':
-        mock_response = {
-            'type':"post",
-            'title':"A post title about a post about web dev",
-            'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
-            'source':"http://lastplaceigotthisfrom.com/posts/yyyyy",
-            'origin':"http://whereitcamefrom.com/posts/bbbzz",
-            'description':"This post discusses stuff -- brief",
-            'contentType':"text/plain",
-            'content':"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
-            # the author has an ID where by authors can be disambiguated
-            'author':{
-                'type':"author",
-                'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                'host':"http://127.0.0.1:5454/",
-                'displayName':"Lara Croft",
-                'url':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                'github': "http://github.com/laracroft"
-            },
-            'categories':["web","tutorial"],
-            'count': 1023,
-            'size': 50,
-            'comments':[
-                {
-                    'type':"comment",
-                    'author':{
-                        'type':"author",
-                        # ID of the Author (UUID)
-                        'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        # url to the authors information
-                        'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        'host':"http://127.0.0.1:5454/",
-                        "displayName":"Greg Johnson",
-                        # HATEOS url for Github API
-                        'github': "http://github.com/gjohnson"
-                    },
-                    'comment':"Sick Olde English",
-                    'contentType':"text/markdown",
-                    # ISO 8601 TIMESTAMP
-                    'published':"2015-03-09T13:07:04+00:00",
-                    # ID of the Comment (UUID)
-                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
-                },
-                {
-                    'type':"comment",
-                    'author':{
-                        'type':"author",
-                        # ID of the Author (UUID)
-                        'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        # url to the authors information
-                        'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        'host':"http://127.0.0.1:5454/",
-                        "displayName":"Greg Johnson",
-                        # HATEOS url for Github API
-                        'github': "http://github.com/gjohnson"
-                    },
-                    'comment':"Sick Olde English",
-                    'contentType':"text/markdown",
-                    # ISO 8601 TIMESTAMP
-                    'published':"2015-03-09T13:07:04+00:00",
-                    # ID of the Comment (UUID)
-                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
-                }, 
-                {
-                    'type':"comment",
-                    'author':{
-                        'type':"author",
-                        # ID of the Author (UUID)
-                        'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        # url to the authors information
-                        'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                        'host':"http://127.0.0.1:5454/",
-                        "displayName":"Greg Johnson",
-                        # HATEOS url for Github API
-                        'github': "http://github.com/gjohnson"
-                    },
-                    'comment':"Sick Olde English",
-                    'contentType':"text/markdown",
-                    # ISO 8601 TIMESTAMP
-                    'published':"2015-03-09T13:07:04+00:00",
-                    # ID of the Comment (UUID)
-                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
-                }
-            ],
-            'published':"2015-03-09T13:07:04+00:00",
-            'visibility':"PUBLIC",
-            'unlisted': False,
-        }
-        return render(request, 'citrus_home/viewpost.html', {'post': mock_response})
 
-def stream_redirect(request):
-    if request.method == 'GET':
-        mock_response = [
-            {
-                'type':"post",
-                'title':"A post title about a post about web dev",
-                'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
-                'source':"http://lastplaceigotthisfrom.com/posts/yyyyy",
-                'origin':"http://whereitcamefrom.com/posts/zzbbzzz",
-                'description':"This post discusses stuff -- brief",
-                'contentType':"text/plain",
-                'content':"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
-                # the author has an ID where by authors can be disambiguated
-                'author':{
-                    'type':"author",
-                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    'host':"http://127.0.0.1:5454/",
-                    'displayName':"Lara Croft",
-                    'url':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    'github': "http://github.com/laracroft"
-                },
-                'categories':["web","tutorial"],
-                'count': 1023,
-                'size': 50,
-                'comments':[
-                    {
-                        'type':"comment",
-                        'author':{
-                            'type':"author",
-                            # ID of the Author (UUID)
-                            'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                            # url to the authors information
-                            'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                            'host':"http://127.0.0.1:5454/",
-                            "displayName":"Greg Johnson",
-                            # HATEOS url for Github API
-                            'github': "http://github.com/gjohnson"
-                        },
-                        'comment':"Sick Olde English",
-                        'contentType':"text/markdown",
-                        # ISO 8601 TIMESTAMP
-                        'published':"2015-03-09T13:07:04+00:00",
-                        # ID of the Comment (UUID)
-                        'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
-                    }
-                ],
-                'published':"2015-03-09T13:07:04+00:00",
-                'visibility':"PUBLIC",
-                'unlisted': False,
-            },
-            {
-                'type':"post",
-                'title':"How to work on Django",
-                'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
-                'source':"http://lastplaceigotthisfrom.com/posts/yyyyy",
-                'origin':"http://heroku.com/posts/aaaa",
-                'description':"This post discusses stuff -- brief",
-                'contentType':"text/plain",
-                'content':"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
-                # the author has an ID where by authors can be disambiguated
-                'author':{
-                    'type':"author",
-                    'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    'host':"http://127.0.0.1:5454/",
-                    'displayName':"Craft Smith",
-                    'url':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    'github': "http://github.com/laracroft"
-                },
-                'categories':["web","tutorial"],
-                'count': 1023,
-                'size': 50,
-                'comments':[
-                    {
-                        'type':"comment",
-                        'author':{
-                            'type':"author",
-                            # ID of the Author (UUID)
-                            'id':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                            # url to the authors information
-                            'url':"http://127.0.0.1:5454/author/1d698d25ff008f7538453c120f581471",
-                            'host':"http://127.0.0.1:5454/",
-                            "displayName":"Greg Johnson",
-                            # HATEOS url for Github API
-                            'github': "http://github.com/gjohnson"
-                        },
-                        'comment':"Sick Olde English",
-                        'contentType':"text/markdown",
-                        # ISO 8601 TIMESTAMP
-                        'published':"2015-03-09T13:07:04+00:00",
-                        # ID of the Comment (UUID)
-                        'id':"http://127.0.0.1:5454/author/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/de305d54-75b4-431b-adb2-eb6b9e546013/comments/f6255bb01c648fe967714d52a89e8e9c",
-                    }
-                ],
-                'published':"2012-03-09T13:07:04+00:00",
-                'visibility':"PUBLIC",
-                'unlisted': False,
-            },
-        ]
-
-        curr_uuid = get_uuid(request)
-        return render(request, 'citrus_home/stream.html', {'json_list': mock_response, 'uuid':curr_uuid})
-
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id}
 
 
 """
@@ -332,7 +104,8 @@ def register_redirect(request):
             login(request,user)
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
-            citrusAuthor.save()
+            result = citrusAuthor.save()
+
             return redirect(home_redirect) 
     
     # return form with user input if not valid
@@ -353,7 +126,7 @@ def get_uuid(request):
 render edit_profile html page
 require authentication by successfully logging in
 """
-# @login_required
+@login_required(login_url='login_url')
 def render_profile(request):
     if request.method == 'POST':
         # get uuid from logged in user
@@ -385,7 +158,6 @@ def render_profile(request):
         profile.save()
 
         # set up Django form
-        print(profile.user, profile.github,profile.displayName)
         current_profile = { 'username': profile.user,'displayName': profile.displayName,'github': profile.github }
         form = ProfileForm(current_profile)
 
@@ -400,6 +172,7 @@ def render_profile(request):
     # handle not POST OR GET (to-do)
     uuid = get_uuid(request)
     profile = get_object_or_404(CitrusAuthor, id=uuid)
+
     current_profile = { 'username': profile.user,
                         'displayName': profile.displayName,
                         'github': profile.github}
@@ -646,11 +419,21 @@ def get_not_followers(request,author_id):
     print(author_id)
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-        
-        try:
-            followers = Follower.objects.get(uuid = author).followers_uuid #err if query is empty
-        except:
-            followers = []
+
+        #try:
+            #followers = Follower.objects.get(uuid = author).followers_uuid #err if query is empty
+        #except:
+            #followers = []
+
+        # validate if the user has any followers
+        try: 
+            result = Follower.objects.get(uuid = author)
+        except ObjectDoesNotExist:
+            response = JsonResponse({"results":"no non-followers found"})
+            response.status_code = 200
+            return response
+
+        followers = result.followers_uuid
 
         all_user = CitrusAuthor.objects.all()
 
@@ -709,7 +492,6 @@ def get_followers(request, author_id):
         # check for list of followers of author_id
         try:
             result = Follower.objects.get(uuid=author_id)
-            print(result)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"no followers found or incorrect id of author"})
             response.status_code = 404
@@ -858,7 +640,6 @@ def edit_followers(request, author_id, foreign_author_id):
             # create instance of the follower with uuid to author_id
             new_follower_object = Follower(uuid = author,followers_uuid= followers)
             new_follower_object.save()
-            print("created",new_follower_object.uuid)
 
             # check if foreign_author_id also follow author_id
             try:
@@ -886,7 +667,6 @@ def edit_followers(request, author_id, foreign_author_id):
                     friend = str(foreign_author_id)
                     new_friend_object = Friend(uuid = author,friends_uuid= friend)
                     new_friend_object.save()
-                    print("created",new_friend_object.uuid)
                 else:
                     # add foreign id 
                     friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
@@ -901,7 +681,6 @@ def edit_followers(request, author_id, foreign_author_id):
                     friend = str(author_id)
                     new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
                     new_friend_object.save()
-                    print("created",new_friend_object.uuid)
                 else:
                     # add author id 
                     friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
@@ -951,7 +730,6 @@ def edit_followers(request, author_id, foreign_author_id):
                 friend = str(foreign_author_id)
                 new_friend_object = Friend(uuid = author,friends_uuid= friend)
                 new_friend_object.save()
-                print("created",new_friend_object.uuid)
             else:
                 # add foreign id 
                 friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
@@ -966,7 +744,6 @@ def edit_followers(request, author_id, foreign_author_id):
                 friend = str(author_id)
                 new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
                 new_friend_object.save()
-                print("created",new_friend_object.uuid)
             else:
                 # add author id 
                 friends = str(foreign_author_id_friends.friends_uuid)+CONST_SEPARATOR+str(author_id)
@@ -1019,7 +796,6 @@ def get_friends(request, author_id):
         # check for list of followers of author_id
         try:
             result = Friend.objects.get(uuid=author_id)
-            print(result)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"no friends found or incorrect id of author"})
             response.status_code = 404
@@ -1153,6 +929,7 @@ def manage_post(request, id, **kwargs):
     pid = kwargs.get('pid')
     print(request.method)
     if request.method == "POST":
+        # 
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
         post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
@@ -1166,18 +943,25 @@ def manage_post(request, id, **kwargs):
 
     # update an existing post made by the user
     elif request.method == "PUT":
-        # check if form is valid here
-        body = json.loads(request.body)
+        # verify that the owner of the post is trying to change the post
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.get(id=pid) 
-        # update fields of the post object
-        post.title = body['title']
-        post.description = body['description']
-        post.content = body['content']
-        post.visibility = body['visibility']
-        post.shared_with = body['shared_with']
-        post.save()
-        return returnJsonResponse(specific_message="post updated", status_code=200)
+        posts = Post.objects.get(id=pid)
+        post_author = posts.author
+        if author == post_author:
+        # check if form is valid here
+            body = json.loads(request.body)
+            author = CitrusAuthor.objects.get(id=id)
+            post = Post.objects.get(id=pid) 
+            # update fields of the post object
+            post.title = body['title']
+            post.description = body['description']
+            post.content = body['content']
+            post.visibility = body['visibility']
+            post.shared_with = body['shared_with']
+            post.save()
+            return returnJsonResponse(specific_message="post updated", status_code=200)
+        else:
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
 
  
     elif request.method == "GET":
@@ -1308,3 +1092,61 @@ def stringToBool(value):
         return True
     elif value == "False":
         return False
+
+
+"""
+If a user is signed in a GET request to localhost:8000/home-test/ will return a list of posts of all
+friends of the signed in user (most recent posts first that are all public)
+"""
+def handleStream(request):
+    # get current user and find corresponding citrus author
+    if request.method == "GET":
+        current_user = request.user
+        citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # find friends of the citrus author and get their posts
+        friends = Friend.objects.filter(uuid=citrus_author)
+        friends_arr = []
+        for friend in friends:
+            author = CitrusAuthor.objects.get(id=friend.friends_uuid)
+            friends_arr.append(author)
+        # now you have a list of authors that are friends of the signed in user find the posts and return them
+        # append current user's posts also (user story i want to post to my stream)
+        friends_arr.append(citrus_author)
+        posts_arr = []
+        # for now we are only looking for public posts this will later be extended to private to author and private to friends
+        posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+        json_posts = []
+        for post in posts:
+            author = post.author
+            comments = Comment.objects.filter(post=post)
+            comments_arr = create_comment_list(post)
+            author_data = convertAuthorObj(author)
+            categories = post.categories.split()
+            return_data = {
+                "type": "post",
+                "title": post.title,
+                "id": post.id,
+                "source": "localhost:8000/some_random_source",
+                "origin": post.origin,
+                "description": post.description,
+                "contentType": "text/plain",
+                "content": post.content,
+                # probably serialize author here and call it
+                "author": author_data,
+                "categories": categories,
+                "count": comments.count(),
+                "comments": comments_arr, 
+                "published": post.created,
+                "visibility": post.visibility,
+                "unlisted": "false"
+            }
+            json_posts.append(return_data)
+        
+        return JsonResponse({
+            "posts": json_posts
+        },status=200)
+    
+    else:
+        return returnJsonResponse(specific_message="method not available", status_code=40)
+        
+    
