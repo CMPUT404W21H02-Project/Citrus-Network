@@ -19,7 +19,7 @@ import re
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-
+import ast
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -49,12 +49,10 @@ def make_post_redirect(request):
 @login_required(login_url='login_url')
 def post_redirect(request, author_id, post_id): 
     if request.method == 'GET':
+
         # get uuid from logged in user
         uuid = get_uuid(request)
         return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
-        
-        
-
 
 """
 comment
@@ -102,6 +100,7 @@ def register_redirect(request):
             # login with newly created user
             username = request.POST.get('username')
             password = request.POST.get('password')
+            login(request,user)
             # create CitrusAuthor
             citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
             result = citrusAuthor.save()
@@ -252,13 +251,25 @@ def manage_profile(request, id):
         response.status_code = 405
         return response
 
+'''
+Helper function to get the booleans that will be used to 
+set custom form errors for the user editing their profile
+PARAMS: profile - current users information,
+        new_username - requested new username,
+        new_displayName - requested new display name,
+        new_github - requested new github.
+RETURN: list of three booleans
+'''
 def setFormErrors(profile,new_username,new_displayName,new_github):
     u_valid = validate_username(profile, new_username)
     d_valid = validate_displayName(profile,new_displayName)
     g_valid = validate_github(profile,new_github)
     
     return [u_valid,d_valid,g_valid] 
-
+'''
+Helper function that raises and error if one of the fields is not available
+PARAMS: field validites - a list of booleans
+'''
 def validate_fields(field_validities):
     print(field_validities)
     if False in field_validities:
@@ -266,50 +277,53 @@ def validate_fields(field_validities):
     else:
         return
 
+'''
+Function to validate a requested username
+PARAMS: profile - current users profile,
+        new_username - requested username
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_username(profile, new_username):
     #cant query for username attributes from Citrus Author object
     if User.objects.filter(username=new_username).exists():
         existing_user = User.objects.get(username=new_username) 
-        
         if  existing_user.id != profile.user.id:
-            print("username is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'Username "%s" is already in use.' % new_username)
         else:
-            print("you did not change your username - this one is already yours")
             return True
     else:
-        print("username is available - no one had it yet")
         return True
 
-
+'''
+Function to validate a requested displayName
+PARAMS: profile - current users profile,
+        new_displayName - requested displayName
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_displayName(profile, new_displayName):  
     if CitrusAuthor.objects.filter(displayName=new_displayName).exists():
         existing_user = CitrusAuthor.objects.get(displayName=new_displayName)
         if existing_user.id != profile.id:
-            print("display name is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'Display Name "%s" is already in use.' % new_displayName)
         else:
-            print("you did not change your display name - this one is already yours")
             return True
     else:
-        print("display name is available - no one had it yet")
         return True
 
+'''
+Function to validate a requested github
+PARAMS: profile - current users profile,
+        new_github - requested github
+RETURN: boolean - True if available, False if unavailable
+'''
 def validate_github(profile,  new_github):
-   
     if CitrusAuthor.objects.filter(github=new_github).exists():
         existing_user = CitrusAuthor.objects.get(github=new_github)
         if existing_user.id != profile.id:
-            print("github uri is not available, someone who is not you has it")
             return False
-            #raise forms.ValidationError(u'github "%s" is already in use.' % new_github)
         else:
-            print("you did not change your github uri - this one is already yours")
             return True
     else:
-        print("github uri is available - no one had it yet")
         return True
         
 """
@@ -401,17 +415,59 @@ URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 """
 @login_required
 def get_not_followers(request,author_id):
+    print(author_id)
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-        # validate if the user has any followers
+
+        #try:
+            #followers = Follower.objects.get(uuid = author).followers_uuid #err if query is empty
+        #except:
+            #followers = []
+
+        
         try: 
             result = Follower.objects.get(uuid = author)
         except ObjectDoesNotExist:
-            response = JsonResponse({"results":"no non-followers found"})
+            all_user = CitrusAuthor.objects.all()
+            not_followers = []
+            for user in all_user:
+                if (str(user.id) != str(author_id)):
+                    not_followers.append(user)
+
+            if len(not_followers)==0:
+                response = JsonResponse({"results":"no non-followers found"})
+                response.status_code = 200
+                return response
+
+            # generate json response for list of not followers
+            items = []
+            for user in not_followers:
+                # get the follower profile info
+                json = {
+                    "type": "Author",
+                    "id": str(user.id),
+                    "host": str(user.host),
+                    "displayName": str(user.displayName),
+                    "github": str(user.github),
+                }
+                items.append(json)
+
+            # check to see nothing is in items list
+            if len(items) == 0:
+                response = JsonResponse({"results":"no non-followers found"})
+                response.status_code = 200
+                return response
+
+            results = { "type": "non-follower",
+                        "items":items}
+
+            response = JsonResponse(results)
             response.status_code = 200
             return response
+ 
 
         followers = result.followers_uuid
+
         all_user = CitrusAuthor.objects.all()
 
         # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
@@ -452,7 +508,6 @@ def get_not_followers(request,author_id):
         response.status_code = 200
         return response
         
-
     else:
         response = JsonResponse({'message':'method not allowed'})
         response.status_code = 405
@@ -500,7 +555,8 @@ def get_followers(request, author_id):
             response.status_code = 404
             return response
 
-        results = { "type": "follower",      
+        #LEAH MARCH 4 - THIS IS MISSING AN "S" FROM SPEC lol. change to "type":"followers"
+        results = { "type": "followers",      
                     "items":items}
 
         response = JsonResponse(results)
@@ -511,6 +567,15 @@ def get_followers(request, author_id):
         response.status_code = 405
         return response
 
+
+'''
+function to render the followers page
+PARAMS: request
+RETURN: request, followers page, current user id
+'''
+def render_followers_page(request):
+    uuid = get_uuid(request)
+    return render(request,'citrus_home/followers.html', {'uuid':uuid})
 
 """
 handles these requests:
@@ -842,6 +907,23 @@ def edit_friends(request, author_id, foreign_author_id):
         response = JsonResponse({"message":"Method not Allowed"})
         response.status_code = 405
         return response
+'''
+function to render the friends page
+PARAMS: request
+RETURN: request, friends page, current user id
+'''
+def render_friends_page(request):
+    uuid = get_uuid(request)
+    return render(request, 'citrus_home/friends.html', {'uuid':uuid})
+
+'''
+function to render the friends page
+PARAMS: request
+RETURN: request, findfriends page, current user id
+'''
+def render_find_friends_page(request):
+    uuid = get_uuid(request)
+    return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
 """
 handle the creation of a new post object
@@ -888,17 +970,31 @@ def manage_post(request, id, **kwargs):
 
     
     elif request.method == 'DELETE':
+        # get current user
+        current_user = request.user
+        current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # id of the person who owns the post
         posts = Post.objects.get(id=pid)
-        posts.delete()
-        return returnJsonResponse(specific_message="post deleted", status_code=200)
+        post_author = posts.author
+        if current_citrus_author == post_author:
+            posts_current = Post.objects.get(id=pid)
+            posts_current.delete()
+            return returnJsonResponse(specific_message="post deleted", status_code=200)
 
     # update an existing post made by the user
     elif request.method == "PUT":
         # verify that the owner of the post is trying to change the post
-        author = CitrusAuthor.objects.get(id=id)
+        # author = CitrusAuthor.objects.get(id=id)
+        # posts = Post.objects.get(id=pid)
+        # post_author = posts.author
+        # if author == post_author:
+        # get current user
+        current_user = request.user
+        current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # id of the person who owns the post
         posts = Post.objects.get(id=pid)
         post_author = posts.author
-        if author == post_author:
+        if current_citrus_author == post_author:
         # check if form is valid here
             body = json.loads(request.body)
             author = CitrusAuthor.objects.get(id=id)
@@ -1055,49 +1151,94 @@ def handleStream(request):
         current_user = request.user
         citrus_author = CitrusAuthor.objects.get(user=current_user)
         # find friends of the citrus author and get their posts
-        friends = Friend.objects.filter(uuid=citrus_author)
-        friends_arr = []
-        for friend in friends:
-            author = CitrusAuthor.objects.get(id=friend.friends_uuid)
-            friends_arr.append(author)
-        # now you have a list of authors that are friends of the signed in user find the posts and return them
-        # append current user's posts also (user story i want to post to my stream)
-        friends_arr.append(citrus_author)
-        posts_arr = []
-        # for now we are only looking for public posts this will later be extended to private to author and private to friends
-        posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
-        json_posts = []
-        for post in posts:
-            author = post.author
-            comments = Comment.objects.filter(post=post)
-            comments_arr = create_comment_list(post)
-            author_data = convertAuthorObj(author)
-            categories = post.categories.split()
-            return_data = {
-                "type": "post",
-                "title": post.title,
-                "id": post.id,
-                "source": "localhost:8000/some_random_source",
-                "origin": post.origin,
-                "description": post.description,
-                "contentType": "text/plain",
-                "content": post.content,
-                # probably serialize author here and call it
-                "author": author_data,
-                "categories": categories,
-                "count": comments.count(),
-                "comments": comments_arr, 
-                "published": post.created,
-                "visibility": post.visibility,
-                "unlisted": "false"
-            }
-            json_posts.append(return_data)
-        
-        return JsonResponse({
-            "posts": json_posts
-        },status=200)
+        try:
+            friends = Friend.objects.get(uuid=citrus_author)
+            # friends arr holds the uuid for each friend of the current user that is signed in
+            friends_uuid_arr = friends.friends_uuid.split(CONST_SEPARATOR)
+            friends_arr = []
+            for id in friends_uuid_arr:
+                author = CitrusAuthor.objects.get(id=id)
+                friends_arr.append(author)
+
+            # now you have a list of authors that are friends of the signed in user find the posts and return them
+            # append current user's posts also (user story i want to post to my stream)
+            friends_arr.append(citrus_author)
+            posts_arr = []
+            # for now we are only looking for public posts this will later be extended to private to author and private to friends
+            posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+            json_posts = []
+            for post in posts:
+                author = post.author
+                comments = Comment.objects.filter(post=post)
+                comments_arr = create_comment_list(post)
+                author_data = convertAuthorObj(author)
+                categories = post.categories.split()
+                return_data = {
+                    "type": "post",
+                    "title": post.title,
+                    "id": post.id,
+                    "source": "localhost:8000/some_random_source",
+                    "origin": post.origin,
+                    "description": post.description,
+                    "contentType": "text/plain",
+                    "content": post.content,
+                    # probably serialize author here and call it
+                    "author": author_data,
+                    "categories": categories,
+                    "count": comments.count(),
+                    "comments": comments_arr, 
+                    "published": post.created,
+                    "visibility": post.visibility,
+                    "unlisted": "false"
+                }
+                json_posts.append(return_data)
+            
+            return JsonResponse({
+                "posts": json_posts
+            },status=200)
+        except ObjectDoesNotExist:
+            try:
+                no_friends = Post.objects.filter(author=citrus_author)
+                friends_arr = []
+                friends_arr.append(citrus_author)
+                posts_arr = []
+                # for now we are only looking for public posts this will later be extended to private to author and private to friends
+                posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+                json_posts = []
+                for post in posts:
+                    author = post.author
+                    comments = Comment.objects.filter(post=post)
+                    comments_arr = create_comment_list(post)
+                    author_data = convertAuthorObj(author)
+                    categories = post.categories.split()
+                    return_data = {
+                        "type": "post",
+                        "title": post.title,
+                        "id": post.id,
+                        "source": "localhost:8000/some_random_source",
+                        "origin": post.origin,
+                        "description": post.description,
+                        "contentType": "text/plain",
+                        "content": post.content,
+                        # probably serialize author here and call it
+                        "author": author_data,
+                        "categories": categories,
+                        "count": comments.count(),
+                        "comments": comments_arr, 
+                        "published": post.created,
+                        "visibility": post.visibility,
+                        "unlisted": "false"
+                    }
+                    json_posts.append(return_data)
+                
+                return JsonResponse({
+                    "posts": json_posts
+                },status=200)
+                
+            except ObjectDoesNotExist:
+                return returnJsonResponse(specific_message="make some friends :)", status_code=401)
     
     else:
-        return returnJsonResponse(specific_message="method not available", status_code=40)
+        return returnJsonResponse(specific_message="method not available", status_code=400)
         
     

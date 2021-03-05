@@ -13,6 +13,11 @@ urlpatterns = [
   path('register/', views.register_redirect, name='register_url'),
   path('logout/',views.logout_redirect,name = 'logout_url'),
   path("profile/",views.render_profile,name="profile"),
+
+  path("findfriends/",views.render_find_friends_page,name='findfriends_url'),
+  path("friends/",views.render_friends_page,name='friends_url'),
+  path("followers/",views.render_followers_page, name='followers_url'),
+
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',views.manage_profile, name='profile_api'),
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/github$',views.get_github_events, name='github'),
   # https://stackoverflow.com/questions/32950432/django-urls-uuid-not-working/47948076
