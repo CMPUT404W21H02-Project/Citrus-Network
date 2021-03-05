@@ -1137,51 +1137,55 @@ def handleStream(request):
         current_user = request.user
         citrus_author = CitrusAuthor.objects.get(user=current_user)
         # find friends of the citrus author and get their posts
-        friends = Friend.objects.filter(uuid=citrus_author) 
-        print(type(friends))
-        friends_arr = []
-        for friend in friends:
-            author = CitrusAuthor.objects.get(id=friend.friends_uuid)
-            friends_arr.append(author)
+        try:
+            friends = Friend.objects.get(uuid=citrus_author)
+            # friends arr holds the uuid for each friend of the current user that is signed in
+            friends_uuid_arr = friends.friends_uuid.split(CONST_SEPARATOR)
+            friends_arr = []
+            for id in friends_uuid_arr:
+                author = CitrusAuthor.objects.get(id=id)
+                friends_arr.append(author)
 
-        # now you have a list of authors that are friends of the signed in user find the posts and return them
-        # append current user's posts also (user story i want to post to my stream)
-        friends_arr.append(citrus_author)
-        posts_arr = []
-        # for now we are only looking for public posts this will later be extended to private to author and private to friends
-        posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
-        json_posts = []
-        for post in posts:
-            author = post.author
-            comments = Comment.objects.filter(post=post)
-            comments_arr = create_comment_list(post)
-            author_data = convertAuthorObj(author)
-            categories = post.categories.split()
-            return_data = {
-                "type": "post",
-                "title": post.title,
-                "id": post.id,
-                "source": "localhost:8000/some_random_source",
-                "origin": post.origin,
-                "description": post.description,
-                "contentType": "text/plain",
-                "content": post.content,
-                # probably serialize author here and call it
-                "author": author_data,
-                "categories": categories,
-                "count": comments.count(),
-                "comments": comments_arr, 
-                "published": post.created,
-                "visibility": post.visibility,
-                "unlisted": "false"
-            }
-            json_posts.append(return_data)
-        
-        return JsonResponse({
-            "posts": json_posts
-        },status=200)
+            # now you have a list of authors that are friends of the signed in user find the posts and return them
+            # append current user's posts also (user story i want to post to my stream)
+            friends_arr.append(citrus_author)
+            posts_arr = []
+            # for now we are only looking for public posts this will later be extended to private to author and private to friends
+            posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+            json_posts = []
+            for post in posts:
+                author = post.author
+                comments = Comment.objects.filter(post=post)
+                comments_arr = create_comment_list(post)
+                author_data = convertAuthorObj(author)
+                categories = post.categories.split()
+                return_data = {
+                    "type": "post",
+                    "title": post.title,
+                    "id": post.id,
+                    "source": "localhost:8000/some_random_source",
+                    "origin": post.origin,
+                    "description": post.description,
+                    "contentType": "text/plain",
+                    "content": post.content,
+                    # probably serialize author here and call it
+                    "author": author_data,
+                    "categories": categories,
+                    "count": comments.count(),
+                    "comments": comments_arr, 
+                    "published": post.created,
+                    "visibility": post.visibility,
+                    "unlisted": "false"
+                }
+                json_posts.append(return_data)
+            
+            return JsonResponse({
+                "posts": json_posts
+            },status=200)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="make some friends :)", status_code=401)
     
     else:
-        return returnJsonResponse(specific_message="method not available", status_code=40)
+        return returnJsonResponse(specific_message="method not available", status_code=400)
         
     

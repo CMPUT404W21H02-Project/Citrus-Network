@@ -82,7 +82,7 @@
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
                         //true if a follower id is also present in friends ids - false otherwise
-                        if (friendsids.includes(json.items[0].id)){
+                        if (friendsids.includes(json.items[i].id)){
                             $("#card_parent") 
                                 .append('<div class="card">'+
                                         '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
