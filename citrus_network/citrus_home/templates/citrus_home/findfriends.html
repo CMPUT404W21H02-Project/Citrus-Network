@@ -73,7 +73,10 @@
         function followNonFollower(button){
             var uuid = "{{uuid}}"; 
             var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
-            follow(url)
+            
+            follow(url).done(function(response) {
+                console.log(response);
+            });
 
             //set elements after following
             button.style.background = "transparent";
@@ -83,16 +86,39 @@
 
         /**need error handling here - Leah march 5**/
         function follow(url){
-            $.ajax({
+            return $.ajax({
                 url: url,
                 type: 'PUT',
                 contentType: "application/json",
                 success: function(result) {
                     console.log(result)
-                    return result;
+                   
                 }
             })
         }
+
+        /**get pending friends requests - in PROGRESS
+        function getPendingIds(){
+            var uuid = "{{uuid}}" 
+            var url = "/service/author/" + uuid + "/friends/"
+            var friendsids = new Array();
+            return fetchJSON(url).then((json) => {
+                //try because json.items is not present in response where status code != 200
+                try{
+                    for (var i = 0; i < json.items.length; i++) { 
+                    friendsids.push(json.items[i].id);
+                        console.log(friendsids);
+                    }
+                    console.log(friendsids);
+                    getFollowers(friendsids);
+                }catch(err){
+                    friendsids.push("0");
+                    console.log(friendsids);
+                    getFollowers(friendsids);
+                }
+            });
+        }
+        **/
     </script>
   </body>
 </html>
