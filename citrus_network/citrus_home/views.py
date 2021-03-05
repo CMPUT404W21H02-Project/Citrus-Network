@@ -29,23 +29,28 @@ def home_redirect(request):
 
         # get uuid from logged in user
         uuid = get_uuid(request)
+        print("CURRENT USER ID")
+        print(uuid)
         return render(request, 'citrus_home/stream.html', {'uuid':uuid})
 
 def make_post_redirect(request):
     if request.method == 'GET':
-        return render(request, 'citrus_home/makepost.html')
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/makepost.html', {'uuid':uuid})
+    else:
+        response = JsonResponse({
+            "message": "Method Not Allowed. Only support GET."
+        })
+        response.status_code = 405
+        return response
 
 @login_required(login_url='login_url')
 def post_redirect(request, author_id, post_id): 
     if request.method == 'GET':
         # get uuid from logged in user
         uuid = get_uuid(request)
-        # View page only
-        if str(uuid) != str(author_id):
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
-        # Edit and View page
-        else:
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
         
         
 
