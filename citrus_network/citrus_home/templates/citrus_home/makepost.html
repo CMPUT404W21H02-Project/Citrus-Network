@@ -137,6 +137,10 @@
             var url = pre_url + uuid + "/posts/";
             var title = document.getElementById("title-name").value;
             var content = document.getElementById("post-textarea").value;
+            if (title === ""){
+                alert("Don't submit an empty post");
+                return false;
+            }
             var visibility = document.getElementById("post-visibility").value;
             var markdown;
             if(document.getElementById('btnradio1').checked){
@@ -154,13 +158,7 @@
             } else {
                 categories = document.getElementById('categories').value;
             }
-            // console.log(title);
-            // console.log(content);
-            // console.log(categories);
-            // console.log(visibility);
-            // console.log(markdown);
-            // console.log(shared);
-            //console.log(data);
+
             var mJson = {
                     title: title,
                     description: "mock desc",
