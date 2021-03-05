@@ -41,12 +41,10 @@ jobs:
     - name: Test with Django tests
       run: |
         dir
-        cd citrus_network
         python manage.py makemigrations
         python manage.py migrate
         python manage.py test
     - name: Run code coverage and generate report
-      working-directory: ./citrus_network
       run: |
         python -m coverage erase
         python -m coverage run manage.py test citrus_home
@@ -56,7 +54,7 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV }} # not required for public repos
-        files: ./citrus_network/coverage.xml # path to report file
+        files: ./coverage.xml # path to report file
         fail_ci_if_error: true
 
       
