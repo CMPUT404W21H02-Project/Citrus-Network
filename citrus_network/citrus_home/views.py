@@ -1197,7 +1197,46 @@ def handleStream(request):
                 "posts": json_posts
             },status=200)
         except ObjectDoesNotExist:
-            return returnJsonResponse(specific_message="make some friends :)", status_code=401)
+            try:
+                no_friends = Post.objects.filter(author=citrus_author)
+                friends_arr = []
+                friends_arr.append(citrus_author)
+                posts_arr = []
+                # for now we are only looking for public posts this will later be extended to private to author and private to friends
+                posts = Post.objects.filter(author__in=friends_arr,visibility="PUBLIC").order_by('-created')
+                json_posts = []
+                for post in posts:
+                    author = post.author
+                    comments = Comment.objects.filter(post=post)
+                    comments_arr = create_comment_list(post)
+                    author_data = convertAuthorObj(author)
+                    categories = post.categories.split()
+                    return_data = {
+                        "type": "post",
+                        "title": post.title,
+                        "id": post.id,
+                        "source": "localhost:8000/some_random_source",
+                        "origin": post.origin,
+                        "description": post.description,
+                        "contentType": "text/plain",
+                        "content": post.content,
+                        # probably serialize author here and call it
+                        "author": author_data,
+                        "categories": categories,
+                        "count": comments.count(),
+                        "comments": comments_arr, 
+                        "published": post.created,
+                        "visibility": post.visibility,
+                        "unlisted": "false"
+                    }
+                    json_posts.append(return_data)
+                
+                return JsonResponse({
+                    "posts": json_posts
+                },status=200)
+                
+            except ObjectDoesNotExist:
+                return returnJsonResponse(specific_message="make some friends :)", status_code=401)
     
     else:
         return returnJsonResponse(specific_message="method not available", status_code=400)
