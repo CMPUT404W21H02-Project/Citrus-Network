@@ -970,17 +970,31 @@ def manage_post(request, id, **kwargs):
 
     
     elif request.method == 'DELETE':
+        # get current user
+        current_user = request.user
+        current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # id of the person who owns the post
         posts = Post.objects.get(id=pid)
-        posts.delete()
-        return returnJsonResponse(specific_message="post deleted", status_code=200)
+        post_author = posts.author
+        if current_citrus_author == post_author:
+            posts_current = Post.objects.get(id=pid)
+            posts_current.delete()
+            return returnJsonResponse(specific_message="post deleted", status_code=200)
 
     # update an existing post made by the user
     elif request.method == "PUT":
         # verify that the owner of the post is trying to change the post
-        author = CitrusAuthor.objects.get(id=id)
+        # author = CitrusAuthor.objects.get(id=id)
+        # posts = Post.objects.get(id=pid)
+        # post_author = posts.author
+        # if author == post_author:
+        # get current user
+        current_user = request.user
+        current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # id of the person who owns the post
         posts = Post.objects.get(id=pid)
         post_author = posts.author
-        if author == post_author:
+        if current_citrus_author == post_author:
         # check if form is valid here
             body = json.loads(request.body)
             author = CitrusAuthor.objects.get(id=id)
