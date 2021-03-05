@@ -26,7 +26,3 @@ class TestUrls(TestCase):
     def test_make_post_redirect(self):
         url = reverse('make_post_url')
         self.assertEquals(resolve(url).func, views.make_post_redirect)
-    
-    def test_view_post_redirect(self):
-        url = reverse('view_post_url')
-        self.assertEquals(resolve(url).func, views.post_redirect)
