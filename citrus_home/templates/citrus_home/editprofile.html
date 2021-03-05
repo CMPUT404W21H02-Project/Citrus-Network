@@ -1,0 +1,58 @@
+<!-- This document is acting as a template if we want to split edit profile and view profile. -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <title>Profile</title>
+</head>
+<body>
+    {% include "navbar.html" %}
+    {% load crispy_forms_tags %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class = "card mt-5 mb-5 edit-profile">
+                <div class="card-header">
+                    <h3 class="ml-1 mt-1">Edit Profile</h3>
+                </div>
+                <img class="card=img-left" src="https://image.freepik.com/free-photo/lemon_1205-1667.jpg" alt="">
+                <div class="card-body">
+                    <form class="mt-5 mb-5" method="POST">
+                        {%csrf_token%}
+                        {{form.username|as_crispy_field}}
+                        {% if pf_form_errors.usernameError %}
+                            <div class="invalid-feedback d-block mb-3">
+                                {{pf_form_errors.usernameError}}
+                            </div>
+                        {% endif %}
+                        {{form.displayName|as_crispy_field}}
+                        {% if pf_form_errors.displayNameError %}
+                            <div class="invalid-feedback d-block mb-3">
+                                {{pf_form_errors.displayNameError}}
+                            </div>
+                        {% endif %}
+                        {{form.github|as_crispy_field}}
+                        {% if pf_form_errors.githubError %}
+                            <div class="invalid-feedback d-block mb-3">
+                                {{pf_form_errors.githubError}}
+                            </div>
+                        {% endif %}
+                        <div class="form-row justify-content-center">
+                            <button class="btn btn-success mr-1" type="submit">
+                                <em class="icon-lime"></em>
+                                Edit
+                            </button>
+                            <div class="btn btn-danger ml-1" type="button" onclick="swapProfileMode()">
+                                <em class="icon-pineapple"></em>
+                                Back
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body> -->

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+    <title>Citrus Network</title>
+  </head>
+
+  <body>
+    {% include '../navbar-logged-in.html' %}
+    <div class="container"> 
+        <div class="row justify-content-center mt-1 mb-1">
+            <div class="col-md-10 col-sm-12 position-relative" id = "card_parent" >
+            <!--appending div elements here-->
+            </div>
+        </div>
+    </div>
+    
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
+    </script>
+
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+    </script>
+
+    <script>
+        window.onload = getFriends;
+
+        function fetchJSON(url) {
+            var request = new Request(url);
+            return fetch(request).then((response) => {
+                if (response.status === 200 || response.status == 404) { 
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }
+            });
+        }
+
+        /**function to get a list of users friends**/
+        function getFriends() {
+            var uuid = "{{uuid}}";
+            var url = "/service/author/" + uuid + "/friends/" 
+            fetchJSON(url).then((json) => { // another callback
+                //try because json.items is not present in response where status code != 200
+                try{
+                    for (var i = 0; i < json.items.length; i++) { 
+                        $("#card_parent") 
+                        .append('<div class="card">'+
+                                '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                '<div class="card-body" id = "card_body">'+
+                                    '<button id = "'+json.items[i].id+'" onClick="removeFriend(this)">Remove Friend</button>'+
+                                    '</div>'+
+                                '</div>'); 
+                    } 
+                }catch(err){
+                    //if you have no friends to remove
+                    $("#card_parent") 
+                    .append('<div class="card"><div class="card-header" id = "card_header">You Have No Friends!'+
+                            '</div><div class="card-body" id = "card_body"><br></div></div>');
+                }
+            });
+        }
+
+         /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
+        function removeFriend(button){
+            var uuid = "{{uuid}}";
+            var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
+            remove(url)
+            var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
+            remove(inverse_url)
+
+            //set elements after removing friend
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "Friend Succesfully Removed";
+        }
+        
+        /**DELETE request remove a friend and follower - need more error handling**/
+        function remove(url){
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                contentType: "application/json",
+                success: function(result) {
+                    console.log(result)
+                }
+            })
+        }
+
+    </script>
+  </body>
+</html>
+
+<style>
+    div.container{
+        margin-top: 2em;
+    }
+    a.card-link {
+        color: inherit;
+        text-decoration: inherit;
+    }
+    button{
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        background-color: #da2222;
+        border-color:#830f0f; 
+        color: white;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+        font-size: large;
+    }
+    button:hover{
+        box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
+        border-radius: 2px;
+    }
+    .card-header{
+        font-size: x-large;
+    }
+</style>
