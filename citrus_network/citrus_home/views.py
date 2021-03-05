@@ -753,13 +753,13 @@ def get_followers(request, author_id):
         return response
 
 
-
+'''
+function to render the followers page
+PARAMS: request
+RETURN: request, followers page, current user id
+'''
 def render_followers_page(request):
     uuid = get_uuid(request)
-    followers_response = get_followers(request,uuid)
-    body = followers_response.content.decode()
-    body_dict = ast.literal_eval(body)
-    print(body_dict)
     return render(request,'citrus_home/followers.html', {'uuid':uuid})
 
 """
@@ -1098,24 +1098,22 @@ def edit_friends(request, author_id, foreign_author_id):
         response = JsonResponse({"message":"Method not Allowed"})
         response.status_code = 405
         return response
-
+'''
+function to render the friends page
+PARAMS: request
+RETURN: request, friends page, current user id
+'''
 def render_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/friends.html', {'uuid':uuid})
 
+'''
+function to render the friends page
+PARAMS: request
+RETURN: request, findfriends page, current user id
+'''
 def render_find_friends_page(request):
-    print("in find render friend")
     uuid = get_uuid(request)
-    print("got uuid")
-    '''
-    response = get_not_followers(request,uuid)
-    body = response.content.decode()
-    body_dict = ast.literal_eval(body)
-    #need error checking here for if no other user exists
-    if 'items' in body_dict:
-        body_dict = body_dict['items']
-    print(body_dict)
-        '''
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
 """
