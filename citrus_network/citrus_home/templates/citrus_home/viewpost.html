@@ -17,7 +17,7 @@
 
     <body>
     {% include "navbar-logged-in.html" %}
-        <div class="container">
+        <div class="container mt-5">
             <!-- Allow user to edit post only if they are the author -->
             {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
                 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -112,9 +112,9 @@
                 </div>
             {% endif %}
 
-            <div class="row justify-content-center mt-1 mb-1">
+            <div class="row justify-content-center mt-4 mb-1">
                 <div class="col-md-10 col-sm-12 position-relative">
-                    <div class="card mt-5 mb-5">
+                    <div class="card mb-5">
                         <div class="card-header">
                             <a class="card-link" href="#author">
                                 <p style="margin: 0;" class="author-name"><strong></strong></p>
@@ -157,12 +157,6 @@
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous">
     </script>
-    <style>
-        a.card-link {
-            color: inherit;
-            text-decoration: inherit;
-        }
-    </style>
     <script>
         // Example starter JavaScript for disabling form submissions if there are invalid fields
         (function() {
@@ -376,9 +370,6 @@
         color: inherit;
         text-decoration: inherit;
     }
-    div.button-nav{
-        margin-top: 3em;
-    }
     a.nav-link{
         width: 100%;
     }
@@ -402,5 +393,11 @@
     .header-buttons .nav-button:hover{
         box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
         border-radius: 5px;
+    }
+    div.header-buttons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
     }
 </style>
