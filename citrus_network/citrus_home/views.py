@@ -29,14 +29,15 @@ def home_redirect(request):
 
         # get uuid from logged in user
         uuid = get_uuid(request)
-
         print("CURRENT USER ID")
         print(uuid)
         return render(request, 'citrus_home/stream.html', {'uuid':uuid})
 
 def make_post_redirect(request):
     if request.method == 'GET':
-        return render(request, 'citrus_home/makepost.html')
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/makepost.html', {'uuid':uuid})
 
 def post_redirect(request): 
     if request.method == 'GET':

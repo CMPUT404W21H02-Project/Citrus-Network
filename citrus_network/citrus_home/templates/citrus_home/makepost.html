@@ -17,37 +17,38 @@
     <div class="container pt-5">
         <div class="row justify-content-center mt-5 mb-2">
             <div class="col-md-6 col-sm-12 col-10">
-                <input type="text" class="form-control" id="recipient-name" placeholder="Title">
+                <input type="text" class="form-control" id="title-name" placeholder="Title">
             </div>
             <div class="col-md-2 col-sm-6 col-4">
                 <div class="dropdown">
-                    <select class="form-select" aria-label="Default select example">
-                        <option value="public">Public</option>
-                        <option value="friends">Friends</option>
-                        <option value="private">Private</option>
-                        <option value="friendtofriend">Friend to Friend</option>
-                        <option value="serveronly">Server Only</option>
+                    <select class="form-select" aria-label="Default select example" id="post-visibility">
+                        <option value="PUBLIC">Public</option>
+                        <option value="FRIENDS">Friends</option>
+                        <option value="PRIVATE">Private</option>
+                        <option value="FRIENDTOFRIEND">Friend to Friend</option>
+                        <option value="SERVERONLY">Server Only</option>
                     </select>
                 </div>
             </div>
             <div class="col-md-4 col-sm-6 col-4">
-                <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="group-type">
+                    <input type="radio" class="btn-check" name="btnradio" value="false" id="btnradio1" autocomplete="off" checked>
                     <label class="btn btn-outline-primary" for="btnradio1">Plain Text</label>
                   
-                    <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                    <input type="radio" class="btn-check" name="btnradio" value="true" id="btnradio2" autocomplete="off">
                     <label class="btn btn-outline-primary" for="btnradio2">Markdown</label>
                   </div>
             </div>
         </div>
         <div class="row justify-content-center mb-4">
             <div class="col-md-12 col-sm-12 col-10">
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" placeholder="Enter body post here"></textarea>
+                <textarea class="form-control" id="post-textarea" rows="3" placeholder="Enter body post here"></textarea>
             </div>
         </div>
         <div class="row mt-1 mb-2">
             <div class="col-md-4">
-                <button type="button" class="btn btn-outline-primary">
+                <input type="text" class="form-control" id="categories" placeholder="Categories" hidden="true">
+                <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
                     <span class="material-icons">
                         add_circle_outline
                     </span>
@@ -55,9 +56,9 @@
                 </button>
             </div>
         </div>
-        <div class="row mt-4 mb-5">
+        <div class="row mt-4 mb-2">
             <div class="col-md-4">
-                <button type="button" class="btn btn-outline-primary">
+                <button type="button" class="btn btn-outline-primary" disabled>
                     <span class="material-icons">
                         insert_photo
                     </span>
@@ -65,16 +66,122 @@
                 </button>
             </div>
         </div>
+        <div class="row mt-4 mb-5" hidden="true">
+            <div class="col-md-4">
+                <div class="dropdown">
+                    <select class="form-select" aria-label="Default select example" id="friends-select">
+                    </select>
+                </div>
+            </div>
+        </div>
         <div class="row justify-content-center mt-4 mb-2">
             <div class="col-md-2 col-4">
                 <button type="button" class="btn btn-outline-danger">Cancel</button>
             </div>
             <div class="col-md-2 col-4">
-                <button type="button" class="btn btn-outline-success">Post</button>
+                <button type="button" onClick="makePost()" class="btn btn-outline-success">Post</button>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+    </script>
+    <script>
+        window.onload = getFriends;
+        function hideCategory() {
+            var view = $("#categories");
+            if (view.is(":visible")){
+                view.attr('hidden', 'true');
+            }else {
+                view.removeAttr('hidden');
+            }
+        }
+        
+        function fetchJSON(url) {
+            var request = new Request(url);
+            return fetch(request).then((response) => {
+                if (response.status === 200 || response.status == 404) { 
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }});
+        }
+
+        function getFriends() {
+            var uuid = "{{uuid}}";
+            var pre_url = "/service/author/"
+            var url = pre_url + uuid + "/friends/" 
+            fetchJSON(url).then((json) => { //another callback
+                try{
+                    //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
+                    for (var i = 0; i < json.items.length; i++) { 
+                        // console.log(json.items[i].displayName)
+                        // console.log(json.items[i].id)
+                        $("#friends-select")
+                        .append('<option value="'+ json.items[i].id +'">' + json.items[i].displayName + '</option>');
+                        } 
+                    }catch(err){
+                        // console.log(uuid)
+                        $("#friends-select") 
+                        .append('<option value="public">Public</option>');
+                    }
+                });
+        }
+
+        function makePost() {
+            var uuid = "{{ uuid }}";
+            var pre_url = "/service/author/";
+            var url = pre_url + uuid + "/posts/";
+            var title = document.getElementById("title-name").value;
+            var content = document.getElementById("post-textarea").value;
+            var visibility = document.getElementById("post-visibility").value;
+            var markdown;
+            if(document.getElementById('btnradio1').checked){
+                markdown = document.getElementById('btnradio1').value;
+            }
+            if(document.getElementById('btnradio2').checked){
+                markdown = document.getElementById('btnradio2').value;
+            }
+            markdown = "false";
+            var shared = document.getElementById("friends-select").value;
+            var categories_field = $("#categories");
+            var categories;
+            if (categories_field.is(":hidden")){
+                categories = "";
+            } else {
+                categories = document.getElementById('categories').value;
+            }
+            // console.log(title);
+            // console.log(content);
+            // console.log(categories);
+            // console.log(visibility);
+            // console.log(markdown);
+            // console.log(shared);
+            //console.log(data);
+            var mJson = {
+                    title: title,
+                    description: "mock desc",
+                    categories: categories,
+                    content: content,
+                    origin: window.location.origin,
+                    visibility: visibility,
+                    shared_with: shared,
+            };
+            $.ajax({
+                type: 'POST',
+                url: url,
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(mJson),
+                success: function(result) {
+                    console.log(result)
+                }
+            });
+        }
+    </script>
   </body>
 </html>
 <style>
