@@ -1,3 +1,4 @@
+import django_on_heroku 
 """
 Django settings for citrus_network project.
 
@@ -9,7 +10,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-import django_on_heroku # top of the file
+# top of the file
 from pathlib import Path
 import os
 
