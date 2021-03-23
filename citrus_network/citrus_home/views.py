@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import CitrusAuthor, Friend, Follower, Comment, Post
+from .forms import PostForm
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -26,7 +27,6 @@ CONST_SEPARATOR = " "
 @login_required(login_url='login_url')
 def home_redirect(request):
     if request.method == 'GET':
-
         # get uuid from logged in user
         uuid = get_uuid(request)
         print("CURRENT USER ID")
@@ -38,7 +38,8 @@ def make_post_redirect(request):
     if request.method == 'GET':
         # get uuid from logged in user
         uuid = get_uuid(request)
-        return render(request, 'citrus_home/makepost.html', {'uuid':uuid})
+        form = PostForm()
+        return render(request, 'citrus_home/makepost.html', {'uuid':uuid, 'form': form})
     else:
         response = JsonResponse({
             "message": "Method Not Allowed. Only support GET."
@@ -963,10 +964,17 @@ def manage_post(request, id, **kwargs):
     print(request.method)
     if request.method == "POST":
         # 
-        body = json.loads(request.body)
+        #body = json.loads(request.body)
+        title = str(request.POST['title'])
+        description = str(request.POST['description'])
+        content = str(request.POST['content'])
+        categories = str(request.POST['categories'])
+        visibility = str(request.POST['visibility'])
+        shared_with = str(request.POST['shared_with'])
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
-        return returnJsonResponse(specific_message="post created", status_code=200)
+        post = Post.objects.create(id=str(uuid.uuid4()), title=title, description=description,content=content, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
+        return redirect(home_redirect)
+        #return returnJsonResponse(specific_message=" new post created", status_code=201)
 
     
     elif request.method == 'DELETE':

@@ -9,7 +9,7 @@ class CitrusAuthorAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'title', 'description', 'content', 'author', 'commonmark', 'visibility',)
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id','title','description','content','author','origin','commonmark','categories','visibility','created' )
+    list_display = ('id','title','description','content','author','origin','contentType','categories','visibility','created' )
 
 
 class CommentAdmin(admin.ModelAdmin):

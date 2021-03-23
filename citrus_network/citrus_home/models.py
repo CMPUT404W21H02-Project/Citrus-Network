@@ -2,7 +2,21 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import User
 from django.core.validators import int_list_validator
+from django.urls import reverse
 
+CONTENT_TYPE = {
+    ('text/plain', 'Plain Text'),
+    ('text/markdown', 'Markdown'),
+    ('image/png;base64', 'Image/png'),
+    ('image/jpeg;base64', 'Image/jpeg'),
+    ('application/base64', 'Application'),
+}
+
+VISIBILITY_CHOICES  = {
+    ("PUBLIC", "public"),
+    ("PRIVATE_TO_AUTHOR", "private to author"),
+    ("PRIVATE_TO_FRIEND", "private to friends")
+}
 
 class CitrusAuthor(models.Model):
     type            = models.CharField(max_length=100, default="Author")
@@ -29,19 +43,15 @@ class Post(models.Model):
     content             = models.CharField(max_length=400)
     author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     origin              = models.CharField(max_length=300)
-    commonmark          = models.BooleanField(default=False)
+    contentType         = models.CharField(max_length=20, default='text/plain', choices=CONTENT_TYPE)
+    # commonmark          = models.BooleanField(default=False)
     # image           = models.ImageField()
     # parse this and return as list for GET request
-    categories          = models.CharField(max_length=400)
+    categories          = models.CharField(max_length=400, null=True, blank=True)
     # if visibility option is not provided the default will be public
-    visibility_choices  = [
-        ("PUBLIC", "public"),
-        ("PRIVATE_TO_AUTHOR", "private to author"),
-        ("PRIVATE_TO_FRIEND", "private to friends")
-    ]
-    visibility          = models.CharField(max_length=50, choices=visibility_choices, default="PUBLIC")
+    visibility          = models.CharField(max_length=50, choices=VISIBILITY_CHOICES, default="PUBLIC")
     # if private to author or private to friends is true add usernames to shared_with
-    shared_with         = models.CharField(max_length=600)
+    shared_with         = models.CharField(max_length=600, null=True, blank=True)
     created             = models.DateTimeField(auto_now_add=True)
 
 
