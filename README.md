@@ -2,9 +2,7 @@
 # Citrus Network
 ## Join the citrusy movement and take control of your own data!
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-=======
-
+[![Build](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml/badge.svg)](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml)
 
 
 Heroku
