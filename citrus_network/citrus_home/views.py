@@ -34,7 +34,7 @@ def basicAuthHandler(request):
 
         credentials = base64.b64decode(credentials)
         username, password = credentials.decode('utf-8').split(':')
-        if username == "CitrusNetwork" and password == "oranges":
+        if username == "CitrusNetwork" and password == "oranges" and token_type == "Basic":
             return True
         return False
     except:
