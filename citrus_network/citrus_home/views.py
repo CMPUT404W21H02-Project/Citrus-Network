@@ -20,6 +20,8 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 import ast
+from bs4 import BeautifulSoup
+
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -181,7 +183,6 @@ def render_profile(request):
     response.status_code = 200
     form = ProfileForm(current_profile)
     return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile})
-    
     
 """
 handles get requests with id and retrieve author profile information: username, displayname, github
@@ -438,21 +439,58 @@ def get_authors(request):
         return response
 
 """
+handles GET request: get a list of authors from team 3
+Expected: 
+URL: ://service/authors/team3
+"""
+def get_team3_authors(request):
+    URL = "https://team3-socialdistribution.herokuapp.com/search"
+    PROFILE_URL = "https://team3-socialdistribution.herokuapp.com/author"
+    if request.method == "GET":
+        response = requests.get(URL)
+        soup = BeautifulSoup(response.content,"html.parser")
+
+        uuids = []
+        for li in soup.find_all('li'):
+            print(li.a['href'].split('/')[2])
+            uuid = li.a['href'].split('/')[2]
+            # print(uuid)
+            # uuids.append(li.a['href'].split('/')[2])
+
+        # print(uuids)
+        # for uuid in uuids:
+        #     url = PROFILE_URL+uuid
+        #     print(url)
+        #     response = requests.get(url)
+        #     print(response.json())
+        
+        response = JsonResponse({"results":"success"})
+        response.status_code = 200
+        return response
+
+"""
+handles GET request: get a list of authors from team 18
+Expected: 
+URL: ://service/authors/team18
+"""
+def get_team18_authors(request):
+    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
+    if request.method == "GET":
+        response = requests.get(URL)
+        result = response.json()
+        response = JsonResponse({"type":"author", "items":result})
+        response.status_code = 200
+        return response
+
+"""
 handles GET request: get a list of authors who are not their followers or friends
 Expected: 
 URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 """
 @login_required
 def get_not_followers(request,author_id):
-    print(author_id)
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
-
-        #try:
-            #followers = Follower.objects.get(uuid = author).followers_uuid #err if query is empty
-        #except:
-            #followers = []
-
         
         try: 
             result = Follower.objects.get(uuid = author)
