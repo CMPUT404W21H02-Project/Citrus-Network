@@ -20,8 +20,25 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 import ast
+import base64
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
+
+# Follows basic auth scheme where the user:password is sent as a base64 encoding.
+# Username is CitrusNetwork and Password is oranges
+# https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware
+def basicAuthHandler(request):
+    try:
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        token_type, _, credentials = auth_header.partition(' ')
+
+        credentials = base64.b64decode(credentials)
+        username, password = credentials.decode('utf-8').split(':')
+        if username == "CitrusNetwork" and password == "oranges":
+            return True
+        return False
+    except:
+        return False
 
 @login_required(login_url='login_url')
 def home_redirect(request):
@@ -414,27 +431,36 @@ Expected:
 URL: ://service/authors
 """
 def get_authors(request):
-    if request.method == "GET":  
-        all_user = CitrusAuthor.objects.all()
+    if basicAuthHandler(request):
+        if request.method == "GET":  
+            all_user = CitrusAuthor.objects.all()
 
-        # generate json response for list of not followers
-        items = []
-        for user in all_user:
-            # get the author profile info
-            json = {
-                "type": "Author",
-                "id": str(user.id),
-                "host": str(user.host),
-                "displayName": str(user.displayName),
-                "github": str(user.github),
-            }
-            items.append(json)
+            # generate json response for list of not followers
+            items = []
+            for user in all_user:
+                # get the author profile info
+                json = {
+                    "type": "Author",
+                    "id": str(user.id),
+                    "host": str(user.host),
+                    "displayName": str(user.displayName),
+                    "github": str(user.github),
+                }
+                items.append(json)
 
-        results = { "type": "author",      
-                    "items": items}
+            results = { "type": "author",      
+                        "items": items}
 
-        response = JsonResponse(results)
-        response.status_code = 200
+            response = JsonResponse(results)
+            response.status_code = 200
+            return response
+        else:
+            response = JsonResponse({'message':'method not allowed'})
+            response.status_code = 405
+            return response
+    else:
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
         return response
 
 """
@@ -1271,5 +1297,4 @@ def handleStream(request):
     
     else:
         return returnJsonResponse(specific_message="method not available", status_code=400)
-        
     
