@@ -32,28 +32,14 @@ def home_redirect(request):
         print("CURRENT USER ID")
         print(uuid)
         return render(request, 'citrus_home/stream.html', {'uuid':uuid})
-        
-@login_required(login_url='login_url')
-def make_post_redirect(request):
-    if request.method == 'GET':
-        # get uuid from logged in user
-        uuid = get_uuid(request)
-        form = PostForm()
-        return render(request, 'citrus_home/makepost.html', {'uuid':uuid, 'form': form})
-    else:
-        response = JsonResponse({
-            "message": "Method Not Allowed. Only support GET."
-        })
-        response.status_code = 405
-        return response
 
 @login_required(login_url='login_url')
 def post_redirect(request, author_id, post_id): 
     if request.method == 'GET':
-
         # get uuid from logged in user
         uuid = get_uuid(request)
-        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
+        form = PostForm()
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
 
 """
 comment
@@ -956,6 +942,41 @@ def render_find_friends_page(request):
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
 """
+    NEW TODO
+"""
+@login_required(login_url='login_url')
+def make_post_redirect(request, id, **kwargs):
+    pid = kwargs.get('pid')
+    if request.method == 'GET':
+        # get uuid from logged in user
+        user_uuid = get_uuid(request)
+        form = PostForm()
+        return render(request, 'citrus_home/makepost.html', {'uuid':user_uuid, 'form': form})
+    elif request.method  == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post_id = str(uuid.uuid4())
+            author = CitrusAuthor.objects.get(id=id)
+            title = str(request.POST['title'])
+            description = str(request.POST['description'])
+            content = str(request.POST['content'])
+            categories = str(request.POST['categories'])
+            visibility = str(request.POST['visibility'])
+            shared_with = str(request.POST['shared_with'])
+            post = Post.objects.create(id=post_id, title=title, description=description,content=content, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
+            return redirect(home_redirect)
+        else:
+            data = form.errors.as_json()
+            return JsonResponse(data, status=400) 
+    else:
+        response = JsonResponse({
+            "message": "Method Not Allowed. Only support GET."
+        })
+        response.status_code = 405
+        return response
+
+
+"""
 handle the creation of a new post object
 GET Requests:
 URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID} will get you the post of that author with up to 5 comments
@@ -992,18 +1013,11 @@ def manage_post(request, id, **kwargs):
     pid = kwargs.get('pid')
     print(request.method)
     if request.method == "POST":
-        # 
-        #body = json.loads(request.body)
-        title = str(request.POST['title'])
-        description = str(request.POST['description'])
-        content = str(request.POST['content'])
-        categories = str(request.POST['categories'])
-        visibility = str(request.POST['visibility'])
-        shared_with = str(request.POST['shared_with'])
+        #
+        body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.create(id=str(uuid.uuid4()), title=title, description=description,content=content, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
-        return redirect(home_redirect)
-        #return returnJsonResponse(specific_message=" new post created", status_code=201)
+        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
+        return returnJsonResponse(specific_message="post created", status_code=200)
 
     
     elif request.method == 'DELETE':

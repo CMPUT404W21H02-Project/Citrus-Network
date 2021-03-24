@@ -19,7 +19,7 @@
         <!--buttons
         <div class="row mt-5 justify-content-end">
             <div class="col-xl-1 col-lg-1 col-md-1 col-sm-2 col-3">
-                <a class="nav-link" href="{% url 'make_post_url'%}">
+                <a class="nav-link" href="{% url 'manage_post' uuid %}">
                     <button type="button" class="btn btn-success">Post</button>
                 </a>
                 <button type="button" class="btn btn-success" onclick="getGithubActivity();">GitHub</button>
@@ -29,7 +29,7 @@
             <div class="col-md-10 col-sm-12 position-relative">
                 <div class="button-nav">
                     <div class = "header-buttons">
-                        <a  class=  "nav-link" href="{% url 'make_post_url'%}"><button id = "post-button" type="button" class="nav-button">Post</button></a>
+                        <a  class=  "nav-link" href="{% url 'manage_post' uuid %}"><button id = "post-button" type="button" class="nav-button">Post</button></a>
                         <a class = "nav-link"><button id = "github-button" type="button" class="nav-button" onclick="getGithubActivity();">GitHub Activity</button></a>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                         <div>
                             <div class="card-body card-link" id = "github-body">
                                 <p style="margin: 0" id = "githubBody" class ="github-activity"></p>
-                                <a id = "profileref" href = "{% url 'profile' %}" style="display:none;" >Check your GitHub in your profile</a>
+                                <a id = "profileref" href = "{% url 'profile' uuid %}" style="display:none;" >Check your GitHub in your profile</a>
                             </div>
                         </div>
                 </div>
