@@ -23,7 +23,7 @@ class FollowerAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'followers_uuid',)
 
 class NodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'host', 'is_verified', 'node_username', 'node_password',)
+    list_display = ('user', 'host', 'node_username', 'node_password',)
 
 admin.site.register(CitrusAuthor, CitrusAuthorAdmin,)
 
