@@ -76,3 +76,11 @@ class Friend(models.Model):
 class Follower(models.Model):
     uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     followers_uuid  = models.TextField(validators=[int_list_validator])
+
+class Node(models.Model):
+    # add a node with URL
+    host = models.URLField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # for Basic Auth TODO later
+    node_username = models.CharField(max_length=100)
+    node_password = models.CharField(max_length=100)

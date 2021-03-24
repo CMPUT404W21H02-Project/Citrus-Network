@@ -410,6 +410,35 @@ def get_github_events(request, id):
         return response
 
 """
+handles GET request: get a list of authors on the server
+Expected: 
+URL: ://service/authors
+"""
+def get_authors(request):
+    if request.method == "GET":  
+        all_user = CitrusAuthor.objects.all()
+
+        # generate json response for list of not followers
+        items = []
+        for user in all_user:
+            # get the author profile info
+            json = {
+                "type": "Author",
+                "id": str(user.id),
+                "host": str(user.host),
+                "displayName": str(user.displayName),
+                "github": str(user.github),
+            }
+            items.append(json)
+
+        results = { "type": "author",      
+                    "items": items}
+
+        response = JsonResponse(results)
+        response.status_code = 200
+        return response
+
+"""
 handles GET request: get a list of authors who are not their followers or friends
 Expected: 
 URL: ://service/authors/{AUTHOR_ID}/nonfollowers
