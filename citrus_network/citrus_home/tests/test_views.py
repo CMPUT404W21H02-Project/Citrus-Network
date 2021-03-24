@@ -19,11 +19,6 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'citrus_home/stream.html')
     
-    def test_make_post_redirect_GET(self):
-        response = self.c.get(reverse('make_post_url'))
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'citrus_home/makepost.html')
-    
     def test_view_post_redirect_GET(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.get(reverse('view_post_url', args=[self.mockuuid, test_uuid]))
