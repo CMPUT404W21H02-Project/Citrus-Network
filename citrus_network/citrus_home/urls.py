@@ -29,5 +29,7 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/friends/<uuid:foreign_author_id>/', views.edit_friends, name='edit_friends'),
   path('service/author/<uuid:author_id>/nonfollowers/', views.get_not_followers, name='not_followers'),
   path('home-test/', views.handleStream, name='get_stream'),
+  path('service/authors/', views.get_authors, name='authors'),
+
 ]
 
