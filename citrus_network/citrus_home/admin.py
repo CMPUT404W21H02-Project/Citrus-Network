@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CitrusAuthor, Post, Comment,Friend,Follower
+from .models import CitrusAuthor, Post, Comment, Friend, Follower, Node
 
 class CitrusAuthorAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'user', 'host', 'displayName','url', 'github',)
@@ -22,6 +22,9 @@ class FriendAdmin(admin.ModelAdmin):
 class FollowerAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'followers_uuid',)
 
+class NodeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'host', 'is_verified', 'node_username', 'node_password',)
+
 admin.site.register(CitrusAuthor, CitrusAuthorAdmin,)
 
 admin.site.register(Friend, FriendAdmin,)
@@ -31,3 +34,5 @@ admin.site.register(Follower, FollowerAdmin,)
 admin.site.register(Post, PostAdmin)
 
 admin.site.register(Comment, CommentAdmin)
+
+admin.site.register(Node, NodeAdmin,)
