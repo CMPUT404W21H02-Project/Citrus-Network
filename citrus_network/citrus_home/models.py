@@ -39,7 +39,7 @@ posts have different types: public, shared to friends, private to author, privat
 class Post(models.Model):
     id                  = models.CharField(max_length=50, primary_key=True)
     title               = models.CharField(max_length=200)
-    description         = models.CharField(max_length=300)
+    description         = models.CharField(max_length=300, null=True, blank=True)
     content             = models.CharField(max_length=400)
     author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     origin              = models.CharField(max_length=300)

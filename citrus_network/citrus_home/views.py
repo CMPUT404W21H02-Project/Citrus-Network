@@ -33,14 +33,6 @@ def home_redirect(request):
         print(uuid)
         return render(request, 'citrus_home/stream.html', {'uuid':uuid})
 
-@login_required(login_url='login_url')
-def post_redirect(request, author_id, post_id): 
-    if request.method == 'GET':
-        # get uuid from logged in user
-        uuid = get_uuid(request)
-        form = PostForm()
-        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
-
 """
 comment
 """
@@ -942,7 +934,8 @@ def render_find_friends_page(request):
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
 """
-    NEW TODO
+    render makepost html page
+    create a new post using POST method for PostForm (custom django form for posts)
 """
 @login_required(login_url='login_url')
 def make_post_redirect(request, id, **kwargs):
@@ -975,6 +968,54 @@ def make_post_redirect(request, id, **kwargs):
         response.status_code = 405
         return response
 
+"""
+    render view post html page
+    update existing form using POST method for PostForm (custom django form for posts).
+"""
+@login_required(login_url='login_url')
+def post_redirect(request, author_id, post_id): 
+    if request.method == 'GET':
+        # get uuid from logged in user
+        uuid = get_uuid(request)
+        form = PostForm()
+        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
+    elif request.method  == "POST":
+        uuid = get_uuid(request)
+        form = PostForm(request.POST)
+        if form.is_valid():
+            current_user = request.user
+            current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+            # id of the person who owns the post
+            posts = Post.objects.get(id=post_id)
+            post_author = posts.author
+            if current_citrus_author == post_author:
+            # check if form is valid here
+                post = Post.objects.get(id=post_id) 
+                # update fields of the post object
+                post.title = str(request.POST['title'])
+                post.description = str(request.POST['description'])
+                post.content = str(request.POST['content'])
+                post.categories = str(request.POST['categories'])
+                post.visibility = str(request.POST['visibility'])
+                post.shared_with = str(request.POST['shared_with'])
+                post.save()
+
+                response = JsonResponse({
+                    "message": "post updated!"
+                })
+                response.status_code = 200
+                return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form, 'response':response,})
+            else:
+                return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
+        else:
+            data = form.errors.as_json()
+            return JsonResponse(data, status=400) 
+    else:
+        response = JsonResponse({
+            "message": "Method Not Allowed. Only support GET."
+        })
+        response.status_code = 405
+        return response
 
 """
 handle the creation of a new post object
@@ -1017,7 +1058,7 @@ def manage_post(request, id, **kwargs):
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
         post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
-        return returnJsonResponse(specific_message="post created", status_code=200)
+        return returnJsonResponse(specific_message="post created", status_code=201)
 
     
     elif request.method == 'DELETE':
