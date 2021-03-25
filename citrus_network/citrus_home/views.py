@@ -444,27 +444,11 @@ Expected:
 URL: ://service/authors/team3
 """
 def get_team3_authors(request):
-    URL = "https://team3-socialdistribution.herokuapp.com/search"
-    PROFILE_URL = "https://team3-socialdistribution.herokuapp.com/author"
+    URL = "https://team3-socialdistribution.herokuapp.com/authors"
     if request.method == "GET":
         response = requests.get(URL)
-        soup = BeautifulSoup(response.content,"html.parser")
-
-        uuids = []
-        for li in soup.find_all('li'):
-            print(li.a['href'].split('/')[2])
-            uuid = li.a['href'].split('/')[2]
-            # print(uuid)
-            # uuids.append(li.a['href'].split('/')[2])
-
-        # print(uuids)
-        # for uuid in uuids:
-        #     url = PROFILE_URL+uuid
-        #     print(url)
-        #     response = requests.get(url)
-        #     print(response.json())
-        
-        response = JsonResponse({"results":"success"})
+        result = response.json()
+        response = JsonResponse({"type":"author", "items":result})
         response.status_code = 200
         return response
 
