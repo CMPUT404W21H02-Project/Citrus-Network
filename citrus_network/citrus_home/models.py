@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.models import User
 from django.core.validators import int_list_validator
 from django.urls import reverse
+import markdown
 
 CONTENT_TYPE = {
     ('text/plain', 'Plain Text'),
@@ -40,7 +41,7 @@ class Post(models.Model):
     id                  = models.CharField(max_length=50, primary_key=True)
     title               = models.CharField(max_length=200)
     description         = models.CharField(max_length=300, null=True, blank=True)
-    content             = models.CharField(max_length=400)
+    content             = models.TextField()
     author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     origin              = models.CharField(max_length=300)
     contentType         = models.CharField(max_length=20, default='text/plain', choices=CONTENT_TYPE)
@@ -53,6 +54,9 @@ class Post(models.Model):
     # if private to author or private to friends is true add usernames to shared_with
     shared_with         = models.CharField(max_length=600, null=True, blank=True)
     created             = models.DateTimeField(auto_now_add=True)
+
+    def content_markdown(self):
+        return markdown.markdown(self.content)
 
 
 

@@ -112,15 +112,25 @@
                     <div class="card mb-5">
                         <div class="card-header">
                             <a class="card-link" href="#author">
-                                <p style="margin: 0;" class="author-name"><strong></strong></p>
-                                <p style="margin: 0;" class="published"></p>
+                                <p style="margin: 0;" class="author-name"><strong>{{post.author}}</strong></p>
+                                <p style="margin: 0;" class="published">{{post.created}}</p>
+                                <p style="margin: 0;">{{post.origin}}</p>
                             </a>
                             <div class="post-tag">
+                                {% for tag in post.categories %}
+                                    <a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">{{tag}}</a>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class="card-body">
-                            <h6 class="font-weight-bold post-title"></h6>
-                            <p class="post-content"></p>
+                            <h6 class="font-weight-bold post-title">{{post.title}}</h6>
+                            <div class="post-content">
+                                {% if post.contentType == 'text/markdown' %}
+                                <div id="markdown">{{ post.md | safe }}</div>
+                                {% else %}
+                                <p>{{ p.content }}</p>
+                                {% endif %}
+                            </div>
                             <!-- Like API not yet implemented -->
                             <!-- <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
                                 <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
@@ -214,16 +224,6 @@
                     dataType: 'json',
                     success: function(post) {
                         console.log(post);
-                        $('.author-name').html(post.author.displayName)
-                        $('.published').html(post.published)
-                        var tagHtml = ''; 
-                        for (var i in post.categories) {
-                            tagHtml +=  '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + 
-                            post.categories[i] + '</a>';
-                        }
-                        $('.post-tag').html(tagHtml)
-                        $('.post-title').html(post.title);
-                        $('.post-content').html(post.content);
                         for (var i in post.comments) {
                             var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
                                 '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 

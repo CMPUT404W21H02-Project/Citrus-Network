@@ -979,10 +979,11 @@ def make_post_redirect(request, id, **kwargs):
             title = str(request.POST['title'])
             description = str(request.POST['description'])
             content = str(request.POST['content'])
+            contentType = str(request.POST['contentType'])
             categories = str(request.POST['categories'])
             visibility = str(request.POST['visibility'])
             shared_with = str(request.POST['shared_with'])
-            post = Post.objects.create(id=post_id, title=title, description=description,content=content, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
+            post = Post.objects.create(id=post_id, title=title, description=description, content=content, contentType=contentType, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
             return redirect(home_redirect)
         else:
             data = form.errors.as_json()
@@ -1003,8 +1004,24 @@ def post_redirect(request, author_id, post_id):
     if request.method == 'GET':
         # get uuid from logged in user
         uuid = get_uuid(request)
-        form = PostForm()
-        return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
+
+        current_user = request.user
+        current_citrus_author = CitrusAuthor.objects.get(user=current_user)
+        # id of the person who owns the post
+        posts = Post.objects.get(id=post_id)
+        post_author = posts.author
+        if current_citrus_author == post_author:
+            # check if form is valid here
+            post = Post.objects.get(id=post_id) 
+            current_post = {'title': post.title, 'description': post.description,
+                'content': post.content, 'contentType': post.contentType, 'md': post.content_markdown(),
+                'categories': post.categories, 'visibility': post.visibility, 'created': post.created,
+                'shared_with': post.shared_with, 'author': post.author.displayName, 'origin': post.origin,
+            }
+            form = PostForm()
+            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form, 'post': current_post})
+        else:
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
     elif request.method  == "POST":
         uuid = get_uuid(request)
         form = PostForm(request.POST)
@@ -1021,6 +1038,7 @@ def post_redirect(request, author_id, post_id):
                 post.title = str(request.POST['title'])
                 post.description = str(request.POST['description'])
                 post.content = str(request.POST['content'])
+                post.contentType = str(request.POST['contentType'])
                 post.categories = str(request.POST['categories'])
                 post.visibility = str(request.POST['visibility'])
                 post.shared_with = str(request.POST['shared_with'])
@@ -1083,7 +1101,7 @@ def manage_post(request, id, **kwargs):
         #
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
+        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'],contentType=body['contentType'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
         return returnJsonResponse(specific_message="post created", status_code=201)
 
     
@@ -1121,6 +1139,7 @@ def manage_post(request, id, **kwargs):
             post.title = body['title']
             post.description = body['description']
             post.content = body['content']
+            post.contentType = body['contentType']
             post.visibility = body['visibility']
             post.shared_with = body['shared_with']
             post.save()
@@ -1145,7 +1164,7 @@ def manage_post(request, id, **kwargs):
             "source": "localhost:8000/some_random_source",
             "origin": posts.origin,
             "description": posts.description,
-            "contentType": "text/plain",
+            "contentType": posts.contentType,
             "content": posts.content,
             # probably serialize author here and call it
             "author": author_data,
