@@ -438,6 +438,53 @@ def get_authors(request):
         response.status_code = 200
         return response
 
+
+
+"""
+handles GET request: get a list of authors on the server
+Expected: 
+URL: ://service/authors
+"""
+def get_authors(request):
+    if request.method == "GET":  
+        all_user = CitrusAuthor.objects.all()
+
+        # generate json response for list of not followers
+        items = []
+        for user in all_user:
+            # get the author profile info
+            json = {
+                "type": "Author",
+                "id": str(user.id),
+                "host": str(user.host),
+                "displayName": str(user.displayName),
+                "github": str(user.github),
+            }
+            items.append(json)
+
+        results = { "type": "author",      
+                    "items": items}
+
+        response = JsonResponse(results)
+        response.status_code = 200
+        return response
+
+"""
+handles GET request: get a list of authors on the server
+Expected: 
+expected method: POST, GET
+URL: ://service/authors
+"""
+def follow_team3_author(request):
+    if request.method == "GET":
+        UUID_TEAM3 = "e59e548b-64bf-4da3-9243-bfcadd7d6db5"
+        
+        # TO DO follow sb
+        
+        response = JsonResponse({ "type": "success"})
+        response.status_code = 200
+        return response
+
 """
 handles GET request: get a list of authors from team 3
 Expected: 
