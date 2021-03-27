@@ -1356,11 +1356,14 @@ def handle_inbox(request, author_id):
             return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=401)
         try:
             author = CitrusAuthor.objects.get(id=author_id)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="author not found", status_code=400)
+        try:
             inbox = Inbox.objects.get(author=author)
             inbox.delete()
             return returnJsonResponse(specific_message="inbox deleted", status_code=200)
         except ObjectDoesNotExist:
-            return returnJsonResponse(specific_message="inbox not found", status_code=400)
+            return returnJsonResponse(specific_message="inbox deleted", status_code=200)
     else:
         return returnJsonResponse(specific_message="method not available", status_code=405)
 

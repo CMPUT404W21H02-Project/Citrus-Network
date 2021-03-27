@@ -17,6 +17,11 @@
     <div class="container">
         <!-- Display the inbox -->
         <div class="mt-5 stream-inbox">
+            <div class="row justify-content-center mt-1 mb-1 ">
+                <div class="col-md-6 col-sm-10 position-relative d-grid gap-2">
+                    <button type="button" onclick="clearInbox()" class="btn btn-danger btn-lg"><em class="bi-trash"></em>Clear Inbox</button>
+                </div>
+            </div>
         </div>
     </div>
     <script 
@@ -85,6 +90,26 @@
                 }
             });
         }
+
+        function fetchDelete(url) {
+            return fetch(url, {method: "DELETE"}).then((response) => {
+                if (response.status === 200 || response.status === 404) { // OK
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }});
+            }
+
+        function clearInbox() {
+            var uuid = "{{uuid}}";
+            url = window.location.origin;
+            url += "/service/author/" + uuid +"/inbox/";
+            fetchDelete(url).then((json) => {
+                location.reload();
+            });
+        }
+        
+
 
         window.onload = function() {
             getInbox();
