@@ -1320,9 +1320,9 @@ def handle_inbox(request, author_id):
         }
         try:
             inbox = Inbox.objects.get(author=author)
-            return_data["items"] = inbox.items
+            return_data["items"] = json.loads(inbox.items)
         except ObjectDoesNotExist:
-            return_data["items"] = "[]"
+            return_data["items"] = []
         return JsonResponse(return_data, status=200)
 
     elif request.method == "POST":
