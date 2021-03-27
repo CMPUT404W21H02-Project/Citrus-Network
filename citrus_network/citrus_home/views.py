@@ -1332,6 +1332,8 @@ def handle_inbox(request, author_id):
         except ObjectDoesNotExist:
             return returnJsonResponse(specific_message="author not found", status_code=400)
         try:
+            if (body.type != "post" or body.type != "like" or body.type != "follow"):
+                return returnJsonResponse(specific_message="invalid type", status_code=400)
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)
             items.insert(0, body)
@@ -1360,3 +1362,9 @@ def handle_inbox(request, author_id):
             return returnJsonResponse(specific_message="inbox not found", status_code=400)
     else:
         return returnJsonResponse(specific_message="method not available", status_code=405)
+
+@login_required(login_url='login_url')
+def inbox_redirect(request):
+    if request.method == "GET":
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/inbox.html', {'uuid':uuid})
