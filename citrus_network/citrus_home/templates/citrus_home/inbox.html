@@ -19,7 +19,25 @@
         <div class="mt-5 stream-inbox">
             <div class="row justify-content-center mt-1 mb-1 ">
                 <div class="col-md-6 col-sm-10 position-relative d-grid gap-2">
-                    <button type="button" onclick="clearInbox()" class="btn btn-danger btn-lg"><em class="bi-trash"></em>Clear Inbox</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#clear-modal" class="btn btn-danger btn-lg"><em class="bi-trash"></em>Clear Inbox</button>
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="clear-modal" tabindex="-1" aria-labelledby="clear-modal-label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="clear-modal-label">Clear Inbox</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to clear out your inbox?</p>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" onclick="clearInbox()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
