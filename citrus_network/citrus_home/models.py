@@ -76,3 +76,7 @@ class Node(models.Model):
     # for Basic Auth TODO later
     node_username = models.CharField(max_length=100)
     node_password = models.CharField(max_length=100)
+
+class Inbox(models.Model):
+    author = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
+    items = models.TextField()
