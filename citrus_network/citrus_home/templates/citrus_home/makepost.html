@@ -17,7 +17,7 @@
     {% load crispy_forms_tags %}
     <div class="container pt-5">
         <h1>Make a Post</h1>
-        <div class="form-group">
+        <div class="form-group" enctype="multipart/form-data">
             <form method="post">
                 {% csrf_token %}
                 <div class="row justify-content-center mt-5 mb-2">
@@ -43,21 +43,19 @@
                             {{form.categories|as_crispy_field}}
                         </div>
                         <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
-                            <span class="material-icons">
-                                add_circle_outline
-                            </span>
+                            <span class="material-icons">add_circle_outline</span>
                             Category
                         </button>
                     </div>
                 </div>
                 <div class="row mt-4 mb-2">
                     <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-primary" disabled>
-                            <span class="material-icons">
-                                insert_photo
-                            </span>
+                        <button type="button" class="btn btn-outline-primary">
+                            <span class="material-icons">insert_photo</span>
                             Add Image
                         </button>
+                        <!-- <input type="file" name="image" accept="image/*" id="id_image" onchange="readURL(this);" class="btn btn-outline-primary">
+                        </input> -->
                     </div>
                 </div>
                 <div class="row mt-4 mb-5" hidden="true">
@@ -91,6 +89,21 @@
                 view.attr('hidden', 'true');
             }else {
                 view.removeAttr('hidden');
+            }
+        }
+    </script>
+    <script>
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#blah')
+                        .attr('src', e.target.result)
+                        .width(150)
+                        .attr('style',"display: block;")
+                        .height(200);
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
     </script>
