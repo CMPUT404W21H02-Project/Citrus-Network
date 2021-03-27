@@ -1332,7 +1332,8 @@ def handle_inbox(request, author_id):
         except ObjectDoesNotExist:
             return returnJsonResponse(specific_message="author not found", status_code=400)
         try:
-            if (body.type != "post" or body.type != "like" or body.type != "follow"):
+            if ("post" in body.type.lower() or "like" in body.type.lower() or \
+                "follow" in body.type.lower()):
                 return returnJsonResponse(specific_message="invalid type", status_code=400)
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)
