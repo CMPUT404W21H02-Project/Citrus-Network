@@ -1,14 +1,14 @@
-<nav class="navbar sticky-top navbar-expand-md navbar-light bg-light">
+<nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a class="navbar-brand mr-5" href="{% url 'home_url'%}">
             <em class="orange"></em>
             <em>The Citrus Network</em>
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-auto">
 
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'home_url'%}">
@@ -30,8 +30,13 @@
                     <a class = "nav-link" href = "{% url 'findfriends_url' %}">
                         <em class = "find-friends"></em>Find Friends</a>
                 </li>
+
+                <li class = "nav-item active">
+                    <a class = "nav-link" href = "{% url 'inbox_redirect' %}">
+                        <em class = "inbox"></em>Inbox</a>
+                </li>
             </ul>
-            <ul class="navbar-nav flex-row col-md-1 ms-md-auto">
+            <ul class="navbar-nav flex-row col-md-1">
                 <li class="nav-item dropdown-container">
                     <a class="nav-link dropdown-toggle text-dark" data-bs-toggle="dropdown" role="buton" aria-expanded="false"><em class="profile-icon"></em></a>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -91,6 +96,15 @@
         display: inline-block;
         height: 30px;
         width: 30px;
+    }
+    .inbox {
+        background-image: url('https://pics.freeicons.io/uploads/icons/png/1510172381557996993-512.png');
+        background-size: cover;
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
     }
     .friends{
         background-image: url("https://img.icons8.com/color/96/000000/friends--v1.png");

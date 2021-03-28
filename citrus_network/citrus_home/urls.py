@@ -30,6 +30,7 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/nonfollowers/', views.get_not_followers, name='not_followers'),
   path('home-test/', views.handleStream, name='get_stream'),
   path('service/authors/', views.get_authors, name='authors'),
-
+  path('service/author/<uuid:author_id>/inbox/', views.handle_inbox, name='inbox'),
+  path('inbox/', views.inbox_redirect, name='inbox_redirect'),
 ]
 
