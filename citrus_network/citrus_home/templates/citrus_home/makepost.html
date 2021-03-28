@@ -50,12 +50,12 @@
                 </div>
                 <div class="row mt-4 mb-2">
                     <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-primary">
+                        <!-- <button type="button" class="btn btn-outline-primary">
                             <span class="material-icons">insert_photo</span>
                             Add Image
-                        </button>
-                        <!-- <input type="file" name="image" accept="image/*" id="id_image" onchange="readURL(this);" class="btn btn-outline-primary">
-                        </input> -->
+                        </button> -->
+                        <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary">
+                        </input>
                     </div>
                 </div>
                 <div class="row mt-4 mb-5" hidden="true">
@@ -93,18 +93,35 @@
         }
     </script>
     <script>
-        function readURL(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    $('#blah')
-                        .attr('src', e.target.result)
-                        .width(150)
-                        .attr('style',"display: block;")
-                        .height(200);
-                };
-                reader.readAsDataURL(input.files[0]);
+        // document.getElementById('id_contentType').addEventListener("change", function() {
+        //     var selectedType = document.getElementById('id_contentType').value;
+        //     console.log(value);
+        // });
+        $("#id_contentType").change(function(){
+            console.log($("#id_contentType").val());
+            if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
+                let content = $("#div_id_content");
+                content.parent().hide();
+                console.log("This works");
             }
+        });
+        document.getElementById('id_image').addEventListener("change", function() {
+            var files = document.getElementById('id_image').files;
+            if (files.length > 0) {
+                getBase64(files[0]);
+            }
+        });
+        function getBase64(file) {
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                let postContent = $("#id_content");
+                postContent.val(reader.result);
+                console.log(reader.result);
+            };
+            reader.onerror = function (error) {
+                console.log('Error: ', error);
+            };
         }
     </script>
     <!-- <script>

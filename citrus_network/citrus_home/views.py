@@ -1019,7 +1019,7 @@ def post_redirect(request, author_id, post_id):
                 'shared_with': post.shared_with, 'author': post.author.displayName, 'origin': post.origin,
             }
             form = PostForm()
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form, 'post': current_post})
+            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form, 'post': current_post, 'test': post})
         else:
             return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
     elif request.method  == "POST":
@@ -1318,7 +1318,7 @@ def handleStream(request):
                     "source": "localhost:8000/some_random_source",
                     "origin": post.origin,
                     "description": post.description,
-                    "contentType": "text/plain",
+                    "contentType": post.contentType,
                     "content": post.content,
                     # probably serialize author here and call it
                     "author": author_data,
@@ -1357,7 +1357,7 @@ def handleStream(request):
                         "source": "localhost:8000/some_random_source",
                         "origin": post.origin,
                         "description": post.description,
-                        "contentType": "text/plain",
+                        "contentType": post.contentType,
                         "content": post.content,
                         # probably serialize author here and call it
                         "author": author_data,

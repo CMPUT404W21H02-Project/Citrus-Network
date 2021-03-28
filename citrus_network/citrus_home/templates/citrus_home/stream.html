@@ -104,11 +104,12 @@
                     }
                     postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
                         json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
-                        '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>' + 
-                        // '<img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/' + 
-                        // json.posts[i].origin + '.svg"/>' + 
-                        '<p>' + json.posts[i].content + '</p>';
-                    
+                        '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>';
+                    if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
+                        postHtml += '<img src=\"' + json.posts[i].content + '\"/>';
+                    } else {
+                        postHtml += '<p>' + json.posts[i].content + '</p>' + '<p>' + json.posts[i].contentType + '</p>';
+                    }
                     newElement.innerHTML = postHtml;
 
                     document.querySelector(".stream-post").appendChild(newElement);

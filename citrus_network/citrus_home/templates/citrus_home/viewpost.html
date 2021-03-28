@@ -125,7 +125,9 @@
                         <div class="card-body">
                             <h6 class="font-weight-bold post-title">{{post.title}}</h6>
                             <div class="post-content">
-                                {% if post.contentType == 'text/markdown' %}
+                                {% if post.contentType == 'image/png;base64' or post.contentType == 'image/jpeg;base64'%}
+                                <img src="{{p.content}}"/>
+                                {% elif post.contentType == 'text/markdown' %}
                                 <div id="markdown">{{ post.md | safe }}</div>
                                 {% else %}
                                 <p>{{ p.content }}</p>
