@@ -3,7 +3,6 @@ import uuid
 from django.contrib.auth.models import User
 from django.core.validators import int_list_validator
 from django.urls import reverse
-import markdown
 
 CONTENT_TYPE = {
     ('text/plain', 'Plain Text'),
@@ -54,9 +53,6 @@ class Post(models.Model):
     # if private to author or private to friends is true add usernames to shared_with
     shared_with         = models.CharField(max_length=600, null=True, blank=True)
     created             = models.DateTimeField(auto_now_add=True)
-
-    def content_markdown(self):
-        return markdown.markdown(self.content)
 
 
 

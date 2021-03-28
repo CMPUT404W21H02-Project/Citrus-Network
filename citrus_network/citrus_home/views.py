@@ -1013,13 +1013,8 @@ def post_redirect(request, author_id, post_id):
         if current_citrus_author == post_author:
             # check if form is valid here
             post = Post.objects.get(id=post_id) 
-            current_post = {'title': post.title, 'description': post.description,
-                'content': post.content, 'contentType': post.contentType, 'md': post.content_markdown(),
-                'categories': post.categories, 'visibility': post.visibility, 'created': post.created,
-                'shared_with': post.shared_with, 'author': post.author.displayName, 'origin': post.origin,
-            }
             form = PostForm()
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form, 'post': current_post, 'test': post})
+            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
         else:
             return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
     elif request.method  == "POST":
