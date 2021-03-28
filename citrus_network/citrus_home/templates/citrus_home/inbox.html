@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+
+    <title>Citrus Network</title>
+  </head>
+  <body>
+    {% include '../navbar-logged-in.html' %}
+    <div class="container">
+        <!-- Display the inbox -->
+        <div class="mt-5 stream-inbox">
+            <div class="row justify-content-center mt-1 mb-1 ">
+                <div class="col-md-6 col-sm-10 position-relative d-grid gap-2">
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#clear-modal" class="btn btn-danger btn-lg"><em class="bi-trash"></em>Clear Inbox</button>
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="clear-modal" tabindex="-1" aria-labelledby="clear-modal-label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="clear-modal-label">Clear Inbox</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to clear out your inbox?</p>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" onclick="clearInbox()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
+    </script>
+    <script>
+        function fetchJSON(url) {
+            console.log(url);
+            var request = new Request(url);
+            return fetch(request).then((response) => {
+                if (response.status === 200 || response.status === 404) { // OK
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }});
+            }
+
+        // get stream gets it as a json which is setup for pagination in mind. This will be needed
+        // to implement an "infinite scroll" as the number of posts in the stream increases beyond
+        // what we should get in a single call.
+        function getInbox() {
+            var uuid = "{{uuid}}";
+            url = window.location.origin;
+            url += "/service/author/" + uuid +"/inbox/";
+            fetchJSON(url).then((json) => {
+                //console.log(json.posts);
+                for(var i of json.items){
+                    if (i.type.toLowerCase().includes("post") || i.type.toLowerCase().includes("like") || 
+                            i.type.toLowerCase().includes("follow")) {
+                        var newElement = document.createElement('div');
+                        var classAttr = document.createAttribute("class");
+                        classAttr.value = "row justify-content-center mt-1 mb-1 ";
+                        newElement.setAttributeNode(classAttr);
+                        if (i.type == "post") {
+                            var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
+                                '<a class="card card-link" href=../service/author/' + 
+                                i.author.id + '/view-post/' + i.id + '/>' + 
+                                '<div class="card-header"><p><b>' + 
+                                i.author.displayName + '</b></p></div>' 
+                                postHtml += '<div class="card-body"><p>Shared a post with you!' + 
+                                    '</p></div></a></div>'
+                            
+                            newElement.innerHTML = postHtml;
+                        } else if (i.type == "follow") {
+                            var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
+                                '<a class="card card-link" href=../followers/>' + 
+                                '<div class="card-header"><p><b>' + 
+                                i.author.displayName + '</b></p></div>' 
+                                postHtml += '<div class="card-body"><p>Is following you!' + 
+                                    '</p></div></a></div>'
+                            
+                            newElement.innerHTML = postHtml;
+                        } else {
+                            var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
+                                '<div class="card">' + 
+                                '<div class="card-header"><p><b>' + 
+                                i.author.displayName + '</b></p></div>' 
+                                postHtml += '<div class="card-body"><p>' + i.summary +  
+                                    '</p></div></div></div>'
+                            
+                            newElement.innerHTML = postHtml;
+                        }
+
+                        document.querySelector(".stream-inbox").appendChild(newElement);
+                    }
+                }
+            });
+        }
+
+        function fetchDelete(url) {
+            return fetch(url, {method: "DELETE"}).then((response) => {
+                if (response.status === 200 || response.status === 404) { // OK
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }});
+            }
+
+        function clearInbox() {
+            var uuid = "{{uuid}}";
+            url = window.location.origin;
+            url += "/service/author/" + uuid +"/inbox/";
+            fetchDelete(url).then((json) => {
+                location.reload();
+            });
+        }
+        
+
+
+        window.onload = function() {
+            getInbox();
+        }
+    </script>
+    <style>
+        a.card-link {
+            color: inherit;
+            text-decoration: inherit;
+        }
+    </style>
+</body>
+</html>
