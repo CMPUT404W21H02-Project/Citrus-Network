@@ -1016,7 +1016,7 @@ def post_redirect(request, author_id, post_id):
             form = PostForm()
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
         else:
-            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
+            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
     elif request.method  == "POST":
         uuid = get_uuid(request)
         form = PostForm(request.POST)

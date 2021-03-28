@@ -224,7 +224,7 @@
                         }
                         $('.post-tag').html(tagHtml);
                         $('.post-title').html(post.title);
-                        if (post.contentType == 'text/markdown'){
+                        if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
                             $('.post-content').html('<img src=\"' + post.content + '\"/>');

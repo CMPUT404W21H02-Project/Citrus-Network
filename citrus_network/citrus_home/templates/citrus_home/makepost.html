@@ -93,16 +93,10 @@
         }
     </script>
     <script>
-        // document.getElementById('id_contentType').addEventListener("change", function() {
-        //     var selectedType = document.getElementById('id_contentType').value;
-        //     console.log(value);
-        // });
         $("#id_contentType").change(function(){
-            console.log($("#id_contentType").val());
             if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
                 let content = $("#div_id_content");
                 content.parent().hide();
-                console.log("This works");
             }
         });
         document.getElementById('id_image').addEventListener("change", function() {
@@ -117,7 +111,6 @@
             reader.onload = function () {
                 let postContent = $("#id_content");
                 postContent.val(reader.result);
-                console.log(reader.result);
             };
             reader.onerror = function (error) {
                 console.log('Error: ', error);
