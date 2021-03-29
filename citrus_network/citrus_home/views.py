@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import CitrusAuthor, Friend, Follower, Comment, Post
+from .models import CitrusAuthor, Friend, Follower, Comment, Post, Inbox
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -19,9 +19,26 @@ import re
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-
+import ast
+import base64
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
+
+# Follows basic auth scheme where the user:password is sent as a base64 encoding.
+# Username is CitrusNetwork and Password is oranges
+# https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware
+def basicAuthHandler(request):
+    try:
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        token_type, _, credentials = auth_header.partition(' ')
+
+        credentials = base64.b64decode(credentials)
+        username, password = credentials.decode('utf-8').split(':')
+        if username == "CitrusNetwork" and password == "oranges" and token_type == "Basic":
+            return True
+        return False
+    except:
+        return False
 
 @login_required(login_url='login_url')
 def home_redirect(request):
@@ -413,27 +430,36 @@ Expected:
 URL: ://service/authors
 """
 def get_authors(request):
-    if request.method == "GET":  
-        all_user = CitrusAuthor.objects.all()
+    if basicAuthHandler(request):
+        if request.method == "GET":  
+            all_user = CitrusAuthor.objects.all()
 
-        # generate json response for list of not followers
-        items = []
-        for user in all_user:
-            # get the author profile info
-            json = {
-                "type": "Author",
-                "id": str(user.id),
-                "host": str(user.host),
-                "displayName": str(user.displayName),
-                "github": str(user.github),
-            }
-            items.append(json)
+            # generate json response for list of not followers
+            items = []
+            for user in all_user:
+                # get the author profile info
+                json = {
+                    "type": "Author",
+                    "id": str(user.id),
+                    "host": str(user.host),
+                    "displayName": str(user.displayName),
+                    "github": str(user.github),
+                }
+                items.append(json)
 
-        results = { "type": "author",      
-                    "items": items}
+            results = { "type": "author",      
+                        "items": items}
 
-        response = JsonResponse(results)
-        response.status_code = 200
+            response = JsonResponse(results)
+            response.status_code = 200
+            return response
+        else:
+            response = JsonResponse({'message':'method not allowed'})
+            response.status_code = 405
+            return response
+    else:
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
         return response
 
 
@@ -847,7 +873,7 @@ def edit_followers(request, author_id, foreign_author_id):
 
             # check if foreign_author_id also follow author_id
             try:
-                foreign_author = Follower.objects.get(uuid=foregin_id)
+                foreign_author = Follower.objects.get(uuid=foreign_author_id)
             except ObjectDoesNotExist: # foreign_author_id has no followers
                 response = JsonResponse({"results":"success"})
                 response.status_code = 200
@@ -879,11 +905,11 @@ def edit_followers(request, author_id, foreign_author_id):
 
                 # check foreign_author_id exist in friend model:
                 try:
-                    foreign_author_id_friends = Friend.objects.get(uuid=foregin_id)
+                    foreign_author_id_friends = Friend.objects.get(uuid=foreign_author_id)
                 except ObjectDoesNotExist: # author id is not in friend model
                     # create instance of the follower with uuid to foreign_author_id
                     friend = str(author_id)
-                    new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
+                    new_friend_object = Friend(uuid = foreign_author_id,friends_uuid= friend)
                     new_friend_object.save()
                 else:
                     # add author id 
@@ -910,7 +936,7 @@ def edit_followers(request, author_id, foreign_author_id):
 
         # check if foreign_author_id also follow author_id
         try:
-            foreign_author = Follower.objects.get(uuid=foregin_id)
+            foreign_author = Follower.objects.get(uuid=foreign_author_id)
         except ObjectDoesNotExist: # foreign_author_id has no followers
             response = JsonResponse({"results":"success"})
             response.status_code = 200
@@ -942,11 +968,11 @@ def edit_followers(request, author_id, foreign_author_id):
 
             # check foreign_author_id exist in friend model:
             try:
-                foreign_author_id_friends = Friend.objects.get(uuid=foregin_id)
+                foreign_author_id_friends = Friend.objects.get(uuid=foreign_author_id)
             except ObjectDoesNotExist: # author id is not in friend model
                 # create instance of the follower with uuid to foreign_author_id
                 friend = str(author_id)
-                new_friend_object = Friend(uuid = foregin_id,friends_uuid= friend)
+                new_friend_object = Friend(uuid = foreign_author_id,friends_uuid= friend)
                 new_friend_object.save()
             else:
                 # add author id 
@@ -1413,5 +1439,79 @@ def handleStream(request):
     
     else:
         return returnJsonResponse(specific_message="method not available", status_code=400)
-        
     
+@csrf_exempt
+def handle_inbox(request, author_id):
+    if request.method == "GET":
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="author not found", status_code=400)
+
+        try:
+            current_user = request.user
+            current_citrus_author = CitrusAuthor.objects.get(user=current_user) 
+        except:
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=401)
+
+        if str(current_citrus_author.id) != str(author_id):
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=401)
+        return_data = {
+            "type":"inbox",
+            "author":author_id
+        }
+        try:
+            inbox = Inbox.objects.get(author=author)
+            return_data["items"] = json.loads(inbox.items)
+        except ObjectDoesNotExist:
+            return_data["items"] = []
+        return JsonResponse(return_data, status=200)
+
+    elif request.method == "POST":
+        body = json.loads(request.body)
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="author not found", status_code=400)
+        try:
+            print(body["type"])
+            if ("post" not in body["type"].lower() and "like" not in body["type"].lower() and \
+                "follow" not in body["type"].lower()):
+                return returnJsonResponse(specific_message="invalid type", status_code=400)
+            inbox = Inbox.objects.get(author=author)
+            items = json.loads(inbox.items)
+            items.insert(0, body)
+            inbox.items = json.dumps(items)
+            inbox.save()
+        except ObjectDoesNotExist:
+            inbox = Inbox.objects.create(author=author, items='[' + json.dumps(body) + ']')
+
+        return JsonResponse(body, status=201)
+
+    elif request.method == "DELETE":
+        try:
+            current_user = request.user
+            current_citrus_author = CitrusAuthor.objects.get(user=current_user) 
+        except:
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=401)
+
+        if str(current_citrus_author.id) != str(author_id):
+            return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=401)
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="author not found", status_code=400)
+        try:
+            inbox = Inbox.objects.get(author=author)
+            inbox.delete()
+            return returnJsonResponse(specific_message="inbox deleted", status_code=200)
+        except ObjectDoesNotExist:
+            return returnJsonResponse(specific_message="inbox deleted", status_code=200)
+    else:
+        return returnJsonResponse(specific_message="method not available", status_code=405)
+
+@login_required(login_url='login_url')
+def inbox_redirect(request):
+    if request.method == "GET":
+        uuid = get_uuid(request)
+        return render(request, 'citrus_home/inbox.html', {'uuid':uuid})

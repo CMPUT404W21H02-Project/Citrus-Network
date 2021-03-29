@@ -35,11 +35,14 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/followers/', views.get_followers, name='followers'),
   path('service/author/<uuid:author_id>/followers/<uuid:foreign_author_id>/', views.edit_followers, name='edit_followers'),
 
-
   # OTHER SERVERS
   path('service/authors/team3', views.get_team3_authors, name='authors3'),
   path('service/authors/team18', views.get_team18_authors, name='authors18'),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/followers/(?P<foreign_author_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',  views.edit_followers, name='edit_followers'),
   # url(r'^service/author/(?P<id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/friends/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$', views.edit_friends_18, name='edit_friends_18'),
+
+  path('home-test/', views.handleStream, name='get_stream'),
+  path('service/author/<uuid:author_id>/inbox/', views.handle_inbox, name='inbox'),
+  path('inbox/', views.inbox_redirect, name='inbox_redirect'),
 ]
 
