@@ -964,8 +964,7 @@ def render_find_friends_page(request):
     create a new post using POST method for PostForm (custom django form for posts)
 """
 @login_required(login_url='login_url')
-def make_post_redirect(request, id, **kwargs):
-    pid = kwargs.get('pid')
+def make_post_redirect(request):
     if request.method == 'GET':
         # get uuid from logged in user
         user_uuid = get_uuid(request)
@@ -974,8 +973,9 @@ def make_post_redirect(request, id, **kwargs):
     elif request.method  == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
+            user_uuid = get_uuid(request)
             post_id = str(uuid.uuid4())
-            author = CitrusAuthor.objects.get(id=id)
+            author = CitrusAuthor.objects.get(id=user_uuid)
             title = str(request.POST['title'])
             description = str(request.POST['description'])
             content = str(request.POST['content'])
