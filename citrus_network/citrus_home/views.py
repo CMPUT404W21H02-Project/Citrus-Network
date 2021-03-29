@@ -19,8 +19,6 @@ import re
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-import ast
-from bs4 import BeautifulSoup
 
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
@@ -500,7 +498,37 @@ def get_team3_authors(request):
         return response
 
 """
-handles GET request: get a list of authors from team 18
+handles POST request: get a list of authors from team 18
+PUT: Add a follower (must be authenticated) or accept friend request to befriend and follow foreign_author_id
+Expected: 
+Method: GET
+URL: ://service/authors/team18
+"""
+def get_team18_authors(request):
+    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
+    if request.method == "GET":
+        response = requests.get(URL)
+        result = response.json()
+        response = JsonResponse({"type":"author", "items":result})
+        response.status_code = 200
+        return response
+
+"""
+handles POST request: get a list of authors from team 18
+Expected: 
+URL: ://service/authors/team18
+"""
+def get_team18_authors(request):
+    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
+    if request.method == "GET":
+        response = requests.get(URL)
+        result = response.json()
+        response = JsonResponse({"type":"author", "items":result})
+        response.status_code = 200
+        return response
+
+"""
+handles GET request: get a list of authors from team 18 or 3
 Expected: 
 URL: ://service/authors/team18
 """
@@ -665,6 +693,40 @@ def get_followers(request, author_id):
         response.status_code = 405
         return response
 
+'''
+function to check if author exist in team 3 server
+PARAMS: author id
+RETURN: response
+'''
+def check_athor_exist_team3(author_id):
+    URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
+    url = URL_TEAM3 + author_id
+    response = requests.get(url)
+    return response
+
+'''
+function to check if author exist in team 18 server
+PARAMS: author id
+RETURN: response
+'''
+def check_author_exist_team18(author_id):
+    URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
+    FORWARD_SLASH = "/"
+    url = URL_TEAM18 + author_id + FORWARD_SLASH
+    response = requests.get(url)
+    return response
+
+'''
+function to check if author exist in our database 
+PARAMS: author id
+RETURN: True or False
+'''
+def check_author_exist(author_id):
+    try:
+        author_id = CitrusAuthor.objects.get(id=author_id)
+    except ObjectDoesNotExist:
+        return False
+    return True
 
 '''
 function to render the followers page
@@ -674,6 +736,7 @@ RETURN: request, followers page, current user id
 def render_followers_page(request):
     uuid = get_uuid(request)
     return render(request,'citrus_home/followers.html', {'uuid':uuid})
+
 
 """
 handles these requests:
@@ -744,20 +807,30 @@ def edit_followers(request, author_id, foreign_author_id):
         return response
 
     elif request.method == 'PUT':
-        # DO I VERIFY FOREIGN AUTHOR ID, I.E IF IT'S FROM OTHER SERVER ???
-
         # validate author id in citrus_author model:
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-        except ObjectDoesNotExist:
-            response = JsonResponse({"results":"author_id doesnt exist"})
-            response.status_code = 404
-            return response
+        except ObjectDoesNotExist: 
+
+            # check if that author_id exists in 2 other server
+            response_team3 = check_athor_exist_team3(str(author_id))
+            response_team18 = check_author_exist_team18(str(author_id))
+
+            if response_team3.status_code == 404 and response_team18.status_code == 404:
+                response = JsonResponse({"results":"author_id doesnt exist"})                
+                response.status_code = 404
+                return response
+            elif response_team3.status_code == 200:
+                response = JsonResponse({"results":"author_id exist in team 3 server"})                
+                response.status_code = 200
+                # return response
+            elif response_team18.status_code == 200:
+                response = JsonResponse({"results":"author_id exist in team 18 server"})                
+                response.status_code = 200
+                # return response
 
         # validate foregin id in citrus_author model:
-        try:
-            foregin_id = CitrusAuthor.objects.get(id=foreign_author_id)
-        except ObjectDoesNotExist:
+        if check_author_exist(foreign_author_id) == False:
             response = JsonResponse({"results":"invalid foreign id"})
             response.status_code = 404
             return response
