@@ -3,6 +3,16 @@ import uuid
 from django.contrib.auth.models import User
 from django.core.validators import int_list_validator
 from django.urls import reverse
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
+
+@receiver(pre_save, sender=User)
+def set_new_user_inactive(sender, instance, **kwargs):
+    if instance._state.adding is True:
+        print("Creating Inactive User")
+        instance.is_active = False
+    else:
+        print("Updating User Record")
 
 CONTENT_TYPE = {
     ('text/plain', 'Plain Text'),
