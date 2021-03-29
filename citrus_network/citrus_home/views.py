@@ -1067,33 +1067,66 @@ def manage_post(request, id, **kwargs):
 
  
     elif request.method == "GET":
-        # potentially check if the user is authenticated
-        author = CitrusAuthor.objects.get(id=id)
-        posts = Post.objects.get(id=pid)
-        comments = Comment.objects.filter(post=posts)
-        comments_arr = create_comment_list(posts)
-        author_data = convertAuthorObj(author)
-        # check for post categories and put them into an array
-        categories = posts.categories.split()
-        return_data = {
-            "type": "post",
-            "title": posts.title,
-            "id": posts.id,
-            "source": "localhost:8000/some_random_source",
-            "origin": posts.origin,
-            "description": posts.description,
-            "contentType": "text/plain",
-            "content": posts.content,
-            # probably serialize author here and call it
-            "author": author_data,
-            "categories": categories,
-            "count": comments.count(),
-            "comments": comments_arr, 
-            "published": posts.created,
-            "visibility": posts.visibility,
-            "unlisted": "false"
+        # print(request.META['host'])
+        # ^^ HOW TO GET REQUEST HEADERS ^^
+        # return 1 post
+        if pid:
+            author = CitrusAuthor.objects.get(id=id)
+            posts = Post.objects.get(id=pid)
+            comments = Comment.objects.filter(post=posts)
+            comments_arr = create_comment_list(posts)
+            author_data = convertAuthorObj(author)
+            # check for post categories and put them into an array
+            categories = posts.categories.split()
+            return_data = {
+                "type": "post",
+                "title": posts.title,
+                "id": posts.id,
+                "source": "localhost:8000/some_random_source",
+                "origin": posts.origin,
+                "description": posts.description,
+                "contentType": "text/plain",
+                "content": posts.content,
+                # probably serialize author here and call it
+                "author": author_data,
+                "categories": categories,
+                "count": comments.count(),
+                "comments": comments_arr, 
+                "published": posts.created,
+                "visibility": posts.visibility,
+                "unlisted": "false"
         }
-        return JsonResponse(return_data, status=200)
+            return JsonResponse(return_data, status=200)
+
+        # return all posts of the author ordered by most recent posts
+        else:
+            print("here")
+            author = CitrusAuthor.objects.get(id=id)
+            # posts = Post.objects.get(id=pid)
+            comments = Comment.objects.filter(post=posts)
+            comments_arr = create_comment_list(posts)
+            author_data = convertAuthorObj(author)
+            # check for post categories and put them into an array
+            categories = posts.categories.split()
+            return_data = {
+                "type": "post",
+                "title": posts.title,
+                "id": posts.id,
+                "source": "localhost:8000/some_random_source",
+                "origin": posts.origin,
+                "description": posts.description,
+                "contentType": "text/plain",
+                "content": posts.content,
+                # probably serialize author here and call it
+                "author": author_data,
+                "categories": categories,
+                "count": comments.count(),
+                "comments": comments_arr, 
+                "published": posts.created,
+                "visibility": posts.visibility,
+                "unlisted": "false"
+            }
+            return JsonResponse(return_data, status=200)
     
     else:
         return returnJsonResponse(specific_message="method not supported", status_code=400)
