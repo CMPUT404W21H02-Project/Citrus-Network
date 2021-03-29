@@ -1100,33 +1100,40 @@ def manage_post(request, id, **kwargs):
 
         # return all posts of the author ordered by most recent posts
         else:
-            print("here")
+            # return all posts of the given user
             author = CitrusAuthor.objects.get(id=id)
-            # posts = Post.objects.get(id=pid)
-            comments = Comment.objects.filter(post=posts)
-            comments_arr = create_comment_list(posts)
-            author_data = convertAuthorObj(author)
-            # check for post categories and put them into an array
-            categories = posts.categories.split()
-            return_data = {
-                "type": "post",
-                "title": posts.title,
-                "id": posts.id,
-                "source": "localhost:8000/some_random_source",
-                "origin": posts.origin,
-                "description": posts.description,
-                "contentType": "text/plain",
-                "content": posts.content,
-                # probably serialize author here and call it
-                "author": author_data,
-                "categories": categories,
-                "count": comments.count(),
-                "comments": comments_arr, 
-                "published": posts.created,
-                "visibility": posts.visibility,
-                "unlisted": "false"
-            }
-            return JsonResponse(return_data, status=200)
+            visibility_list = ['PUBLIC']
+            posts = Post.objects.filter(author=author,visibility__in=visibility_list).order_by('-created')
+            json_posts = []
+            for post in posts:
+                author = post.author
+                comments = Comment.objects.filter(post=post)
+                comments_arr = create_comment_list(post)
+                author_data = convertAuthorObj(author)
+                categories = post.categories.split()
+                return_data = {
+                    "type": "post",
+                    "title": post.title,
+                    "id": post.id,
+                    "source": "localhost:8000/some_random_source",
+                    "origin": post.origin,
+                    "description": post.description,
+                    "contentType": "text/plain",
+                    "content": post.content,
+                    # probably serialize author here and call it
+                    "author": author_data,
+                    "categories": categories,
+                    "count": comments.count(),
+                    "comments": comments_arr, 
+                    "published": post.created,
+                    "visibility": post.visibility,
+                    "unlisted": "false"
+                }
+                json_posts.append(return_data)
+                
+            return JsonResponse({
+                "posts": json_posts
+            },status=200)
     
     else:
         return returnJsonResponse(specific_message="method not supported", status_code=400)
@@ -1406,3 +1413,51 @@ def inbox_redirect(request):
     if request.method == "GET":
         uuid = get_uuid(request)
         return render(request, 'citrus_home/inbox.html', {'uuid':uuid})
+
+
+"""
+function to return all public posts (local for now)
+search parameters can be provided:
+localhost:8000/public-posts?q=searchparamter searchparamter2 searchparameterk
+"""
+@csrf_exempt
+def browse_posts(request):
+    # return all public posts
+    if request.method == "GET":
+        try:
+            search_paramaters = request.GET.get('q').split()
+            # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
+            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters)))
+        except:
+            public_posts = Post.objects.filter(visibility='PUBLIC')
+        json_posts = []
+        for post in public_posts:
+            author = post.author
+            comments = Comment.objects.filter(post=post)
+            comments_arr = create_comment_list(post)
+            author_data = convertAuthorObj(author)
+            categories = post.categories.split()
+            return_data = {
+                "type": "post",
+                "title": post.title,
+                "id": post.id,
+                "source": "localhost:8000/some_random_source",
+                "origin": post.origin,
+                "description": post.description,
+                "contentType": "text/plain",
+                "content": post.content,
+                # probably serialize author here and call it
+                "author": author_data,
+                "categories": categories,
+                "count": comments.count(),
+                "comments": comments_arr, 
+                "published": post.created,
+                "visibility": post.visibility,
+                "unlisted": "false"
+            }
+            json_posts.append(return_data)
+        # return JsonResponse(return_data, status=200)
+        return returnJsonResponse(json_posts, status_code=200)
+    
+    else:
+        return returnJsonResponse(specific_message="method not supported", status_code=400)
