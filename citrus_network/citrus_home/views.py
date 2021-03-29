@@ -465,50 +465,35 @@ def get_authors(request):
 
 
 
-"""
-handles GET request: get a list of authors on the server
-Expected: 
-URL: ://service/authors
-"""
-def get_authors(request):
-    if request.method == "GET":  
-        all_user = CitrusAuthor.objects.all()
+# """
+# handles GET request: get a list of authors on the server
+# Expected: 
+# URL: ://service/authors
+# """
+# def get_authors(request):
+#     if request.method == "GET":  
+#         all_user = CitrusAuthor.objects.all()
 
-        # generate json response for list of not followers
-        items = []
-        for user in all_user:
-            # get the author profile info
-            json = {
-                "type": "Author",
-                "id": str(user.id),
-                "host": str(user.host),
-                "displayName": str(user.displayName),
-                "github": str(user.github),
-            }
-            items.append(json)
+#         # generate json response for list of not followers
+#         items = []
+#         for user in all_user:
+#             # get the author profile info
+#             json = {
+#                 "type": "Author",
+#                 "id": str(user.id),
+#                 "host": str(user.host),
+#                 "displayName": str(user.displayName),
+#                 "github": str(user.github),
+#             }
+#             items.append(json)
 
-        results = { "type": "author",      
-                    "items": items}
+#         results = { "type": "author",      
+#                     "items": items}
 
-        response = JsonResponse(results)
-        response.status_code = 200
-        return response
+#         response = JsonResponse(results)
+#         response.status_code = 200
+#         return response
 
-"""
-handles GET request: get a list of authors on the server
-Expected: 
-expected method: POST, GET
-URL: ://service/authors
-"""
-def follow_team3_author(request):
-    if request.method == "GET":
-        UUID_TEAM3 = "e59e548b-64bf-4da3-9243-bfcadd7d6db5"
-        
-        # TO DO follow sb
-        
-        response = JsonResponse({ "type": "success"})
-        response.status_code = 200
-        return response
 
 """
 handles GET request: get a list of authors from team 3
@@ -529,34 +514,6 @@ handles POST request: get a list of authors from team 18
 PUT: Add a follower (must be authenticated) or accept friend request to befriend and follow foreign_author_id
 Expected: 
 Method: GET
-URL: ://service/authors/team18
-"""
-def get_team18_authors(request):
-    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
-    if request.method == "GET":
-        response = requests.get(URL)
-        result = response.json()
-        response = JsonResponse({"type":"author", "items":result})
-        response.status_code = 200
-        return response
-
-"""
-handles POST request: get a list of authors from team 18
-Expected: 
-URL: ://service/authors/team18
-"""
-def get_team18_authors(request):
-    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
-    if request.method == "GET":
-        response = requests.get(URL)
-        result = response.json()
-        response = JsonResponse({"type":"author", "items":result})
-        response.status_code = 200
-        return response
-
-"""
-handles GET request: get a list of authors from team 18 or 3
-Expected: 
 URL: ://service/authors/team18
 """
 def get_team18_authors(request):
@@ -725,7 +682,7 @@ function to check if author exist in team 3 server
 PARAMS: author id
 RETURN: response
 '''
-def check_athor_exist_team3(author_id):
+def check_author_exist_team3(author_id):
     URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
     url = URL_TEAM3 + author_id
     response = requests.get(url)
@@ -740,6 +697,33 @@ def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
     url = URL_TEAM18 + author_id + FORWARD_SLASH
+    response = requests.get(url)
+    return response
+
+'''
+function to check if author_id is a follower of actor_id from team 18 server
+PARAMS: author id
+RETURN: response
+'''
+def check_author_follows_actor_team18(author_id,actor_id):
+    URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
+    FOLLOWERS = "followers"
+    FORWARD_SLASH = "/"
+    url = URL_TEAM18 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) + FORWARD_SLASH
+    print(url) 
+    response = requests.get(url)
+    return response
+
+'''
+function to check if author_id is a follower of actor_id from team 3 server
+PARAMS: author id
+RETURN: response
+'''
+def check_author_follows_actor_team3(author_id,actor_id):
+    URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
+    FOLLOWERS = "followers"
+    FORWARD_SLASH = "/"
+    url = URL_TEAM3 + str(author_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(actor_id)
     response = requests.get(url)
     return response
 
@@ -766,6 +750,33 @@ def check_author_exist_in_Follower(author_id):
     except ObjectDoesNotExist:
         return False
     return True
+
+
+'''
+function to check if author exist in our Friend model 
+PARAMS: author id
+RETURN: True or False
+'''
+def check_author_exist_in_Friend(author_id):
+    try:
+        result = Friend.objects.get(uuid=author_id)
+    except ObjectDoesNotExist:
+        return False
+    return True
+
+
+'''
+function to check if author exists in team 3 
+PARAMS: author id
+RETURN: True or False
+'''
+def check_author_exist_in_Friend(author_id):
+    try:
+        result = Friend.objects.get(uuid=author_id)
+    except ObjectDoesNotExist:
+        return False
+    return True
+
 
 '''
 function to render the followers page
@@ -852,7 +863,7 @@ def edit_followers(request, author_id, foreign_author_id):
         except ObjectDoesNotExist: 
 
             # check if that author_id exists in 2 other server
-            response_team3 = check_athor_exist_team3(str(author_id))
+            response_team3 = check_author_exist_team3(str(author_id))
             response_team18 = check_author_exist_team18(str(author_id))
 
             if response_team3.status_code == 404 and response_team18.status_code == 404:
@@ -1514,11 +1525,41 @@ def handle_inbox(request, author_id):
                         response = JsonResponse({"results":"actor id is already a follower"})
                         response.status_code = 304
                         return response
-                    
+
+                    # check if author_id also follows actor_id then befriend
+                    # check if author_id is a follower by calling their api:
+                    # team 3 URL author/<author id>/followers/<follower id>
+                    # team 18 URL service/author/<author id>/followers/<follower id>
+                    check_team3 = check_author_exist_team3(actor_id)
+                    check_team18 = check_author_exist_team18(actor_id)
+                    if check_team3.status_code == 404 and check_team18.status_code == 404:
+                        response = JsonResponse({"results":"actor id doesn't exist in remote server"})
+                        response.status_code = 404
+                        return response
+                    elif check_team3.status_code==200:
+                        check_follow_team3 = check_author_follows_actor_team3(author_id,actor_id)
+                        if check_follow_team3.status_code == 200:
+                            # befriend
+                            return abs
+                        else:
+                            response = JsonResponse({"results":"test successfully"})
+                            response.status_code = 200
+                            return response
+                    elif check_team18.status_code==200:
+                        check_follow_team18 = check_author_follows_actor_team18(author_id,actor_id).json()
+                        if  check_follow_team18['message'] == True:
+                            # befriend
+                            return abs
+                        else:
+                            response = JsonResponse({"results":"test successfully"})
+                            response.status_code = 200
+                            return response
+
+
                     # add foreign id 
                     followers = str(result.followers_uuid)+CONST_SEPARATOR+str(actor_id)
                     result.followers_uuid = followers
-                    result.save()
+                    result.save()                    
 
                 else: # this author_id has no follower so needs to creat new instance 
                     followers = str(actor_id)
@@ -1528,10 +1569,7 @@ def handle_inbox(request, author_id):
                     new_follower_object = Follower(uuid = author,followers_uuid= followers)
                     new_follower_object.save()
 
-                    # MAYBE CHECK IF AUTHOR ID ALSO FOLLOWS THEM?
-                    
-                return returnJsonResponse(specific_message="success", status_code=200)
- 
+                     
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)
             items.insert(0, body)
@@ -1539,6 +1577,7 @@ def handle_inbox(request, author_id):
             inbox.save()
         except ObjectDoesNotExist:
             inbox = Inbox.objects.create(author=author, items='[' + json.dumps(body) + ']')
+            return returnJsonResponse(specific_message="success", status_code=201)
 
         return JsonResponse(body, status=201)
 
