@@ -37,24 +37,35 @@ common_mark = markdown
 posts have different types: public, shared to friends, private to author, private to friends
 """
 class Post(models.Model):
-    id                  = models.CharField(max_length=50, primary_key=True)
+    type                = models.CharField(max_length=50, default='post')
+    # title of a post
     title               = models.CharField(max_length=200)
+    # id of the post
+    id                  = models.CharField(max_length=50, primary_key=True)
+    # where did you get this post from?
+    source              = models.CharField(max_length=300)
+    # where is it actually from
+    origin              = models.CharField(max_length=300)
+    # a brief description of the post
     description         = models.CharField(max_length=300, null=True, blank=True)
+    contentType         = models.CharField(max_length=20, default='text/plain', choices=CONTENT_TYPE)
     content             = models.TextField()
     author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
-    origin              = models.CharField(max_length=300)
-    contentType         = models.CharField(max_length=20, default='text/plain', choices=CONTENT_TYPE)
-    # commonmark          = models.BooleanField(default=False)
-    # image           = models.ImageField()
     # parse this and return as list for GET request
     categories          = models.CharField(max_length=400, null=True, blank=True)
+    # total number of comments for this post
+    count               = models.IntegerField(null=True, blank=True)
+    # page size
+    size                = models.IntegerField(null=True, blank=True)
+    # the first page of comments
+    comments            = models.CharField(max_length=300, null=True, blank=True)
+    published           = models.DateTimeField(auto_now_add=True)
     # if visibility option is not provided the default will be public
     visibility          = models.CharField(max_length=50, choices=VISIBILITY_CHOICES, default="PUBLIC")
+    # unlisted means it is public if you know the post name -- use this for images, it's so images don't show up in timelines
+    unlisted            = models.BooleanField(default=False)
     # if private to author or private to friends is true add usernames to shared_with
     shared_with         = models.CharField(max_length=600, null=True, blank=True)
-    created             = models.DateTimeField(auto_now_add=True)
-
-
 
 """
 a comment will belong to an author and also be associated with one post
