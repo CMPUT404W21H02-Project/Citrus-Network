@@ -15,18 +15,8 @@
   <body>
     {% include '../navbar-logged-in.html' %}
     <div class="container">
-        <form class="mt-3 row g-3 search-form justify-content-center">
-            <div class="col col-md-8">
-                <label for="search">Search Public Posts</label>
-                <div class="input-group has-validation">
-                    <span class="input-group-text" id="inputGroupPrepend"><em class="bi-search"></em></span>
-                    <input type="text" class="form-control" id="search" aria-describedby="inputGroupPrepend">
-                    <button class="btn btn-success" type="submit">Search</button>
-                </div>
-            </div>
-        </form>
         <!-- Display the stream -->
-        <div class="row justify-content-center mt-1 mb-1 stream-post">
+        <div class="row justify-content-center mt-5 mb-1 stream-post">
         </div>
     </div>
     <script 
@@ -46,8 +36,8 @@
         // get stream gets it as a json which is setup for pagination in mind. This will be needed
         // to implement an "infinite scroll" as the number of posts in the stream increases beyond
         // what we should get in a single call.
-        function getStream(query='') {
-            fetchJSON("{% url 'public_posts' %}?q=" + query).then((json) => {
+        function getStream() {
+            fetchJSON("{% url 'public_posts' %}").then((json) => {
                 for(var i in json.message){
                     var newElement = document.createElement('div');
                     var classAttr = document.createAttribute("class");
@@ -97,25 +87,6 @@
                 caretUp.style.display = "none";
             }
         }
-
-        (function () {
-            'use strict'
-
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.querySelectorAll('.search-form')
-
-            // Loop over them and prevent submission
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    document.querySelector(".stream-post").innerHTML = '';
-                    getStream(document.getElementById('search').value)
-                    form.classList.remove('was-validated');
-                    event.preventDefault()
-                    event.stopPropagation()
-                }, false)
-                })
-        })()
 
         window.onload = function() {
             getStream();
