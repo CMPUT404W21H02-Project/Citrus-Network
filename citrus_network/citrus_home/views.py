@@ -385,7 +385,8 @@ reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity
 """
 # @login_required
 def get_github_events(request, id):
-    if request.method == 'GET':
+    
+    if request.method == 'GET': 
         # look up user by their id, if not exist, return 404 response
         profile = get_object_or_404(CitrusAuthor, id=id)
         
