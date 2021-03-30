@@ -1864,8 +1864,6 @@ localhost:800/public-posts?q=arg1%20arg2
 def browse_posts(request):
     # return all public posts
     if request.method == "GET":
-        search_parameters = request.GET.get('q').split()
-        print("the search parameters are: ", search_parameters)
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
