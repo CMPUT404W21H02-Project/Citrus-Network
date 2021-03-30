@@ -25,6 +25,7 @@ urlpatterns = [
 
   # FOLLOWERS & FRIENDS:
   url(r'^service/author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',views.manage_profile, name='profile_api'),
+  url(r'^author/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',views.manage_profile, name='profile_api2'),
   path("findfriends/",views.render_find_friends_page,name='findfriends_url'),
   path("friends/",views.render_friends_page,name='friends_url'),
   path("followers/",views.render_followers_page, name='followers_url'),
