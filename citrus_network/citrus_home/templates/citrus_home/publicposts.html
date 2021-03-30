@@ -15,16 +15,13 @@
   <body>
     {% include '../navbar-logged-in.html' %}
     <div class="container">
-        <form class="mt-3 row g-3 needs-validation justify-content-center" novalidate>
+        <form class="mt-3 row g-3 search-form justify-content-center">
             <div class="col col-md-8">
                 <label for="search">Search Public Posts</label>
                 <div class="input-group has-validation">
                     <span class="input-group-text" id="inputGroupPrepend"><em class="bi-search"></em></span>
-                    <input type="text" class="form-control" id="search" aria-describedby="inputGroupPrepend" required>
+                    <input type="text" class="form-control" id="search" aria-describedby="inputGroupPrepend">
                     <button class="btn btn-success" type="submit">Search</button>
-                    <div class="invalid-feedback">
-                        Please enter something to search
-                    </div>
                 </div>
             </div>
         </form>
@@ -49,55 +46,31 @@
         // get stream gets it as a json which is setup for pagination in mind. This will be needed
         // to implement an "infinite scroll" as the number of posts in the stream increases beyond
         // what we should get in a single call.
-        function getStream() {
-            var uuid = "{{uuid}}";
-            fetchJSON("{% url 'get_stream' %}").then((json) => {
-                //console.log(json.posts);
-                console.log(json)
-                for(var i in json.posts){
+        function getStream(query='') {
+            fetchJSON("{% url 'public_posts' %}?q=" + query).then((json) => {
+                for(var i in json.message){
                     var newElement = document.createElement('div');
                     var classAttr = document.createAttribute("class");
                     classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
                     newElement.setAttributeNode(classAttr);
                     var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="#author">' + 
-                        '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
-                        '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
+                        '<p style="margin: 0;"><strong>' + json.message[i].author.displayName + '</strong></p>' +
+                        '<p style="margin: 0;">' + json.message[i].published + ' | ' + json.message[i].origin + '</p>' +
                         '</a>';
 
-                    for (var j in json.posts[i].categories) {
-                        postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
+                    for (var j in json.message[i].categories) {
+                        postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.message[i].categories[j] + '</a>'
                     }
                     postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
-                        json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
-                        '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>' + 
+                        json.message[i].author.id + '/view-post/' + json.message[i].id + '/>' + 
+                        '<h6 class="font-weight-bold">' + json.message[i].title + '</h6>' + 
                         // '<img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/' + 
-                        // json.posts[i].origin + '.svg"/>' + 
-                        '<p>' + json.posts[i].content + '</p>';
+                        // json.message[i].origin + '.svg"/>' + 
+                        '<p>' + json.message[i].content + '</p>';
                     
                     newElement.innerHTML = postHtml;
 
                     document.querySelector(".stream-post").appendChild(newElement);
-                }
-            });
-        }
-            
-        function getGithubActivity() {
-            var uuid = "{{uuid}}";
-            var url = "/service/author/" + uuid + "/github" // :service/author/{AUTHOR_ID}
-            fetchJSON(url).then((json) => { // another callback
-                document.querySelector('#githubActivity').style.display = "flex";
-                try{
-                    document.querySelector("#gitHubName").innerText = new String ("GitHub Activity for "+json.events[0].name)
-                    document.querySelector("#github-header").style.background = "#e6d0a0";
-                    document.querySelector("#gitHubName").href = new String("https://github.com/"+json.events[0].name)
-                    for (var i in json.events) {
-                        var event = formatEvent(json.events[i]);
-                        $('#githubBody').append(event + "<br/><br/>");
-                    }
-                }catch(err){
-                    document.querySelector("#github-header").style.background = "#62afdd";
-                    document.querySelector("#githubBody").innerText = "Cannot get GitHub activity";
-                    document.querySelector("#profileref").style.display = "flex";
                 }
             });
         }
@@ -129,18 +102,17 @@
             'use strict'
 
             // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.querySelectorAll('.needs-validation')
+            var forms = document.querySelectorAll('.search-form')
 
             // Loop over them and prevent submission
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                 form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
+                    document.querySelector(".stream-post").innerHTML = '';
+                    getStream(document.getElementById('search').value)
+                    form.classList.remove('was-validated');
                     event.preventDefault()
                     event.stopPropagation()
-                    }
-
-                    form.classList.add('was-validated')
                 }, false)
                 })
         })()

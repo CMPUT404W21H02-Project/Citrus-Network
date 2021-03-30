@@ -48,5 +48,6 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/post/<uuid:post_id>/likes', views.handle_likes, name='post_likes'),
   path('service/author/<uuid:author_id>/post/<uuid:post_id>/comments/<uuid:comment_id>/likes', views.handle_likes, name='comment_likes'),
   path('service/author/<uuid:author_id>/liked', views.handle_likes, name='all_likes'),
+  path('posts/', views.public_posts_redirect, name='view_public_posts'),
 ]
 
