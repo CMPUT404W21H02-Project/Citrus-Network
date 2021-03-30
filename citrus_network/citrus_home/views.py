@@ -1903,6 +1903,10 @@ def browse_posts(request):
     else:
         return returnJsonResponse(specific_message="method not supported", status_code=400)
 
+@login_required(login_url='login_url')
+def public_posts_redirect(request):
+    if request.method == "GET":
+        return render(request, 'citrus_home/publicposts.html')
 
 def handle_likes(request, **kwargs):
     # return either likes on post or comment
