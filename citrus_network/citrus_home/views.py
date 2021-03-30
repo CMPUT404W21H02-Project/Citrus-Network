@@ -1275,7 +1275,7 @@ def post_redirect(request, author_id, post_id):
         if current_citrus_author == post_author:
             # check if form is valid here
             post = Post.objects.get(id=post_id) 
-            form = PostForm()
+            form = PostForm(instance=post)
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
         else:
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
