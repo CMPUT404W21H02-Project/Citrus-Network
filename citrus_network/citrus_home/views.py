@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import PostForm
-from .models import CitrusAuthor, Friend, Follower, Comment, Post, Inbox, Like
+from .models import CitrusAuthor, Friend, Follower, Comment, Post, Inbox, Like, Node
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -1619,7 +1619,7 @@ def handleStream(request):
                     "type": "post",
                     "title": post.title,
                     "id": post.id,
-                    "source": "localhost:8000/some_random_source",
+                    "source": post.source,
                     "origin": post.origin,
                     "description": post.description,
                     "contentType": post.contentType,
@@ -1631,7 +1631,7 @@ def handleStream(request):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted
                 }
                 json_posts.append(return_data)
             
@@ -1887,7 +1887,7 @@ def browse_posts(request):
                 "type": "post",
                 "title": post.title,
                 "id": post.id,
-                "source": "localhost:8000/some_random_source",
+                "source": post.source,
                 "origin": post.origin,
                 "description": post.description,
                 "contentType": post.contentType,
@@ -1899,9 +1899,35 @@ def browse_posts(request):
                 "comments": comments_arr, 
                 "published": post.published,
                 "visibility": post.visibility,
-                "unlisted": "false"
+                "unlisted": post.unlisted
             }
             json_posts.append(return_data)
+        try:
+            nodes = Node.objects.all()
+            # list of all hostnames 
+            server_list = []
+            for server in nodes:
+                server_list.append(server.host)
+
+            for hostname in server_list:
+                print(hostname)
+                if hostname == "https://cmput-404-socialdistribution.herokuapp.com":
+                    request = f"{hostname}/service/allposts/"
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    post_list = content.get('posts')
+                    for post in post_list:
+                        json_posts.append(post)
+                elif hostname == "https://team3-socialdistribution.herokuapp.com":
+                    request = f"{hostname}/posts"
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    for post in content:
+                        json_posts.append(post)
+        except:
+            pass
         # return JsonResponse(return_data, status=200)
         return returnJsonResponse(json_posts, status_code=200)
     
