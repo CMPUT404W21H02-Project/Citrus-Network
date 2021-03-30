@@ -95,7 +95,9 @@ def register_redirect(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             # creates the user object
-            user = form.save()
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
             # login with newly created user
             username = request.POST.get('username')
             password = request.POST.get('password')
