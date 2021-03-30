@@ -122,7 +122,25 @@ def register_redirect(request):
             password = request.POST.get('password')
             login(request,user)
             # create CitrusAuthor
-            citrusAuthor = CitrusAuthor.objects.create(type="author",id=str(uuid.uuid4()), user=user,displayName=user.username)
+
+            base_host = request.META['HTTP_HOST'] 
+            if "http" not in base_host:
+                base_host = "http://" + base_host
+            if not base_host.endswith("/"):
+                base_host += "/"
+ 
+            auth_id =  str(uuid.uuid4())
+            url = base_host  +  "author/" + auth_id    
+            host = base_host                           
+            
+            citrusAuthor = CitrusAuthor.objects.create(type="author", 
+                                                       id=auth_id , 
+                                                       user=user, 
+                                                       displayName=user.username, 
+                                                       host=host, 
+                                                       url=url)
+
+
             result = citrusAuthor.save()
 
             return redirect(home_redirect) 
@@ -213,9 +231,15 @@ URL:/service/author/{AUTHOR_ID}
 def manage_profile(request, id):
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
-        response = JsonResponse({'username': str(profile.user),
-                                'displayName': str(profile.displayName),
-                                'github': str(profile.github)})
+
+        response = JsonResponse({'type' : str(profile.type),
+                                 'id': str(profile.id),
+                                 'host' : str(profile.host),
+                                 'username' : str(profile.user),
+                                 'displayName' : str(profile.displayName),
+                                 'url': str(profile.url),
+                                 'github': str(profile.github)})
+
         response.status_code = 200
         return response
         
