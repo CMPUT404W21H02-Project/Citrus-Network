@@ -825,7 +825,7 @@ handles these requests:
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
-# @login_required
+@csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
     # special case:
     if author_id == foreign_author_id:
