@@ -630,6 +630,8 @@ def get_not_followers(request,author_id):
         except ObjectDoesNotExist:
             all_user = CitrusAuthor.objects.all()
             not_followers = []
+            
+            # adding all user from our server without author_id
             for user in all_user:
                 if (str(user.id) != str(author_id)):
                     not_followers.append(user)
@@ -651,6 +653,15 @@ def get_not_followers(request,author_id):
                     "github": str(user.github),
                 }
                 items.append(json)
+            
+            # adding all user from team 3 server
+            authors3 = get_team3_authors()
+            for author in authors3:
+                items.append(author)
+            # adding all user from team 18 server
+            authors18 = get_team18_authors() 
+            for author in authors18:
+                items.append(author)
 
             # check to see nothing is in items list
             if len(items) == 0:
@@ -669,21 +680,35 @@ def get_not_followers(request,author_id):
         followers = result.followers_uuid
 
         all_user = CitrusAuthor.objects.all()
+        authors3 = get_team3_authors()
+        authors18 = get_team18_authors() 
 
         # get intersection of all_user and followers and disregarding the author_id to return all users author hasn't followed
         not_followers = []
+        # check users in our server
         for user in all_user:
             if (str(user.id) not in str(followers) and str(user.id) != str(author_id)):
                 not_followers.append(user)
 
-        if len(not_followers)==0:
+        # generate json response for list of not followers
+        items = []
+
+        # check users in team 3 server
+        for user in authors3:
+            if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
+                items.append(user) # add them into items containing list of non-followers
+        # check users in team 18 server
+        for user in authors18:
+            if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
+                items.append(user) # add them into items containing list of non-followers
+        
+        # check to see if list of not_followers from our server and items for non-followers from other server are empty:
+        if len(not_followers)==0 or len(items)==0:
             response = JsonResponse({"results":"no non-followers found"})
             response.status_code = 200
             return response
 
-
-        # generate json response for list of not followers
-        items = []
+        # add more non follower from our server to items
         for user in not_followers:
             # get the follower profile info
             json = {
@@ -719,7 +744,7 @@ format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers
 """
-# @login_required
+@login_required
 def get_followers(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
@@ -858,27 +883,13 @@ def edit_followers(request, author_id, foreign_author_id):
         try:
             author = CitrusAuthor.objects.get(id=author_id)
         except ObjectDoesNotExist: 
-
-            # check if that author_id exists in 2 other server
-            response_team3 = check_author_exist_team3(str(author_id))
-            response_team18 = check_author_exist_team18(str(author_id))
-
-            if response_team3.status_code == 404 and response_team18.status_code == 404:
-                response = JsonResponse({"results":"author_id doesnt exist"})                
-                response.status_code = 404
-                return response
-            elif response_team3.status_code == 200:
-                response = JsonResponse({"results":"author_id exist in team 3 server"})                
-                response.status_code = 200
-                # return response
-            elif response_team18.status_code == 200:
-                response = JsonResponse({"results":"author_id exist in team 18 server"})                
-                response.status_code = 200
-                # return response
+            response = JsonResponse({"results":"author_id doesnt exist on server"})                
+            response.status_code = 404
+            return response
 
         # validate foregin id in citrus_author model:
         if check_author_exist_in_CitrusAuthor(foreign_author_id) == False:
-            response = JsonResponse({"results":"invalid foreign id"})
+            response = JsonResponse({"results":"foreign id doesn't exist on server"})
             response.status_code = 404
             return response
 
@@ -1091,6 +1102,7 @@ def get_friends(request, author_id):
 """
 handles these requests:
     GET check if friend
+    PUT put OTHER SERVER'S AUTHOR_ID into author_id friend list
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/friends/{FOREIGN_AUTHOR_ID}
 """
@@ -1121,6 +1133,51 @@ def edit_friends(request, author_id, foreign_author_id):
         response = JsonResponse({"results":"found"})
         response.status_code = 200
         return response
+    elif request.method == "PUT":
+        # validate author id in citrus_author model:
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+        except ObjectDoesNotExist: 
+            response = JsonResponse({"results":"author_id doesnt exist on server"})                
+            response.status_code = 404
+            return response
+
+        # check if foreign author id is in citrus_author model, team 3 server or team 18 server:
+        check_ours = check_author_exist_in_CitrusAuthor(foreign_author_id)
+        check18 = check_author_exist_team18(foreign_author_id)
+        check3 = check_author_exist_team3(foreign_author_id)
+
+        # if none on any server, return error
+        if check_author_exist_in_CitrusAuthor(foreign_author_id) == False and check18.status_code == 404 and check3.status_code == 404:
+            response = JsonResponse({"results":"foreign id doesn't exist on any server"})
+            response.status_code = 404
+            return response
+        elif check_ours == True: # if on our server, return error, follower api will do this
+            response = JsonResponse({"results":"foreign id is on our server, become friend using follow api"})
+            response.status_code = 405
+            return response
+        elif check18.status_code == 200 or check3.status_code ==200: # if on other servers, add them in friend list
+            # foreign_author_id also follow author_id
+            # add both of them as friend of each other in Friend model
+            # check author_id exist in friend model:
+            try:
+                author_id_friends = Friend.objects.get(uuid=author)
+            except ObjectDoesNotExist: # author id is not in friend model
+                # create instance of the follower with uuid to author_id
+                friend = str(foreign_author_id)
+                new_friend_object = Friend(uuid = author,friends_uuid= friend)
+                new_friend_object.save()
+            else:
+                # add foreign id 
+                friends = str(author_id_friends.friends_uuid)+CONST_SEPARATOR+str(foreign_author_id)
+                author_id_friends.friends_uuid = friends
+                author_id_friends.save()
+
+            # not checking foreign author id because they're not on our database        
+
+            response = JsonResponse({"results":"success, added as friends"})
+            response.status_code = 200
+            return response
     else:
         response = JsonResponse({"message":"Method not Allowed"})
         response.status_code = 405
