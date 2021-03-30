@@ -109,3 +109,9 @@ class Node(models.Model):
 class Inbox(models.Model):
     author = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     items = models.TextField()
+
+
+class Like(models.Model):
+    author      = models.CharField(max_length=50, default="1")
+    post_id     = models.CharField(max_length=50, blank=True, null=True)
+    comment_id  = models.CharField(max_length=50, blank=True, null=True)   
