@@ -902,6 +902,7 @@ def edit_followers(request, author_id, foreign_author_id):
         # validate author id in follower model
         # uuid need to be a CitrusAuthor instance
         try:
+            author = CitrusAuthor.objects.get(id=author_id)
             result = Follower.objects.get(uuid=author)
         except ObjectDoesNotExist:
             followers = str(foreign_author_id)
@@ -929,10 +930,12 @@ def edit_followers(request, author_id, foreign_author_id):
 
                 # check author_id exist in friend model:
                 try:
+                    author = CitrusAuthor.objects.get(id=author_id)
                     author_id_friends = Friend.objects.get(uuid=author)
                 except ObjectDoesNotExist: # author id is not in friend model
                     # create instance of the follower with uuid to author_id
                     friend = str(foreign_author_id)
+                    author = CitrusAuthor.objects.get(id=author_id)
                     new_friend_object = Friend(uuid = author,friends_uuid= friend)
                     new_friend_object.save()
                 else:
@@ -943,11 +946,13 @@ def edit_followers(request, author_id, foreign_author_id):
 
                 # check foreign_author_id exist in friend model:
                 try:
-                    foreign_author_id_friends = Friend.objects.get(uuid=foreign_author_id)
+                    foreign_author = CitrusAuthor.objects.get(id=foreign_author_id)
+                    foreign_author_id_friends = Friend.objects.get(uuid=foreign_author)
                 except ObjectDoesNotExist: # author id is not in friend model
                     # create instance of the follower with uuid to foreign_author_id
                     friend = str(author_id)
-                    new_friend_object = Friend(uuid = foreign_author_id,friends_uuid= friend)
+                    foreign_author = CitrusAuthor.objects.get(id=foreign_author_id)
+                    new_friend_object = Friend(uuid = foreign_author,friends_uuid= friend)
                     new_friend_object.save()
                 else:
                     # add author id 
@@ -1058,7 +1063,7 @@ Expected:
 URL: ://service/author/{AUTHOR_ID}/friends/
 """
 # @login_required
-# @csrf_exempt
+@csrf_exempt
 def get_friends(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
