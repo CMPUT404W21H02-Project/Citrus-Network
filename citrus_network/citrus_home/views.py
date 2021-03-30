@@ -825,7 +825,7 @@ handles these requests:
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
-# @login_required
+@csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
     # special case:
     if author_id == foreign_author_id:
@@ -1409,7 +1409,6 @@ def manage_post(request, id, **kwargs):
         else:
             return returnJsonResponse(specific_message="user doesn't have correct permissions", status_code=403)
 
- 
     elif request.method == "GET":
         # print(request.META['host'])
         # ^^ HOW TO GET REQUEST HEADERS ^^
@@ -1429,25 +1428,24 @@ def manage_post(request, id, **kwargs):
                 "source": "localhost:8000/some_random_source",
                 "origin": posts.origin,
                 "description": posts.description,
-                "contentType": "text/plain",
+                "contentType": posts.contentType,
                 "content": posts.content,
                 # probably serialize author here and call it
                 "author": author_data,
                 "categories": categories,
                 "count": comments.count(),
                 "comments": comments_arr, 
-                "published": posts.created,
+                "published": posts.published,
                 "visibility": posts.visibility,
                 "unlisted": "false"
-        }
+            }
             return JsonResponse(return_data, status=200)
-
         # return all posts of the author ordered by most recent posts
         else:
             # return all posts of the given user
             author = CitrusAuthor.objects.get(id=id)
             visibility_list = ['PUBLIC']
-            posts = Post.objects.filter(author=author,visibility__in=visibility_list).order_by('-created')
+            posts = Post.objects.filter(author=author,visibility__in=visibility_list).order_by('-published')
             json_posts = []
             for post in posts:
                 author = post.author
@@ -1462,14 +1460,14 @@ def manage_post(request, id, **kwargs):
                     "source": "localhost:8000/some_random_source",
                     "origin": post.origin,
                     "description": post.description,
-                    "contentType": "text/plain",
+                    "contentType": post.contentType,
                     "content": post.content,
                     # probably serialize author here and call it
                     "author": author_data,
                     "categories": categories,
                     "count": comments.count(),
                     "comments": comments_arr, 
-                    "published": post.created,
+                    "published": post.published,
                     "visibility": post.visibility,
                     "unlisted": "false"
                 }
@@ -1478,7 +1476,6 @@ def manage_post(request, id, **kwargs):
             return JsonResponse({
                 "posts": json_posts
             },status=200)
-    
     else:
         return returnJsonResponse(specific_message="method not supported", status_code=400)
 
@@ -1867,8 +1864,6 @@ localhost:800/public-posts?q=arg1%20arg2
 def browse_posts(request):
     # return all public posts
     if request.method == "GET":
-        search_parameters = request.GET.get('q').split()
-        print("the search parameters are: ", search_parameters)
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
@@ -1890,14 +1885,14 @@ def browse_posts(request):
                 "source": "localhost:8000/some_random_source",
                 "origin": post.origin,
                 "description": post.description,
-                "contentType": "text/plain",
+                "contentType": post.contentType,
                 "content": post.content,
                 # probably serialize author here and call it
                 "author": author_data,
                 "categories": categories,
                 "count": comments.count(),
                 "comments": comments_arr, 
-                "published": post.created,
+                "published": post.published,
                 "visibility": post.visibility,
                 "unlisted": "false"
             }
