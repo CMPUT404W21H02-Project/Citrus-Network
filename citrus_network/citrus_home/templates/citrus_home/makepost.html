@@ -54,7 +54,7 @@
                             <span class="material-icons">insert_photo</span>
                             Add Image
                         </button> -->
-                        <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary">
+                        <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
                         </input>
                     </div>
                 </div>
@@ -97,6 +97,13 @@
             if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
                 let content = $("#div_id_content");
                 content.parent().hide();
+                let img = $("#id_image");
+                img.removeAttr('hidden');
+            } else {
+                let content = $("#div_id_content");
+                content.parent().show();
+                let img = $("#id_image");
+                img.attr('hidden', 'true');
             }
         });
         document.getElementById('id_image').addEventListener("change", function() {
