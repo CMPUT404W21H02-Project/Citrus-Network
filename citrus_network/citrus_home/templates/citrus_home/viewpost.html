@@ -255,8 +255,6 @@
     <!-- Allow user to edit post only if they are the author -->
     {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
         <script>
-            window.onload = getFriends;
-
             //Function that will hide category input, depending on if users choses to add categories.
             function hideCategory() {
                 var view = $("#categories");
@@ -278,27 +276,6 @@
                     }});
             }
 
-            //Function that gets all friends a user has.
-            function getFriends() {
-                var uuid = "{{uuid}}";
-                var pre_url = "/service/author/"
-                var url = pre_url + uuid + "/friends/" 
-                fetchJSON(url).then((json) => { //another callback
-                    try{
-                        //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
-                        for (var i = 0; i < json.items.length; i++) { 
-                            // console.log(json.items[i].displayName)
-                            // console.log(json.items[i].id)
-                            $("#friends-select")
-                            .append('<option value="'+ json.items[i].id +'">' + json.items[i].displayName + '</option>');
-                            } 
-                        }catch(err){
-                            // console.log(uuid)
-                            $("#friends-select") 
-                            .append('<option value="public">Public</option>');
-                        }
-                    });
-            }
             //Update an existing post by sending a PUT request.
             function updatePost() {
                 var uuid = "{{ uuid }}";
