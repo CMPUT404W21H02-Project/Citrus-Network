@@ -2,7 +2,23 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import User
 from django.core.validators import int_list_validator
+from django.urls import reverse
+# from django.dispatch import receiver
+# from django.db.models.signals import pre_save
 
+CONTENT_TYPE = {
+    ('text/plain', 'Plain Text'),
+    ('text/markdown', 'Markdown'),
+    ('image/png;base64', 'Image/png'),
+    ('image/jpeg;base64', 'Image/jpeg'),
+    ('application/base64', 'Application'),
+}
+
+VISIBILITY_CHOICES  = {
+    ("PUBLIC", "public"),
+    ("PRIVATE_TO_AUTHOR", "private to author"),
+    ("PRIVATE_TO_FRIEND", "private to friends")
+}
 
 class CitrusAuthor(models.Model):
     type            = models.CharField(max_length=100, default="Author")
@@ -23,28 +39,35 @@ common_mark = markdown
 posts have different types: public, shared to friends, private to author, private to friends
 """
 class Post(models.Model):
-    id                  = models.CharField(max_length=50, primary_key=True)
+    type                = models.CharField(max_length=50, default='post')
+    # title of a post
     title               = models.CharField(max_length=200)
-    description         = models.CharField(max_length=300)
-    content             = models.CharField(max_length=400)
-    author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
+    # id of the post
+    id                  = models.CharField(max_length=50, primary_key=True)
+    # where did you get this post from?
+    source              = models.CharField(max_length=300)
+    # where is it actually from
     origin              = models.CharField(max_length=300)
-    commonmark          = models.BooleanField(default=False)
-    # image           = models.ImageField()
+    # a brief description of the post
+    description         = models.CharField(max_length=300, null=True, blank=True)
+    contentType         = models.CharField(max_length=20, default='text/plain', choices=CONTENT_TYPE)
+    content             = models.TextField()
+    author              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     # parse this and return as list for GET request
-    categories          = models.CharField(max_length=400)
+    categories          = models.CharField(max_length=400, null=True, blank=True)
+    # total number of comments for this post
+    count               = models.IntegerField(null=True, blank=True)
+    # page size
+    size                = models.IntegerField(null=True, blank=True)
+    # the first page of comments
+    comments            = models.CharField(max_length=300, null=True, blank=True)
+    published           = models.DateTimeField(auto_now_add=True)
     # if visibility option is not provided the default will be public
-    visibility_choices  = [
-        ("PUBLIC", "public"),
-        ("PRIVATE_TO_AUTHOR", "private to author"),
-        ("PRIVATE_TO_FRIEND", "private to friends")
-    ]
-    visibility          = models.CharField(max_length=50, choices=visibility_choices, default="PUBLIC")
+    visibility          = models.CharField(max_length=50, choices=VISIBILITY_CHOICES, default="PUBLIC")
+    # unlisted means it is public if you know the post name -- use this for images, it's so images don't show up in timelines
+    unlisted            = models.BooleanField(default=False)
     # if private to author or private to friends is true add usernames to shared_with
-    shared_with         = models.CharField(max_length=600)
-    created             = models.DateTimeField(auto_now_add=True)
-
-
+    shared_with         = models.CharField(max_length=600, null=True, blank=True)
 
 """
 a comment will belong to an author and also be associated with one post
@@ -68,11 +91,9 @@ class Follower(models.Model):
     followers_uuid  = models.TextField(validators=[int_list_validator])
 
 class Node(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     # add a node with URL
     host = models.URLField(primary_key=True)
-    # if the host has been accepted
-    is_verified = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     # for Basic Auth TODO later
     node_username = models.CharField(max_length=100)
     node_password = models.CharField(max_length=100)
@@ -80,3 +101,9 @@ class Node(models.Model):
 class Inbox(models.Model):
     author = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     items = models.TextField()
+
+
+class Like(models.Model):
+    author      = models.CharField(max_length=50, default="1")
+    post_id     = models.CharField(max_length=50, blank=True, null=True)
+    comment_id  = models.CharField(max_length=50, blank=True, null=True)   
