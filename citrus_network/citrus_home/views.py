@@ -95,7 +95,9 @@ def register_redirect(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             # creates the user object
-            user = form.save()
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
             # login with newly created user
             username = request.POST.get('username')
             password = request.POST.get('password')
@@ -1010,7 +1012,17 @@ def make_post_redirect(request):
             categories = str(request.POST['categories'])
             visibility = str(request.POST['visibility'])
             shared_with = str(request.POST['shared_with'])
-            post = Post.objects.create(id=post_id, title=title, description=description, content=content, contentType=contentType, categories=categories, author=author, origin=str(request.headers['Origin']), visibility=visibility, shared_with=shared_with)
+            post = Post.objects.create(id=post_id, 
+                                    title=title, 
+                                    description=description, 
+                                    content=content, 
+                                    contentType=contentType, 
+                                    categories=categories, 
+                                    author=author, 
+                                    origin=str(request.headers['Origin']), 
+                                    source=str(request.headers['Origin']), 
+                                    visibility=visibility, 
+                                    shared_with=shared_with)
             return redirect(home_redirect)
         else:
             data = form.errors.as_json()
@@ -1123,7 +1135,17 @@ def manage_post(request, id, **kwargs):
         #
         body = json.loads(request.body)
         author = CitrusAuthor.objects.get(id=id)
-        post = Post.objects.create(id=str(uuid.uuid4()), title=body['title'], description=body['description'],content=body['content'],contentType=body['contentType'], categories=body['categories'], author=author, origin=body['origin'], visibility=body['visibility'], shared_with=body['shared_with'])
+        post = Post.objects.create(id=str(uuid.uuid4()), 
+                                title=body['title'], 
+                                description=body['description'],
+                                content=body['content'],
+                                contentType=body['contentType'],
+                                categories=body['categories'],
+                                author=author,
+                                origin=body['origin'],
+                                source=body['origin'],
+                                visibility=body['visibility'],
+                                shared_with=body['shared_with'])
         return returnJsonResponse(specific_message="post created", status_code=201)
 
     
@@ -1365,7 +1387,7 @@ def handleStream(request):
             posts_arr = []
             visibility_list=['PUBLIC', 'PRIVATE_TO_FRIENDS']
             # for now we are only looking for public posts this will later be extended to private to author and private to friends
-            posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-created')
+            posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-published')
             json_posts = []
             for post in posts:
                 author = post.author
@@ -1387,7 +1409,7 @@ def handleStream(request):
                     "categories": categories,
                     "count": comments.count(),
                     "comments": comments_arr, 
-                    "published": post.created,
+                    "published": post.published,
                     "visibility": post.visibility,
                     "unlisted": "false"
                 }
@@ -1404,7 +1426,7 @@ def handleStream(request):
                 posts_arr = []
                 # for now we are only looking for public posts this will later be extended to private to author and private to friends
                 visibility_list=['PUBLIC']
-                posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-created')
+                posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-published')
                 json_posts = []
                 for post in posts:
                     author = post.author
@@ -1426,7 +1448,7 @@ def handleStream(request):
                         "categories": categories,
                         "count": comments.count(),
                         "comments": comments_arr, 
-                        "published": post.created,
+                        "published": post.published,
                         "visibility": post.visibility,
                         "unlisted": "false"
                     }
