@@ -20,84 +20,79 @@
         <div class="container mt-5">
             <!-- Allow user to edit post only if they are the author -->
             {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
+            {% load crispy_forms_tags %}
                 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edit Post</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Edit Post</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.title|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.visibility|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.contentType|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.description|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.content|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                <div id="categories" hidden="true"> 
+                                                    {{form.categories|as_crispy_field}}
+                                                </div>
+                                                <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
+                                                    <span class="material-icons">
+                                                        add_circle_outline
+                                                    </span>
+                                                    Category
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3" hidden="true">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.shared_with|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3 mb-5">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                <button type="button" class="btn btn-outline-primary" disabled>
+                                                    <span class="material-icons">
+                                                        insert_photo
+                                                    </span>
+                                                    Add Image
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                                            <input type="submit" value="Submit" class="btn btn-outline-success"></input>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <div class="row justify-content-center">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <input type="text" class="form-control" id="title-name" placeholder="Title">
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <div class="dropdown">
-                                        <select class="form-select" aria-label="Default select example" id="post-visibility">
-                                            <option value="PUBLIC">Public</option>
-                                            <!-- <option value="FRIENDS">Friends</option> -->
-                                            <option value="PRIVATE_TO_FRIENDS">Private to friends</option>
-                                            <!-- <option value="FRIENDTOFRIEND">Friend to Friend</option> -->
-                                            <!-- <option value="SERVERONLY">Server Only</option> -->
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="group-type">
-                                        <input type="radio" class="btn-check" name="btnradio" value="false" id="btnradio1" autocomplete="off" checked>
-                                        <label class="btn btn-outline-primary" for="btnradio1">Plain Text</label>
-                                    
-                                        <input type="radio" class="btn-check" name="btnradio" value="true" id="btnradio2" autocomplete="off">
-                                        <label class="btn btn-outline-primary" for="btnradio2">Markdown</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <textarea class="form-control" id="post-textarea" rows="3" placeholder="Enter body post here"></textarea>
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <input type="text" class="form-control" id="categories" placeholder="Categories" hidden="true">
-                                    <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
-                                        <span class="material-icons">
-                                            add_circle_outline
-                                        </span>
-                                        Category
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <div class="dropdown">
-                                        <select class="form-select" aria-label="Default select example" id="friends-select">
-                                            <option></option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row justify-content-center mt-3 mb-5">
-                                <div class="col-md-12 col-sm-12 col-10">
-                                    <button type="button" class="btn btn-outline-primary" disabled>
-                                        <span class="material-icons">
-                                            insert_photo
-                                        </span>
-                                        Add Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-outline-success" onClick="updatePost()">Save changes</button>
-                        </div>
-                    </div>
                     </div>
                 </div>
                 <div class="row justify-content-center mt-1">
@@ -151,6 +146,7 @@
             </div>
         </div>
     </body>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -226,9 +222,15 @@
                             tagHtml +=  '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + 
                             post.categories[i] + '</a>';
                         }
-                        $('.post-tag').html(tagHtml)
+                        $('.post-tag').html(tagHtml);
                         $('.post-title').html(post.title);
-                        $('.post-content').html(post.content);
+                        if (post.contentType === 'text/markdown'){
+                            $('.post-content').html(marked(post.content));
+                        } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
+                            $('.post-content').html('<img src=\"' + post.content + '\"/>');
+                        } else {
+                            $('.post-content').html(post.content);
+                        }
                         for (var i in post.comments) {
                             var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
                                 '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 

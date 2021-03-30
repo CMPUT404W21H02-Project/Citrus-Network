@@ -14,77 +14,66 @@
   </head>
   <body>
     {% include '../navbar-logged-in.html' %}
+    {% load crispy_forms_tags %}
     <div class="container pt-5">
         <h1>Make a Post</h1>
-        <div class="row justify-content-center mt-5 mb-2">
-            <div class="col-md-6 col-sm-12 col-10">
-                <input type="text" class="form-control" id="title-name" placeholder="Title">
-            </div>
-            <div class="col-md-2 col-sm-6 col-4">
-                <div class="dropdown">
-                    <select class="form-select" aria-label="Default select example" id="post-visibility">
-                        <option value="PUBLIC">Public</option>
-                        <!-- <option value="FRIENDS">Friends</option> -->
-                        <option value="PRIVATE_TO_FRIENDS">Private to friends</option>
-                        <!-- <option value="FRIENDTOFRIEND">Friend to Friend</option> -->
-                        <!-- <option value="SERVERONLY">Server Only</option> -->
-                    </select>
+        <div class="form-group" enctype="multipart/form-data">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row justify-content-center mt-5 mb-2">
+                    <div class="col-md-6 col-sm-12 col-10">
+                        {{form.title|as_crispy_field}}
+                    </div>
+                    <div class="col-md-2 col-sm-6 col-4">
+                        {{form.visibility|as_crispy_field}}
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-4">
+                        {{form.contentType|as_crispy_field}}
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4 col-sm-6 col-4">
-                <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="group-type">
-                    <input type="radio" class="btn-check" name="btnradio" value="false" id="btnradio1" autocomplete="off" checked>
-                    <label class="btn btn-outline-primary" for="btnradio1">Plain Text</label>
-                  
-                    <input type="radio" class="btn-check" name="btnradio" value="true" id="btnradio2" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio2">Markdown</label>
+                <div class="row justify-content-center mb-2">
+                    {{form.description|as_crispy_field}}
                 </div>
-            </div>
-        </div>
-        <div class="row justify-content-center mb-4">
-            <div class="col-md-12 col-sm-12 col-10">
-                <textarea class="form-control" id="post-textarea" rows="3" placeholder="Enter body post here"></textarea>
-            </div>
-        </div>
-        <div class="row mt-1 mb-2">
-            <div class="col-md-4">
-                <input type="text" class="form-control" id="categories" placeholder="Categories" hidden="true">
-                <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
-                    <span class="material-icons">
-                        add_circle_outline
-                    </span>
-                    Category
-                </button>
-            </div>
-        </div>
-        <div class="row mt-4 mb-2">
-            <div class="col-md-4">
-                <button type="button" class="btn btn-outline-primary" disabled>
-                    <span class="material-icons">
-                        insert_photo
-                    </span>
-                    Add Image
-                </button>
-            </div>
-        </div>
-        <div class="row mt-4 mb-5" hidden="true">
-            <div class="col-md-4">
-                <div class="dropdown">
-                    <select class="form-select" aria-label="Default select example" id="friends-select">
-                        <option></option>
-                    </select>
+                <div class="row justify-content-center mb-2">
+                    {{form.content|as_crispy_field}}
                 </div>
-            </div>
-        </div>
-        <div class="row justify-content-center mt-4 mb-2">
-            <div class="col-md-2 col-4">
-                <a href="{% url 'home_url'%}">
-                    <button type="button" class="btn btn-outline-danger">Cancel</button>
-                </a>
-            </div>
-            <div class="col-md-2 col-4">
-                <button type="button" onClick="makePost()" class="btn btn-outline-success">Post</button>
-            </div>
+                <div class="row mt-1 mb-2">
+                    <div class="col-md-4">
+                        <div id="categories" hidden="true"> 
+                            {{form.categories|as_crispy_field}}
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
+                            <span class="material-icons">add_circle_outline</span>
+                            Category
+                        </button>
+                    </div>
+                </div>
+                <div class="row mt-4 mb-2">
+                    <div class="col-md-4">
+                        <!-- <button type="button" class="btn btn-outline-primary">
+                            <span class="material-icons">insert_photo</span>
+                            Add Image
+                        </button> -->
+                        <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary">
+                        </input>
+                    </div>
+                </div>
+                <div class="row mt-4 mb-5" hidden="true">
+                    <div class="col-md-4">
+                        {{form.shared_with|as_crispy_field}}
+                    </div>
+                </div>
+                <div class="row justify-content-center mt-4 mb-2">
+                    <div class="col-md-2 col-4">
+                        <a href="{% url 'home_url'%}">
+                            <button type="button" class="btn btn-outline-danger">Cancel</button>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-4">
+                        <input type="submit" value="Submit" class="btn btn-outline-success"></input>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
@@ -94,10 +83,6 @@
         crossorigin="anonymous">
     </script>
     <script>
-        window.onload = getFriends;
-        /**
-         * Function that will hide category input, depending on if users choses to add categories.
-        **/
         function hideCategory() {
             var view = $("#categories");
             if (view.is(":visible")){
@@ -106,7 +91,34 @@
                 view.removeAttr('hidden');
             }
         }
-        
+    </script>
+    <script>
+        $("#id_contentType").change(function(){
+            if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
+                let content = $("#div_id_content");
+                content.parent().hide();
+            }
+        });
+        document.getElementById('id_image').addEventListener("change", function() {
+            var files = document.getElementById('id_image').files;
+            if (files.length > 0) {
+                getBase64(files[0]);
+            }
+        });
+        function getBase64(file) {
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                let postContent = $("#id_content");
+                postContent.val(reader.result);
+            };
+            reader.onerror = function (error) {
+                console.log('Error: ', error);
+            };
+        }
+    </script>
+    <!-- <script>
+        window.onload = getFriends;
         /**
          * Get the JSON response from given url.
         **/
@@ -143,59 +155,7 @@
                     }
                 });
         }
-
-        /**
-         * Send a POST request to make a new post, redirect user to stream page after.
-        **/
-        function makePost() {
-            var uuid = "{{ uuid }}";
-            var pre_url = "/service/author/";
-            var url = pre_url + uuid + "/posts/";
-            var title = document.getElementById("title-name").value;
-            var content = document.getElementById("post-textarea").value;
-            if (title === ""){
-                alert("Don't submit an empty post");
-                return false;
-            }
-            var visibility = document.getElementById("post-visibility").value;
-            var markdown;
-            if(document.getElementById('btnradio1').checked){
-                markdown = document.getElementById('btnradio1').value;
-            }
-            if(document.getElementById('btnradio2').checked){
-                markdown = document.getElementById('btnradio2').value;
-            }
-            markdown = "false";
-            var shared = document.getElementById("friends-select").value;
-            var categories_field = $("#categories");
-            var categories;
-            if (categories_field.is(":hidden")){
-                categories = "";
-            } else {
-                categories = document.getElementById('categories').value;
-            }
-
-            var mJson = {
-                    title: title,
-                    description: "mock desc",
-                    categories: categories,
-                    content: content,
-                    origin: window.location.origin,
-                    visibility: visibility,
-                    shared_with: shared,
-            };
-            $.ajax({
-                type: 'POST',
-                url: url,
-                dataType: "json",
-                contentType: "application/json",
-                data: JSON.stringify(mJson),
-                success: function(result) {
-                    window.location.href = "{% url 'home_url'%}"
-                }
-            });
-        }
-    </script>
+    </script> -->
   </body>
 </html>
 <style>

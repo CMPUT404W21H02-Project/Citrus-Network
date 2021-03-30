@@ -9,7 +9,7 @@ class CitrusAuthorAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'title', 'description', 'content', 'author', 'commonmark', 'visibility',)
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id','title','description','content','author','origin','commonmark','categories','visibility','created' )
+    list_display = ('id','title','description','content','author','origin','contentType','categories','visibility','created' )
 
 
 class CommentAdmin(admin.ModelAdmin):
@@ -23,7 +23,7 @@ class FollowerAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'followers_uuid',)
 
 class NodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'host', 'is_verified', 'node_username', 'node_password',)
+    list_display = ('user', 'host', 'node_username', 'node_password',)
 
 class LikeAdmin(admin.ModelAdmin):
     list_display = ('author', 'post_id', 'comment_id')
