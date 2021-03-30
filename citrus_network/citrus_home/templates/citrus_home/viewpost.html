@@ -229,7 +229,10 @@
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
                             $('.post-content').html('<img src=\"' + post.content + '\"/>');
                         } else {
-                            $('.post-content').html(post.content);
+                            let lines = post.content.split("\n")
+                            for (var i of lines) {
+                                $('.post-content').append(i + '<br>');
+                            }
                         }
                         for (var i in post.comments) {
                             var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
