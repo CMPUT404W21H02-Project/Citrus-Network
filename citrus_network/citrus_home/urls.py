@@ -36,8 +36,8 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/followers/<uuid:foreign_author_id>/', views.edit_followers, name='edit_followers'),
 
   # OTHER SERVERS
-  path('service/authors/team3', views.get_team3_authors, name='authors3'),
-  path('service/authors/team18', views.get_team18_authors, name='authors18'),
+  # path('service/authors/team3', views.get_team3_authors, name='authors3'),
+  # path('service/authors/team18', views.get_team18_authors, name='authors18'),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/followers/(?P<foreign_author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/$',  views.edit_followers, name='edit_followers'),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/friends/(?P<foreign_author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/$', views.edit_friends, name='edit_friends'),
 
