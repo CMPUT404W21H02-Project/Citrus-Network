@@ -1867,10 +1867,10 @@ def browse_posts(request):
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
-            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters)))
+            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
         except:
             print("here")
-            public_posts = Post.objects.filter(visibility='PUBLIC')
+            public_posts = Post.objects.filter(visibility='PUBLIC').order_by('-published')
         json_posts = []
         for post in public_posts:
             author = post.author

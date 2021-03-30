@@ -19,6 +19,7 @@
         <div class="row justify-content-center mt-5 mb-1 stream-post">
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script 
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
     </script>
@@ -53,39 +54,27 @@
                     }
                     postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
                         json.message[i].author.id + '/view-post/' + json.message[i].id + '/>' + 
-                        '<h6 class="font-weight-bold">' + json.message[i].title + '</h6>' + 
-                        // '<img class="post-img" height="300px" width="300px" src="https://avatars.dicebear.com/v2/avataaars/' + 
-                        // json.message[i].origin + '.svg"/>' + 
-                        '<p>' + json.message[i].content + '</p>';
+                        '<h6 class="font-weight-bold">' + json.message[i].title + '</h6>';
                     
+                    if (json.message[i].contentType === "image/png;base64" || json.message[i].contentType === "image/jpeg;base64"){
+                        postHtml += '<img src=\"' + json.message[i].content + '\"/>';
+                    } else if (json.message[i].contentType === "text/markdown") {
+                        postHtml += marked(json.message[i].content)
+                    } else{
+                        let lines = json.message[i].content.split('\n');
+                        
+                        postHtml += '<p>';
+                        for (var j of lines) {
+                            postHtml += j + '<br>'
+                        }
+                        postHtml +='</p>';
+                        // console.log(marked(json.message[i].content));
+                    }
                     newElement.innerHTML = postHtml;
 
                     document.querySelector(".stream-post").appendChild(newElement);
                 }
             });
-        }
-
-        function formatEvent(event){
-            var formattedEvent = new String("<strong>"+"Type: "+"</strong>"+event["type"]+
-                                            "<strong>"+"   Action: "+"</strong>"+event["action"]+
-                                            "<strong>"+"    Repo: "+"</strong>"+event["repo"]+
-                                            "<strong>"+"    Time: "+"</strong>"+event["time"]);
-            return formattedEvent
-        }
-
-        function toggleGithubActivity() {
-            var body = document.querySelector("#github-body");
-            var caretUp = document.querySelector(".bi-caret-up");
-            var caretDown = document.querySelector(".bi-caret-down");
-            if (body.style.display == "none") {
-                body.style.display = "block";
-                caretDown.style.display = "none";
-                caretUp.style.display = "block";
-            } else {
-                body.style.display = "none";
-                caretDown.style.display = "block";
-                caretUp.style.display = "none";
-            }
         }
 
         window.onload = function() {
