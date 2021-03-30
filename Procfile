@@ -1,1 +1,1 @@
-web: gunicorn citrus_network.wsgi 
+web: gunicorn citrus_network.wsgi
