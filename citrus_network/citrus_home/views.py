@@ -752,7 +752,6 @@ format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
 URL: ://service/author/{AUTHOR_ID}/followers
 """
-@login_required
 def get_followers(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
@@ -827,7 +826,6 @@ Expected:
 URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
 # @login_required
-@csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
     # special case:
     if author_id == foreign_author_id:
