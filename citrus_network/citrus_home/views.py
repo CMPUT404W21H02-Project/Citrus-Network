@@ -1244,7 +1244,7 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
     
     if request.method == 'GET':
         url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
-        body = { "type": "follow", "new_follower_ID": "a23b6b75-c3e9-4012-b036-0f3b21af36b6"} #leah18s id
+        body = { "type": "follow", "new_follower_ID": foreign_author_id} 
         response = requests.post(url, data = body)
         result = response.json()
         response = JsonResponse({"message from team 18's response":result})
