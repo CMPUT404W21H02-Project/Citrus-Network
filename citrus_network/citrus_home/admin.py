@@ -39,7 +39,7 @@ class FollowerAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'followers_uuid',)
 
 class NodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'host', 'node_username', 'node_password',)
+    list_display = ('host', 'node_username', 'node_password',)
 
 class LikeAdmin(admin.ModelAdmin):
     list_display = ('author', 'post_id', 'comment_id')

@@ -1,50 +1,115 @@
-<!-- This document is acting as a template if we want to split edit profile and view profile. -->
-
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <title>Profile</title>
 </head>
 <body>
-    {% include "navbar.html" %}
-    {% load crispy_forms_tags %}
+    {% include '../navbar-logged-in.html' %}
     <div class="container">
-        <div class="row justify-content-end">
-            <div class="col-sm-1 align-self-end">
-                <div class="btn btn-danger mr-5 mt-5 edit-btn">Edit</div>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class = "card mt-5 mb-5" id="view-profile">
+                    <div class="card-header">
+                        <h3 class="ml-1 mt-1">Profile Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <p><strong>Username</strong></p>
+                                <p id = "currentUsername">{{author.username}}</p>             
+                            </li>
+                            <li class="list-group-item">
+                                <p><strong>Display Name</strong></p>
+                                <p id = "currentDisplayName">{{author.displayName}}</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p><strong>Github</strong></p>
+                                <p id = "currentGithub">{{author.github}}</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row justify-content-center">
-            <div class = "card mt-5 mb-5 view-profile">
-                <div class="card-header">
-                    <h3 class="ml-1 mt-1">Profile Information</h3>
-                </div>
-                <img class="card-img" src="https://image.freepik.com/free-photo/lemon_1205-1667.jpg" alt="">
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <div class="font-weight-bold">Username</div>
-                            {{ user.user }}
-                        </li>
-                        <li class="list-group-item">
-                            <div class="font-weight-bold">Display Name</div>
-                            {{ user.displayName }}
-                        </li>
-                        <li class="list-group-item">
-                            <div class="font-weight-bold">Github</div>
-                            {{ user.github  }}
-                        </li>
-                    </ul>
-                </div>
-            </div>
+        <!-- Display the stream -->
+        <div class="row justify-content-center mt-1 mb-1 stream-post">
         </div>
     </div>
 </body>
-</html>
- -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
+</script>
+<script>
+    function fetchJSON(url, data = {}) {
+        return fetch(url, data).then((response) => {
+            if (response.status === 200 || response.status === 404) { // OK
+                return response.json(); // return a Promise
+            } else {
+                alert("Something went wrong: " + response.status);
+            }});
+        }
 
+    // get stream gets it as a json which is setup for pagination in mind. This will be needed
+    // to implement an "infinite scroll" as the number of posts in the stream increases beyond
+    // what we should get in a single call.
+    function getStream() {
+        fetchJSON("{{ postsURL }}").then((json) => {
+            console.log(json.posts);
+            for(var i in json.posts){
+                var newElement = document.createElement('div');
+                var classAttr = document.createAttribute("class");
+                classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
+                newElement.setAttributeNode(classAttr);
+                let url = "{% url 'render_profile' %}" + json.posts[i].author.id
+                var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                    '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
+                    '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
+                    '</a>';
+
+                for (var j in json.posts[i].categories) {
+                    postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
+                }
+                postHtml += '</div><a class="card-body card-link" href=../../service/author/' + 
+                    json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
+                    '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>';
+                
+                if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
+                    postHtml += '<img src=\"' + json.posts[i].content + '\"/>';
+                } else if (json.posts[i].contentType === "text/markdown") {
+                    postHtml += marked(json.posts[i].content)
+                } else{
+                    let lines = json.posts[i].content.split('\n');
+                    
+                    postHtml += '<p>';
+                    for (var j of lines) {
+                        postHtml += j + '<br>'
+                    }
+                    postHtml +='</p>';
+                    // console.log(marked(json.posts[i].content));
+                }
+                newElement.innerHTML = postHtml;
+
+                document.querySelector(".stream-post").appendChild(newElement);
+            }
+        });
+    }
+
+    window.onload = function() {
+        getStream();
+    }
+</script>
+</html>
+<style>
+    a.card-link {
+        color: inherit;
+        text-decoration: inherit;
+    }   
+    
+</style>
 
