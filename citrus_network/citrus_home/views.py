@@ -626,7 +626,7 @@ RETURN: response
 def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
-    url = URL_TEAM18 + author_id + FORWARD_SLASH
+    url = URL_TEAM18 + author_id + FORWARD_SLASH #str(author_id) ?
     response = requests.get(url)
     return response
 
@@ -1024,8 +1024,9 @@ def edit_followers(request, author_id, foreign_author_id):
             return response
 
         # validate foregin id in citrus_author model:
-        if check_author_exist_in_CitrusAuthor(foreign_author_id) == False:
-            response = JsonResponse({"results":"foreign id doesn't exist on server"})
+        #need to also check here if the author exists in team18 and team3
+        if (check_author_exist_in_CitrusAuthor(foreign_author_id) == False):
+            response = JsonResponse({"results":"foreign id doesn't exist on our server or team18's"})
             response.status_code = 404
             return response
 
@@ -1361,6 +1362,122 @@ RETURN: request, findfriends page, current user id
 def render_find_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
+
+'''
+Follow someone on citrus network === put request to our followers API
+
+PARAMS:
+    request - the request to endpoint 
+    author_id - the id of the author the request is being sent to
+    foreign_author_id - the id of the author on our server sending the request
+    citrus_host - citrus host name
+'''
+def be_follow_citrus(request, author_id, foreign_author_id, citrus_host):
+    pass
+    '''
+     if request.method == 'GET':
+        url =  "/service/author/" + str(author_id)+ "/followers/" + str(foreign_author_id)  + "/"
+        response = requests.put(url)
+        #result = response.json()
+        response = JsonResponse({"message from citrus network server":response.status_code})
+        response.status_code = 200
+        return response'''
+    
+'''
+Follow someone from team 18 === send a friend request to someone from team 18's inbox
+https://app.swaggerhub.com/apis-docs/lida9/SocialDistribution/1.0.0-oas3#/Inbox/post_service_author__authorID__inbox_friendrequest__foreignAuthorID__
+
+PARAMS:
+    request - the request to endpoint 
+    author_id - the id of the author the request is being sent to
+    foreign_author_id - the id of the author on our server sending the request
+    team_18_host - team 18s host name
+'''
+def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
+    #pending_friends_18 = get_pending_friend_reqs(foreign_author_id,team_18_host)
+    
+    if request.method == 'GET':
+        url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
+        body = { "type": "follow", "new_follower_ID": foreign_author_id} 
+        response = requests.post(url, data = body)
+        result = response.json()
+        response = JsonResponse({"message from team 18's response":result})
+        response.status_code = 200
+        return response
+    
+   
+'''
+determine if someones friend request is pending when we follow - if so - post into our friend api
+PARAMS:
+    foreign_author_id - the id of the author on our server sending the request
+    team_18_host - team 18s host name
+'''
+def get_pending_friend_reqs_team18(author_id,team_18_host):
+    pass
+    #teamp 18s api cant friend request to remote servers
+    #url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
+    #response = requests.get(url)
+    #result = response.json()
+    #print(result)
+    #check if team
+
+'''
+Follow someone from team 3 === send a friend request to team 3
+https://github.com/CMPUT404W21-Team3/social-distribution/wiki/API-Reference#follower-detail-view
+
+PARAMS:
+    request - the request to endpoint 
+    author_id - the id of the author the request is being sent to
+    foreign_author_id - the id of the author on our server sending the request
+    team_3_host - team 3s host name
+'''
+def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
+    if request.method == 'GET':
+        response = JsonResponse({"message":"cant friend request or following remote auths on team 3 yet"})
+        response.status_code = 404
+        return response
+        '''
+        #https://team3-socialdistribution.herokuapp.com/api/author/7688943f-7102-4d27-ab90-4935fa5d4ee7/friendrequests/a23b6b75-c3e9-4012-b036-0f3b21af36b6
+        #http://127.0.0.1:8000/service/author/7688943f-7102-4d27-ab90-4935fa5d4ee7/follow_remote_3/cf9924f7-3604-4d76-8d0f-3196aca280f1/https://team3-socialdistribution.herokuapp.com/
+        print(team_3_host)
+        url = team_3_host + "api/author/" + "7688943f-7102-4d27-ab90-4935fa5d4ee7" + "/friendrequests/" + "a23b6b75-c3e9-4012-b036-0f3b21af36b6"
+        print("**************************")
+        print(url)
+        example_body = {
+            "type": "Follow",
+            "summary": str(foreign_author_id) + "wants to follow steve" + str(author_id),
+            "sender": {
+                "type": "author",
+                "id": "a23b6b75-c3e9-4012-b036-0f3b21af36b6",
+                "displayName": "leah_18",
+                "bio": "",
+                "location": "",
+                "birth_date": "",
+                "github": ""
+            },
+            "receiver": {
+                "type": "author",
+                "id": "7688943f-7102-4d27-ab90-4935fa5d4ee7",
+                "displayName": "leah_team_3",
+                "bio": "",
+                "location": "",
+                "birth_date": "",
+                "github": ""
+            }
+        }
+
+        response = requests.put(url, data = example_body)
+        print(response.content)
+        #result = response.json(response)
+        #print(result)
+       
+        response_2 = JsonResponse({"message from team 3's response": "is this better"})
+        return response_2
+    else:
+        response = JsonResponse({"message":"that wasnt a GET request bruv"})
+        response.status_code = 405
+        return response
+    '''
 
 """
     render makepost html page
@@ -1821,11 +1938,44 @@ def handleStream(request):
         current_user = request.user
         citrus_author = CitrusAuthor.objects.get(user=current_user)
         # find friends of the citrus author and get their posts
+        json_posts = []
         try:
             friends = Friend.objects.get(uuid=citrus_author)
             # friends arr holds the uuid for each friend of the current user that is signed in
             friends_uuid_arr = friends.friends_uuid.split(CONST_SEPARATOR)
             friends_arr = []
+            # get all active nodes and check for team 3 and 18
+            # sort friends by server
+            server_list = []
+            try:
+                nodes = Node.objects.all()
+                # list of all hostnames 
+                for server in nodes:
+                    server_list.append(server.host)
+            except:
+                pass
+            team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
+            team3_url = "https://team3-socialdistribution.herokuapp.com/"
+            team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
+            team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
+            friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
+            friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            # citrus network database
+            for id in friends_uuid_arr:
+                # team 9 stores id's with a hyphen
+                author = CitrusAuthor.objects.get(id=id)
+                friends_arr.append(author)
+            
+            # query team18 database
+            for id in team18_friends:
+                request = f"{team18_url}/service/author/{id}/posts/"
+                # print(request)
+                response = requests.get(request)
+                # decode the response
+                content = json.loads(response.content)
+                post_list = content.get('posts')
+                for post in post_list:
+                    json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -1837,7 +1987,6 @@ def handleStream(request):
             visibility_list=['PUBLIC', 'PRIVATE_TO_FRIENDS']
             # for now we are only looking for public posts this will later be extended to private to author and private to friends
             posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-published')
-            json_posts = []
             for post in posts:
                 author = post.author
                 comments = Comment.objects.filter(post=post)
@@ -2261,3 +2410,23 @@ def return_like_object(type, like, post):
             "object": "localhost:8000/"
         }
         return response
+
+# return intersection of all users on team 18 and friends of current user
+def get_team18_friends(friends_uuid_arr, host_name):
+    # get all user id's on team 18's server
+    request = f"{host_name}/service/author/"
+    response = requests.get(request)
+    content = json.loads(response.content)
+    team_18_id = []
+    for author in content:
+        team_18_id.append((author.get('authorID')))
+    return set(friends_uuid_arr).intersection(team_18_id)
+
+# https://team3-socialdistribution.herokuapp.com/
+def get_team3_friends(friends_uuid_arr, host_name):
+    # get all user id's on team 18's server
+    team_3_id = []
+    response = get_team3_authors()
+    for author in response:
+        team_3_id.append((author.get('id')))
+    return set(friends_uuid_arr).intersection(team_3_id)
