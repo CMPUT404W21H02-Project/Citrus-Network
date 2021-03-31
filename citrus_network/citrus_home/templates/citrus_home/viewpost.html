@@ -175,14 +175,14 @@
                                 comment: $("#comment").val()
                             }
                             $.ajax({
-                                url: "/service/author/{{uuid}}/posts/{{post_id}}/comment/",
+                                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
                                 type: "POST",
                                 dataType: 'json',
                                 contentType: "application/json",
                                 data: JSON.stringify(comment),
                                 success: function(data) {
                                     $.ajax({
-                                        url: "/service/author/{{author_id}}/posts/{{post_id}}/comment/",
+                                        url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
                                         type: "GET",
                                         dataType: 'json',
                                         success: function(data) {
@@ -212,7 +212,7 @@
                 });
 
                 $.ajax({
-                    url: "/service/author/{{author_id}}/posts/{{post_id}}",
+                    url: "/service/author/{{author_id}}/get-posts/{{post_id}}/",
                     type: "GET",
                     dataType: 'json',
                     success: function(post) {
