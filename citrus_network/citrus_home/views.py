@@ -267,14 +267,18 @@ def get_authors_public_posts(request, author_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/')
-                        return JsonResponse(req.json())
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/').json()
+                        # print('team 18', req)
+                        for i in req["posts"]:
+                            i["id"] = i["postID"]
+                            i["author"]["id"] = i["authorID"]
+                        return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/')
                     if req.status_code == 200:
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/')
-                        # print(req)
                         return JsonResponse({"posts":req.json()})
+
 """
 handles get requests with id and retrieve author profile information: username, displayname, github
 handles post requests to state changes to author profile information: username, displayname, github 
@@ -1521,6 +1525,79 @@ def make_post_redirect(request):
         response.status_code = 405
         return response
 
+def get_author_post(request, author_id, post_id):
+    if request.method == 'GET':
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/' + post_id + '/')
+            return JsonResponse(req.json())
+        except ObjectDoesNotExist:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + post_id + '/').json()
+                        req["id"] = req["postID"]
+                        req["author"]["id"] = req["authorID"]
+                        return JsonResponse(req)
+                elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + post_id)
+                        return JsonResponse(req.json())
+
+@csrf_exempt
+def handle_remote_comment(request, author_id, post_id):
+    try:
+        current_author = CitrusAuthor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return returnJsonResponse("not authorized", 401)
+    if request.method == 'GET':
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/' + str(post_id) + '/comment/')
+            return JsonResponse(req.json())
+        except ObjectDoesNotExist:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        print(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/')
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/')
+                        return JsonResponse(req.json())
+                elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments')
+                        return JsonResponse({"comments": req.json()})
+
+    elif request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+        except:
+            return returnJsonResponse("Please provide a post body", 400)
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+            req = requests.post(author.host + 'service/author/' + str(author.id) + '/posts/' + str(post_id) + '/comment/', json=body)
+            return JsonResponse(req.json())
+        except ObjectDoesNotExist:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        body["author_write_comment_ID"] = str(current_author.id)
+                        req = requests.post(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/', json=body)
+                        return JsonResponse(req.json())
+                elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body)
+                        return JsonResponse({"comments": req.json()})
+
+
 """
     render view post html page
     update existing form using POST method for PostForm (custom django form for posts).
@@ -1534,15 +1611,20 @@ def post_redirect(request, author_id, post_id):
         current_user = request.user
         current_citrus_author = CitrusAuthor.objects.get(user=current_user)
         # id of the person who owns the post
-        posts = Post.objects.get(id=post_id)
-        post_author = posts.author
-        if current_citrus_author == post_author:
-            # check if form is valid here
-            post = Post.objects.get(id=post_id) 
-            form = PostForm(instance=post)
-            return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
-        else:
+        try:
+            posts = Post.objects.get(id=post_id)
+            post_author = posts.author
+            if current_citrus_author == post_author:
+                # check if form is valid here
+                post = Post.objects.get(id=post_id) 
+                form = PostForm(instance=post)
+                return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
+            else:
+                return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
+        except ObjectDoesNotExist:
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
+
+            
     elif request.method  == "POST":
         uuid = get_uuid(request)
         form = PostForm(request.POST)
