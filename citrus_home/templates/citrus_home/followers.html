@@ -81,18 +81,22 @@
                 //try because json.items is not present in response where status code != 200
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
+                        let url = "{% url 'render_profile' %}" + json.items[i].id;
                         //true if a follower id is also present in friends ids - false otherwise
                         if (friendsids.includes(json.items[i].id)){
+                            console.log(json.items[i]);
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        json.items[i].displayName+'</div></a>'+
                                         '<div class="card-body" id = "card_body">'+
                                         '<p id = "'+json.items[i].id+'">Already Following</p></div>'+
                                         '</div>'); 
                         }else{
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        json.items[i].displayName+'</div></a>'+
                                         '<div class="card-body" id = "card_body">'+
                                         '<button id = "'+json.items[i].id+'" onClick="followBack(this)">Add Friend</button></div>'+
                                         '</div>');
