@@ -1344,25 +1344,8 @@ def render_find_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
-'''
-Follow someone on citrus network === put request to our followers API
 
-PARAMS:
-    request - the request to endpoint 
-    author_id - the id of the author the request is being sent to
-    foreign_author_id - the id of the author on our server sending the request
-    citrus_host - citrus host name
-'''
-def be_follow_citrus(request, author_id, foreign_author_id, citrus_host):
-    pass
-    '''
-     if request.method == 'GET':
-        url =  "/service/author/" + str(author_id)+ "/followers/" + str(foreign_author_id)  + "/"
-        response = requests.put(url)
-        #result = response.json()
-        response = JsonResponse({"message from citrus network server":response.status_code})
-        response.status_code = 200
-        return response'''
+
     
 '''
 Follow someone from team 18 === send a friend request to someone from team 18's inbox
@@ -1385,7 +1368,21 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
         response = JsonResponse({"message from team 18's response":result})
         response.status_code = 200
         return response
-    
+
+
+def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
+    if request.method == "GET":
+        url = team_18_host + "service/author/" + str(author_id) + "/followers/" + str(foreign_author_id) + "/"
+        response = requests.put(url)
+        result = response.json()
+        response = JsonResponse({"message from team 18's response when following back":result})
+        response.status_code = 200
+        return response
+
+
+def be_follow_back_team_3(request, author_id, foreign_author_id, team_18_host):
+    if request.method == "GET":
+        print("cant put to team 3 yet")
    
 '''
 determine if someones friend request is pending when we follow - if so - post into our friend api
@@ -1561,7 +1558,8 @@ def handle_remote_comment(request, author_id, post_id):
             return returnJsonResponse("Please provide a post body", 400)
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-            req = requests.post(author.host + 'service/author/' + str(author.id) + '/posts/' + str(post_id) + '/comment/', json=body)
+            print(current_author, str(author.id))
+            req = requests.post(author.host + 'service/author/' + str(current_author.id) + '/posts/' + str(post_id) + '/comment/', json=body)
             return JsonResponse(req.json())
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
