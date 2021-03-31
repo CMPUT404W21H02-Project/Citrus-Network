@@ -1414,11 +1414,11 @@ PARAMS:
 '''
 def get_pending_friend_reqs_team18(author_id,team_18_host):
     #teamp 18s api cant friend request to remote servers
-    url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
-    response = requests.get(url)
-    result = response.json()
-    print(result)
-
+    #url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
+    #response = requests.get(url)
+    #result = response.json()
+    #print(result)
+    pass
     #check if team
 
 '''
