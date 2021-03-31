@@ -107,7 +107,8 @@
             var url;
             if (non_follower_info_dict[button.id] == citrus_network_swag_host || non_follower_info_dict[button.id] == local_host){
                 //button.id is person recieveing friend req, uuid is person sending friend req
-                var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
+                var url =  "service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
+                //var url = citrus_network_swag_host + "service/author/" + uuid + "inbox"
                 follow_citrus(url).done(function(response) {
                     console.log(response);
                     set_button(button)
@@ -159,12 +160,14 @@
             return $.ajax({
                 url: url,
                 type: 'POST',
+                headers: { 'Access-Control-Allow-Origin': '*' },
                 contentType: "application/json",
-                body: JSON.stringify({ "type": "follow", "new_follower_ID": new_follower_id}),
+                body: { "type": "follow", "new_follower_ID": new_follower_id},
                 success: function(result) {
                     console.log(result)
                 }
             })
+
         }
 
         //follow someone from team3
