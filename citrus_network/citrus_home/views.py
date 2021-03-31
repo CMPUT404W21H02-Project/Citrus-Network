@@ -1022,7 +1022,6 @@ def edit_followers(request, author_id, foreign_author_id):
         # validate foregin id in citrus_author model:
         #need to also check here if the author exists in team18 and team3
         if (check_author_exist_in_CitrusAuthor(foreign_author_id) == False):
-            print(on_team_18.status_code)
             response = JsonResponse({"results":"foreign id doesn't exist on our server or team18's"})
             response.status_code = 404
             return response
