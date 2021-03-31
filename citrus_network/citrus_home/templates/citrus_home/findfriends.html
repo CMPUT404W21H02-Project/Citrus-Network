@@ -65,15 +65,12 @@
                         //creating a dictionary associating each id with its host to control for slight differences in each API
                         if ("host" in json.items[i]){
                             if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                console.log("local or citrus host: " + json.items[i].host)
                                 non_follower_info_dict[json.items[i].id] = json.items[i].host
                                 user_id = json.items[i].id
                             }else if (json.items[i].host == team_18_host){
-                                console.log("team_18 host: " + json.items[i].host)
                                 non_follower_info_dict[json.items[i].authorID] = json.items[i].host
                                 user_id = json.items[i].authorID
                             }else if (json.items[i].host == team_3_host){
-                                console.log("team_3 host: " + json.items[i].host)
                                 non_follower_info_dict[json.items[i].id] = json.items[i].host
                                 user_id = json.items[i].id
                             }else{
@@ -82,11 +79,10 @@
                         }else{
                             console.log("host was not in json.items. Someone did not provide host in API")
                         }
-
-
+                        let url = "{% url 'render_profile' %}" + user_id;
                         $("#card_parent") 
-                        .append('<div class="card"><div class="card-header" id ="card_header">'+
-                                json.items[i].displayName+'</div><div class="card-body" id="card_body">'+
+                        .append('<div class="card"><a class="card-link" href="' + url + '"><div class="card-header" id ="card_header">'+
+                                json.items[i].displayName+'</div></a><div class="card-body" id="card_body">'+
                                 '<button id="'+user_id+'" onClick="followNonFollower(this)">Follow</button>'+
                                 '</div></div>');
                     } 
@@ -104,28 +100,27 @@
         /**function called when clicking on button "follow"**/
         function followNonFollower(button){
             var uuid = "{{uuid}}"; 
-            var url;
+            
             if (non_follower_info_dict[button.id] == citrus_network_swag_host || non_follower_info_dict[button.id] == local_host){
                 //button.id is person recieveing friend req, uuid is person sending friend req
                 var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
                 follow_citrus(url).done(function(response) {
                     console.log(response);
-                    set_button(button)
+                    set_button_citrus(button)
                 });
             
             }else if (non_follower_info_dict[button.id] == team_18_host){
                 //button.id is person recieveing friend req, uuid is person sending friend req
-                var url = team_18_host + "service/author/" + button.id + "/inbox/"
-                follow_team_18(url).done(function(response) {
-                    console.log(response);
-                    set_button(button)
+                var be_follow_team_18_url = "/service/author/" + button.id + "/follow_remote_18/" + uuid + "/" + team_18_host
+                fetchJSON(be_follow_team_18_url).then((json) =>{
+                    console.log(json)
+                    set_button_18(button)
                 });
-
             }else if (non_follower_info_dict[button.id] == team_3_host){
-                var url = team_3_host + "service/author/" + button.id + "/followers/" + uuid  + "/"
-                follow_team_3(url, uuid).done(function(response) {
-                    console.log(response);
-                    set_button(button)
+                var be_follow_team_3_url = "/service/author/" + button.id + "/follow_remote_3/" + uuid + "/" + team_3_host
+                fetchJSON(be_follow_team_3_url).then((json) =>{
+                    console.log(json)
+                    set_button_3(button)
                 });
             }else{
                 console.log("could not follow specified author")
@@ -133,10 +128,22 @@
         }
 
         //set the button elements upon successful follow
-        function set_button(button){
+        function set_button_3(button){
             button.style.background = "transparent";
             button.style.color = "black";
-            button.innerText = "Followed!";
+            button.innerText = "remote auth cant friend req team 3 yet!";
+        }
+
+        function set_button_18(button){
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "Followed on team 18 server!";
+        }
+
+        function set_button_citrus(button){
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "Followed on citrus network!";
         }
 
         //follow someone on the citrus network
@@ -151,35 +158,8 @@
             })
         }
 
-        //follow someone from team18
-        //https://app.swaggerhub.com/apis-docs/lida9/SocialDistribution/1.0.0-oas3#/Inbox/post_service_author__authorID__inbox_friendrequest__foreignAuthorID__
-        //csrfmiddlewaretoken: '{{ csrf_token }}'
-        //content type on postman was multipart/form-data
-        function follow_team_18(url, new_follower_id){
-            return $.ajax({
-                url: url,
-                type: 'POST',
-                contentType: "application/json",
-                body: JSON.stringify({ "type": "follow", "new_follower_ID": new_follower_id}),
-                success: function(result) {
-                    console.log(result)
-                }
-            })
-        }
 
-        //follow someone from team3
-        function follow_team_3(url){
-            return $.ajax({
-                url: url,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function(result) {
-                    console.log(result)
-                }
-            })
-        }
 
-        
 
         /**get pending friends requests - in PROGRESS
         function getPendingIds(){

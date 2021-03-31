@@ -93,7 +93,6 @@ class Follower(models.Model):
 class Node(models.Model):
     # add a node with URL
     host = models.URLField(primary_key=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     # for Basic Auth TODO later
     node_username = models.CharField(max_length=100)
     node_password = models.CharField(max_length=100)

@@ -113,7 +113,7 @@
                 <div class="col-md-10 col-sm-12 position-relative">
                     <div class="card mb-5">
                         <div class="card-header">
-                            <a class="card-link" href="#author">
+                            <a class="card-link" href="{% url 'render_profile' %}{{ author_id }}">
                                 <p style="margin: 0;" class="author-name"><strong></strong></p>
                                 <p style="margin: 0;" class="published"></p>
                             </a>
@@ -175,14 +175,14 @@
                                 comment: $("#comment").val()
                             }
                             $.ajax({
-                                url: "/service/author/{{uuid}}/posts/{{post_id}}/comment/",
+                                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
                                 type: "POST",
                                 dataType: 'json',
                                 contentType: "application/json",
                                 data: JSON.stringify(comment),
                                 success: function(data) {
                                     $.ajax({
-                                        url: "/service/author/{{author_id}}/posts/{{post_id}}/comment/",
+                                        url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
                                         type: "GET",
                                         dataType: 'json',
                                         success: function(data) {
@@ -212,7 +212,7 @@
                 });
 
                 $.ajax({
-                    url: "/service/author/{{author_id}}/posts/{{post_id}}",
+                    url: "/service/author/{{author_id}}/get-posts/{{post_id}}/",
                     type: "GET",
                     dataType: 'json',
                     success: function(post) {
@@ -237,7 +237,8 @@
                             }
                         }
                         for (var i in post.comments) {
-                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
+                            let url = "{% url 'render_profile' %}" + post.comments[i].author.id
+                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
                                 '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 
                                 '</p></a></div><div class="card-body"><p>' + post.comments[i].comment + '</p>' + 
 
