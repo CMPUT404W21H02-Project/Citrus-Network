@@ -40,6 +40,12 @@
         function getStream() {
             fetchJSON("{% url 'public_posts' %}").then((json) => {
                 for(var i in json.message){
+                    if (json.message[i].author.id.includes("/author/")) {
+                        json.message[i].author.id = json.message[i].author.id.split("/author/")[1]
+                    }
+                    if (json.message[i].id.includes("/posts/")) {
+                        json.message[i].id = json.message[i].id.split("/posts/")[1]
+                    }
                     var newElement = document.createElement('div');
                     var classAttr = document.createAttribute("class");
                     classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
