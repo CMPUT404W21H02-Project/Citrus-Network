@@ -2105,7 +2105,7 @@ def handle_inbox(request, author_id):
                 actor_id = body["actor"]["id"]
                 # check the format of the id: either url format or just uuid
                 if ("author" in actor_id):
-                    actor_id = actor_id.split("/")[-2]
+                    actor_id = body["actor"]["authorID"]
                 # check author_id in our model
                 if check_author_exist_in_CitrusAuthor(author_id) == False:
                     response = JsonResponse({"results":"Author Id doesn't exist"})
@@ -2298,16 +2298,16 @@ def browse_posts(request):
 
             for hostname in server_list:
                 print(hostname)
-                if hostname == "https://cmput-404-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/service/allposts/"
+                if hostname == "https://cmput-404-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}service/allposts/"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
                     post_list = content.get('posts')
                     for post in post_list:
                         json_posts.append(post)
-                elif hostname == "https://team3-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/posts"
+                elif hostname == "https://team3-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}posts"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
