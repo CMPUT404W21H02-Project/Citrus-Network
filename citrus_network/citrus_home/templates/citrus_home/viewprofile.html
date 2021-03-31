@@ -59,7 +59,7 @@
     // to implement an "infinite scroll" as the number of posts in the stream increases beyond
     // what we should get in a single call.
     function getStream() {
-        fetchJSON("{{ postsURL }}").then((json) => {
+        fetchJSON(window.location.origin + '/service/author/{{ author.id }}/get-posts').then((json) => {
             console.log(json.posts);
             for(var i in json.posts){
                 var newElement = document.createElement('div');
