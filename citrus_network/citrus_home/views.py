@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import PostForm
-from .models import CitrusAuthor, Friend, Follower, Comment, Post, Inbox, Like
+from .models import CitrusAuthor, Friend, Follower, Comment, Post, Inbox, Like, Node
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
@@ -902,6 +902,7 @@ def edit_followers(request, author_id, foreign_author_id):
         # validate author id in follower model
         # uuid need to be a CitrusAuthor instance
         try:
+            author = CitrusAuthor.objects.get(id=author_id)
             result = Follower.objects.get(uuid=author)
         except ObjectDoesNotExist:
             followers = str(foreign_author_id)
@@ -929,10 +930,12 @@ def edit_followers(request, author_id, foreign_author_id):
 
                 # check author_id exist in friend model:
                 try:
+                    author = CitrusAuthor.objects.get(id=author_id)
                     author_id_friends = Friend.objects.get(uuid=author)
                 except ObjectDoesNotExist: # author id is not in friend model
                     # create instance of the follower with uuid to author_id
                     friend = str(foreign_author_id)
+                    author = CitrusAuthor.objects.get(id=author_id)
                     new_friend_object = Friend(uuid = author,friends_uuid= friend)
                     new_friend_object.save()
                 else:
@@ -943,11 +946,13 @@ def edit_followers(request, author_id, foreign_author_id):
 
                 # check foreign_author_id exist in friend model:
                 try:
-                    foreign_author_id_friends = Friend.objects.get(uuid=foreign_author_id)
+                    foreign_author = CitrusAuthor.objects.get(id=foreign_author_id)
+                    foreign_author_id_friends = Friend.objects.get(uuid=foreign_author)
                 except ObjectDoesNotExist: # author id is not in friend model
                     # create instance of the follower with uuid to foreign_author_id
                     friend = str(author_id)
-                    new_friend_object = Friend(uuid = foreign_author_id,friends_uuid= friend)
+                    foreign_author = CitrusAuthor.objects.get(id=foreign_author_id)
+                    new_friend_object = Friend(uuid = foreign_author,friends_uuid= friend)
                     new_friend_object.save()
                 else:
                     # add author id 
@@ -1058,7 +1063,7 @@ Expected:
 URL: ://service/author/{AUTHOR_ID}/friends/
 """
 # @login_required
-# @csrf_exempt
+@csrf_exempt
 def get_friends(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
@@ -1270,7 +1275,7 @@ def post_redirect(request, author_id, post_id):
         if current_citrus_author == post_author:
             # check if form is valid here
             post = Post.objects.get(id=post_id) 
-            form = PostForm()
+            form = PostForm(instance=post)
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id, 'form': form})
         else:
             return render(request, 'citrus_home/viewpost.html', {'uuid': uuid, 'post_id': post_id, 'author_id': author_id})
@@ -1614,7 +1619,7 @@ def handleStream(request):
                     "type": "post",
                     "title": post.title,
                     "id": post.id,
-                    "source": "localhost:8000/some_random_source",
+                    "source": post.source,
                     "origin": post.origin,
                     "description": post.description,
                     "contentType": post.contentType,
@@ -1626,7 +1631,7 @@ def handleStream(request):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted
                 }
                 json_posts.append(return_data)
             
@@ -1867,10 +1872,10 @@ def browse_posts(request):
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
-            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters)))
+            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
         except:
             print("here")
-            public_posts = Post.objects.filter(visibility='PUBLIC')
+            public_posts = Post.objects.filter(visibility='PUBLIC').order_by('-published')
         json_posts = []
         for post in public_posts:
             author = post.author
@@ -1882,7 +1887,7 @@ def browse_posts(request):
                 "type": "post",
                 "title": post.title,
                 "id": post.id,
-                "source": "localhost:8000/some_random_source",
+                "source": post.source,
                 "origin": post.origin,
                 "description": post.description,
                 "contentType": post.contentType,
@@ -1894,15 +1899,45 @@ def browse_posts(request):
                 "comments": comments_arr, 
                 "published": post.published,
                 "visibility": post.visibility,
-                "unlisted": "false"
+                "unlisted": post.unlisted
             }
             json_posts.append(return_data)
+        try:
+            nodes = Node.objects.all()
+            # list of all hostnames 
+            server_list = []
+            for server in nodes:
+                server_list.append(server.host)
+
+            for hostname in server_list:
+                print(hostname)
+                if hostname == "https://cmput-404-socialdistribution.herokuapp.com":
+                    request = f"{hostname}/service/allposts/"
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    post_list = content.get('posts')
+                    for post in post_list:
+                        json_posts.append(post)
+                elif hostname == "https://team3-socialdistribution.herokuapp.com":
+                    request = f"{hostname}/posts"
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    for post in content:
+                        json_posts.append(post)
+        except:
+            pass
         # return JsonResponse(return_data, status=200)
         return returnJsonResponse(json_posts, status_code=200)
     
     else:
         return returnJsonResponse(specific_message="method not supported", status_code=400)
 
+@login_required(login_url='login_url')
+def public_posts_redirect(request):
+    if request.method == "GET":
+        return render(request, 'citrus_home/publicposts.html')
 
 def handle_likes(request, **kwargs):
     # return either likes on post or comment

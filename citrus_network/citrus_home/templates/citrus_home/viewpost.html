@@ -77,12 +77,14 @@
                                         </div>
                                         <div class="row justify-content-center mt-3 mb-5">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <button type="button" class="btn btn-outline-primary" disabled>
+                                                <!-- <button type="button" class="btn btn-outline-primary" disabled>
                                                     <span class="material-icons">
                                                         insert_photo
                                                     </span>
                                                     Add Image
-                                                </button>
+                                                </button> -->
+                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
+                                                </input>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -229,7 +231,10 @@
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
                             $('.post-content').html('<img src=\"' + post.content + '\"/>');
                         } else {
-                            $('.post-content').html(post.content);
+                            let lines = post.content.split("\n")
+                            for (var i of lines) {
+                                $('.post-content').append(i + '<br>');
+                            }
                         }
                         for (var i in post.comments) {
                             var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
@@ -255,6 +260,14 @@
     <!-- Allow user to edit post only if they are the author -->
     {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
         <script>
+            window.addEventListener('load', function() {
+                if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
+                    let content = $("#div_id_content");
+                    content.parent().hide();
+                    let img = $("#id_image");
+                    img.removeAttr('hidden');
+                }
+            });
             //Function that will hide category input, depending on if users choses to add categories.
             function hideCategory() {
                 var view = $("#categories");
@@ -263,6 +276,36 @@
                 }else {
                     view.removeAttr('hidden');
                 }
+            }
+            $("#id_contentType").change(function(){
+                if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
+                    let content = $("#div_id_content");
+                    content.parent().hide();
+                    let img = $("#id_image");
+                    img.removeAttr('hidden');
+                } else {
+                    let content = $("#div_id_content");
+                    content.parent().show();
+                    let img = $("#id_image");
+                    img.attr('hidden', 'true');
+                }
+            });
+            document.getElementById('id_image').addEventListener("change", function() {
+                var files = document.getElementById('id_image').files;
+                if (files.length > 0) {
+                    getBase64(files[0]);
+                }
+            });
+            function getBase64(file) {
+                var reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function () {
+                    let postContent = $("#id_content");
+                    postContent.val(reader.result);
+                };
+                reader.onerror = function (error) {
+                    console.log('Error: ', error);
+                };
             }
 
             //Get the JSON response from given url.
