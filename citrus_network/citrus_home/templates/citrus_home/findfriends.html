@@ -79,10 +79,10 @@
                         }else{
                             console.log("host was not in json.items. Someone did not provide host in API")
                         }
-
+                        let url = "{% url 'render_profile' %}" + user_id;
                         $("#card_parent") 
-                        .append('<div class="card"><div class="card-header" id ="card_header">'+
-                                json.items[i].displayName+'</div><div class="card-body" id="card_body">'+
+                        .append('<div class="card"><a class="card-link" href="' + url + '"><div class="card-header" id ="card_header">'+
+                                json.items[i].displayName+'</div></a><div class="card-body" id="card_body">'+
                                 '<button id="'+user_id+'" onClick="followNonFollower(this)">Follow</button>'+
                                 '</div></div>');
                     } 
