@@ -469,38 +469,6 @@ def get_authors(request):
         response.status_code = 401
         return response
 
-
-
-# """
-# handles GET request: get a list of authors on the server
-# Expected: 
-# URL: ://service/authors
-# """
-# def get_authors(request):
-#     if request.method == "GET":  
-#         all_user = CitrusAuthor.objects.all()
-
-#         # generate json response for list of not followers
-#         items = []
-#         for user in all_user:
-#             # get the author profile info
-#             json = {
-#                 "type": "Author",
-#                 "id": str(user.id),
-#                 "host": str(user.host),
-#                 "displayName": str(user.displayName),
-#                 "github": str(user.github),
-#             }
-#             items.append(json)
-
-#         results = { "type": "author",      
-#                     "items": items}
-
-#         response = JsonResponse(results)
-#         response.status_code = 200
-#         return response
-
-
 '''
 function to check if team 3 server exist in connecting node
 RETURN: response
@@ -924,11 +892,21 @@ def edit_followers(request, author_id, foreign_author_id):
         result.save()
 
         # unfriend author_id also meaning remove author_id from foreign_author_id friend list 
-        foreign_author = Friend.objects.get(uuid=foreign_author_id)
-        friends = str(foreign_author.friends_uuid)
-        friends = friends.replace(str(author_id),"")
-        foreign_author.friends_uuid = friends
-        foreign_author.save()
+        # check if this foreign author is from our server or their server
+        check_ours = check_author_exist_in_CitrusAuthor(foreign_author_id)
+        check18 = check_author_exist_team18(foreign_author_id)
+        check3 = check_author_exist_team3(foreign_author_id)
+
+        if check_ours == True:
+            foreign_author = Friend.objects.get(uuid=foreign_author_id)
+            friends = str(foreign_author.friends_uuid)
+            friends = friends.replace(str(author_id),"")
+            foreign_author.friends_uuid = friends
+            foreign_author.save()
+        elif check18.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 18 SERVER")
+        elif check3.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 3 SERVER")
 
         response = JsonResponse({"results":"unfollow and unfriend success"})
         response.status_code = 200
@@ -1798,7 +1776,7 @@ def handle_inbox(request, author_id):
                 actor_id = body["actor"]["id"]
                 # check the format of the id: either url format or just uuid
                 if ("author" in actor_id):
-                    actor_id = actor_id.split("/")[-1]
+                    actor_id = body["actor"]["authorID"]
                 # check author_id in our model
                 if check_author_exist_in_CitrusAuthor(author_id) == False:
                     response = JsonResponse({"results":"Author Id doesn't exist"})
