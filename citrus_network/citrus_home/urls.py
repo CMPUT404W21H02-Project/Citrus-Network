@@ -49,5 +49,10 @@ urlpatterns = [
   path('service/author/<uuid:author_id>/post/<uuid:post_id>/likes', views.handle_likes, name='post_likes'),
   path('service/author/<uuid:author_id>/post/<uuid:post_id>/comments/<uuid:comment_id>/likes', views.handle_likes, name='comment_likes'),
   path('service/author/<uuid:author_id>/liked', views.handle_likes, name='all_likes'),
+
+  #FRIEND REQUEST/FOLLOW REMOTE AUTHORS + OUR SERVER
+  path('service/author/<str:author_id>/follow_citrus/<uuid:foreign_author_id>/<path:citrus_host>', views.be_follow_citrus,name='follow_citrus'),
+  path('service/author/<str:author_id>/follow_remote_18/<uuid:foreign_author_id>/<path:team_18_host>', views.be_follow_team_18,name='follow_18'),
+  path('service/author/<uuid:author_id>/follow_remote_3/<uuid:foreign_author_id>/<path:team_3_host>', views.be_follow_team_3,name='follow_3')
 ]
 
