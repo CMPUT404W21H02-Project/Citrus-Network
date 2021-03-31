@@ -17,7 +17,7 @@ CONTENT_TYPE = {
 VISIBILITY_CHOICES  = {
     ("PUBLIC", "public"),
     ("PRIVATE_TO_AUTHOR", "private to author"),
-    ("PRIVATE_TO_FRIEND", "private to friends")
+    ("PRIVATE_TO_FRIENDS", "private to friends")
 }
 
 class CitrusAuthor(models.Model):
