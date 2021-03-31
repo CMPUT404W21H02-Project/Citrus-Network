@@ -237,7 +237,8 @@
                             }
                         }
                         for (var i in post.comments) {
-                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
+                            let url = "{% url 'render_profile' %}" + post.comments[i].author.id
+                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
                                 '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 
                                 '</p></a></div><div class="card-body"><p>' + post.comments[i].comment + '</p>' + 
 
