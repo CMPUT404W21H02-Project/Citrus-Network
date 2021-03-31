@@ -139,4 +139,3 @@ dmypy.json
 migrations/
 citrus_network/db.sqlite3
 citrus_network/citrus_home/migrations/0001_initial.py
-
