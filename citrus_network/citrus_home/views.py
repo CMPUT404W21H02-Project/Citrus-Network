@@ -502,7 +502,7 @@ RETURN: response
 '''
 def check_author_exist_team3(author_id):
     URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
-    url = URL_TEAM3 + author_id
+    url = URL_TEAM3 + str(author_id)
     response = requests.get(url)
     return response
 
@@ -514,7 +514,7 @@ RETURN: response
 def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
-    url = URL_TEAM18 + author_id + FORWARD_SLASH
+    url = URL_TEAM18 + str(author_id) + FORWARD_SLASH
     response = requests.get(url)
     return response
 
@@ -852,8 +852,10 @@ def edit_followers(request, author_id, foreign_author_id):
         return response        
     elif request.method == 'DELETE':
         # validate author id in model
+        print("AH STH")
         try:
-            author = Follower.objects.get(uuid=author_id)
+            author_obj = CitrusAuthor.objects.get(id=author_id)
+            author = Follower.objects.get(uuid=author_obj)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"author has no followers or incorrect id of author"})
             response.status_code = 404
@@ -861,6 +863,7 @@ def edit_followers(request, author_id, foreign_author_id):
         
         # validate foregin id in list of followers:
         followers = str(author.followers_uuid)
+        print(followers)
         if str(foreign_author_id) not in followers:
             response = JsonResponse({"results":"foreign id is not a follower"})
             response.status_code = 304
