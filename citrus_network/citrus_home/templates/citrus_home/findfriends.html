@@ -100,12 +100,12 @@
         /**function called when clicking on button "follow"**/
         function followNonFollower(button){
             var uuid = "{{uuid}}"; 
-            var url;
+            
             if (non_follower_info_dict[button.id] == citrus_network_swag_host || non_follower_info_dict[button.id] == local_host){
                 //button.id is person recieveing friend req, uuid is person sending friend req
-                var be_follow_citrus_url = "/service/author/" + button.id + "/follow_citrus/" + uuid + "/" + citrus_network_swag_host
-                fetchJSON(be_follow_citrus_url).then((json) =>{
-                    console.log(json)
+                var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" // button.id is the author the current user is going to follow
+                follow_citrus(url).done(function(response) {
+                    console.log(response);
                     set_button_citrus(button)
                 });
             
@@ -114,16 +114,13 @@
                 var be_follow_team_18_url = "/service/author/" + button.id + "/follow_remote_18/" + uuid + "/" + team_18_host
                 fetchJSON(be_follow_team_18_url).then((json) =>{
                     console.log(json)
-                    set_button(button)
+                    set_button_18(button)
                 });
             }else if (non_follower_info_dict[button.id] == team_3_host){
                 var be_follow_team_3_url = "/service/author/" + button.id + "/follow_remote_3/" + uuid + "/" + team_3_host
                 fetchJSON(be_follow_team_3_url).then((json) =>{
                     console.log(json)
-                    button.style.background = "transparent";
-                    button.style.color = "black";
-                    button.innerText = "remote auth cant friend req team 3 yet!";
-                    //set_button(button)
+                    set_button_3(button)
                 });
             }else{
                 console.log("could not follow specified author")
@@ -131,10 +128,16 @@
         }
 
         //set the button elements upon successful follow
-        function set_button(button){
+        function set_button_3(button){
             button.style.background = "transparent";
             button.style.color = "black";
-            button.innerText = "Followed on team 18 network!";
+            button.innerText = "remote auth cant friend req team 3 yet!";
+        }
+
+        function set_button_18(button){
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "Followed on team 18 server!";
         }
 
         function set_button_citrus(button){
@@ -143,7 +146,21 @@
             button.innerText = "Followed on citrus network!";
         }
 
-       
+        //follow someone on the citrus network
+        function follow_citrus(url){
+            return $.ajax({
+                url: url,
+                type: 'PUT',
+                contentType: "application/json",
+                success: function(result) {
+                    console.log(result)
+                }
+            })
+        }
+
+
+
+
         /**get pending friends requests - in PROGRESS
         function getPendingIds(){
             var uuid = "{{uuid}}" 

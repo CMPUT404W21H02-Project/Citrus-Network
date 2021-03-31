@@ -622,7 +622,7 @@ RETURN: response
 def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
-    url = URL_TEAM18 + author_id + FORWARD_SLASH
+    url = URL_TEAM18 + author_id + FORWARD_SLASH #str(author_id) ?
     response = requests.get(url)
     return response
 
@@ -1021,11 +1021,8 @@ def edit_followers(request, author_id, foreign_author_id):
 
         # validate foregin id in citrus_author model:
         #need to also check here if the author exists in team18 and team3
-        on_team_18 = check_author_exist_team18(foreign_author_id)
-        #print("************")
-        #print("team 18 status code {}".format(on_team_18.status_code))
-        #and (on_team_18.status_code!= 200)
         if (check_author_exist_in_CitrusAuthor(foreign_author_id) == False):
+            print(on_team_18.status_code)
             response = JsonResponse({"results":"foreign id doesn't exist on our server or team18's"})
             response.status_code = 404
             return response
@@ -1373,13 +1370,15 @@ PARAMS:
     citrus_host - citrus host name
 '''
 def be_follow_citrus(request, author_id, foreign_author_id, citrus_host):
+    pass
+    '''
      if request.method == 'GET':
-        url = citrus_host + "/service/author/" + str(author_id)+ "/followers/" + str(foreign_author_id)  + "/"
+        url =  "/service/author/" + str(author_id)+ "/followers/" + str(foreign_author_id)  + "/"
         response = requests.put(url)
-        result = response.json()
-        response = JsonResponse({"message from citrus network server":result})
+        #result = response.json()
+        response = JsonResponse({"message from citrus network server":response.status_code})
         response.status_code = 200
-        return response
+        return response'''
     
 '''
 Follow someone from team 18 === send a friend request to someone from team 18's inbox
@@ -1404,8 +1403,6 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
         return response
     
    
-
-
 '''
 determine if someones friend request is pending when we follow - if so - post into our friend api
 PARAMS:
@@ -1413,12 +1410,12 @@ PARAMS:
     team_18_host - team 18s host name
 '''
 def get_pending_friend_reqs_team18(author_id,team_18_host):
+    pass
     #teamp 18s api cant friend request to remote servers
     #url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
     #response = requests.get(url)
     #result = response.json()
     #print(result)
-    pass
     #check if team
 
 '''
