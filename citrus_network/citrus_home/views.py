@@ -549,38 +549,6 @@ def get_authors(request):
         response.status_code = 401
         return response
 
-
-
-# """
-# handles GET request: get a list of authors on the server
-# Expected: 
-# URL: ://service/authors
-# """
-# def get_authors(request):
-#     if request.method == "GET":  
-#         all_user = CitrusAuthor.objects.all()
-
-#         # generate json response for list of not followers
-#         items = []
-#         for user in all_user:
-#             # get the author profile info
-#             json = {
-#                 "type": "Author",
-#                 "id": str(user.id),
-#                 "host": str(user.host),
-#                 "displayName": str(user.displayName),
-#                 "github": str(user.github),
-#             }
-#             items.append(json)
-
-#         results = { "type": "author",      
-#                     "items": items}
-
-#         response = JsonResponse(results)
-#         response.status_code = 200
-#         return response
-
-
 '''
 function to check if team 3 server exist in connecting node
 RETURN: response
@@ -614,7 +582,7 @@ RETURN: response
 '''
 def check_author_exist_team3(author_id):
     URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
-    url = URL_TEAM3 + author_id
+    url = URL_TEAM3 + str(author_id)
     response = requests.get(url)
     return response
 
@@ -626,7 +594,7 @@ RETURN: response
 def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
-    url = URL_TEAM18 + author_id + FORWARD_SLASH #str(author_id) ?
+    url = URL_TEAM18 + str(author_id) + FORWARD_SLASH
     response = requests.get(url)
     return response
 
@@ -964,8 +932,10 @@ def edit_followers(request, author_id, foreign_author_id):
         return response        
     elif request.method == 'DELETE':
         # validate author id in model
+        print("AH STH")
         try:
-            author = Follower.objects.get(uuid=author_id)
+            author_obj = CitrusAuthor.objects.get(id=author_id)
+            author = Follower.objects.get(uuid=author_obj)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"author has no followers or incorrect id of author"})
             response.status_code = 404
@@ -973,6 +943,7 @@ def edit_followers(request, author_id, foreign_author_id):
         
         # validate foregin id in list of followers:
         followers = str(author.followers_uuid)
+        print(followers)
         if str(foreign_author_id) not in followers:
             response = JsonResponse({"results":"foreign id is not a follower"})
             response.status_code = 304
@@ -1004,11 +975,21 @@ def edit_followers(request, author_id, foreign_author_id):
         result.save()
 
         # unfriend author_id also meaning remove author_id from foreign_author_id friend list 
-        foreign_author = Friend.objects.get(uuid=foreign_author_id)
-        friends = str(foreign_author.friends_uuid)
-        friends = friends.replace(str(author_id),"")
-        foreign_author.friends_uuid = friends
-        foreign_author.save()
+        # check if this foreign author is from our server or their server
+        check_ours = check_author_exist_in_CitrusAuthor(foreign_author_id)
+        check18 = check_author_exist_team18(foreign_author_id)
+        check3 = check_author_exist_team3(foreign_author_id)
+
+        if check_ours == True:
+            foreign_author = Friend.objects.get(uuid=foreign_author_id)
+            friends = str(foreign_author.friends_uuid)
+            friends = friends.replace(str(author_id),"")
+            foreign_author.friends_uuid = friends
+            foreign_author.save()
+        elif check18.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 18 SERVER")
+        elif check3.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 3 SERVER")
 
         response = JsonResponse({"results":"unfollow and unfriend success"})
         response.status_code = 200
@@ -1976,7 +1957,9 @@ def handleStream(request):
                 content = json.loads(response.content)
                 post_list = content.get('posts')
                 for post in post_list:
-                    json_posts.append(post)
+                    # check to see if post is private to friends?
+                    if post.get('visibility') == 'PUBLIC' or 'FRIEND':
+                        json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -2106,7 +2089,7 @@ def handle_inbox(request, author_id):
                 actor_id = body["actor"]["id"]
                 # check the format of the id: either url format or just uuid
                 if ("author" in actor_id):
-                    actor_id = actor_id.split("/")[-2]
+                    actor_id = body["actor"]["authorID"]
                 # check author_id in our model
                 if check_author_exist_in_CitrusAuthor(author_id) == False:
                     response = JsonResponse({"results":"Author Id doesn't exist"})
@@ -2299,16 +2282,16 @@ def browse_posts(request):
 
             for hostname in server_list:
                 print(hostname)
-                if hostname == "https://cmput-404-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/service/allposts/"
+                if hostname == "https://cmput-404-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}service/allposts/"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
                     post_list = content.get('posts')
                     for post in post_list:
                         json_posts.append(post)
-                elif hostname == "https://team3-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/posts"
+                elif hostname == "https://team3-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}posts"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
