@@ -1991,7 +1991,7 @@ def handle_inbox(request, author_id):
                 actor_id = body["actor"]["id"]
                 # check the format of the id: either url format or just uuid
                 if ("author" in actor_id):
-                    actor_id = actor_id.split("/")[-1]
+                    actor_id = actor_id.split("/")[-2]
                 # check author_id in our model
                 if check_author_exist_in_CitrusAuthor(author_id) == False:
                     response = JsonResponse({"results":"Author Id doesn't exist"})
