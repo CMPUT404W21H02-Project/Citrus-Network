@@ -1105,14 +1105,15 @@ def get_friends(request, author_id):
             if uuid:
                 uuid = uuid.strip() # remove any whitespace
 
-                # get the follower profile info
-                # check remote author or our server's author
-                check18 = check_author_exist_team18(uuid)
+                # check if uuid is on another server:
                 check3 = check_author_exist_team3(uuid)
-                check_ours = check_author_exist_in_CitrusAuthor(uuid)
-                
-
-                if check_ours == True: # if on our server
+                check18 = check_author_exist_team18(uuid) 
+                if check3.status_code == 200:
+                    items.append(check3.json())
+                elif check18.status_code == 200:
+                    items.append(check18.json())
+                else: # uuid is in our server
+                    # get the follower profile info
                     author = CitrusAuthor.objects.get(id = uuid)
                     
                     json = {
@@ -1123,13 +1124,6 @@ def get_friends(request, author_id):
                         "github": str(author.github),
                     }
                     items.append(json)
-
-                elif check18.status_code == 200: # if on other servers
-                    author_profile = get_team18_author_by_id(uuid)
-                    items.append(author_profile)
-                elif check3.status_code ==200: # if on other servers
-                    author_profile = get_team3_author_by_id(uuid)
-                    items.append(author_profile)
 
         # check to see nothing is in items list
         if len(items) == 0:
