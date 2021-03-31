@@ -1956,7 +1956,9 @@ def handleStream(request):
                 content = json.loads(response.content)
                 post_list = content.get('posts')
                 for post in post_list:
-                    json_posts.append(post)
+                    # check to see if post is private to friends?
+                    if post.get('visibility') == 'PUBLIC' or 'FRIEND':
+                        json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
