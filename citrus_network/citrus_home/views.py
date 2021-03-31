@@ -604,6 +604,28 @@ def check_author_exist_in_Friend(author_id):
     return True
 
 """
+get a specific authors from team 18 by uuid
+Expected: 
+"""
+def get_team18_author_by_id(uuid):
+    URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/" + uuid +"/"
+    print(URL)
+    response = requests.get(URL)
+    result = response.json()
+    return result
+
+"""
+get a specific authors from team 18 by uuid
+Expected: 
+"""
+def get_team3_author_by_id(uuid):
+    URL = "https://team3-socialdistribution.herokuapp.com/author/" + uuid
+    print(URL)
+    response = requests.get(URL)
+    result = response.json()
+    return result
+
+"""
 get a list of authors from team 3
 Expected: 
 """
@@ -1068,11 +1090,13 @@ def get_friends(request, author_id):
     if request.method == 'GET':
         # check for list of followers of author_id
         try:
-            result = Friend.objects.get(uuid=author_id)
+            author = CitrusAuthor.objects.get(id = author_id)
+            result = Friend.objects.get(uuid=author)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"no friends found or incorrect id of author"})
             response.status_code = 404
             return response
+
 
         # generate json response for list of followers
         items = []
@@ -1081,17 +1105,25 @@ def get_friends(request, author_id):
             if uuid:
                 uuid = uuid.strip() # remove any whitespace
 
-                # get the follower profile info
-                author = CitrusAuthor.objects.get(id = uuid)
-                
-                json = {
-                    "type": "author",
-                    "id": str(uuid),
-                    "host": str(author.host),
-                    "displayName": str(author.displayName),
-                    "github": str(author.github),
-                }
-                items.append(json)
+                # check if uuid is on another server:
+                check3 = check_author_exist_team3(uuid)
+                check18 = check_author_exist_team18(uuid) 
+                if check3.status_code == 200:
+                    items.append(check3.json())
+                elif check18.status_code == 200:
+                    items.append(check18.json())
+                else: # uuid is in our server
+                    # get the follower profile info
+                    author = CitrusAuthor.objects.get(id = uuid)
+                    
+                    json = {
+                        "type": "author",
+                        "id": str(uuid),
+                        "host": str(author.host),
+                        "displayName": str(author.displayName),
+                        "github": str(author.github),
+                    }
+                    items.append(json)
 
         # check to see nothing is in items list
         if len(items) == 0:
