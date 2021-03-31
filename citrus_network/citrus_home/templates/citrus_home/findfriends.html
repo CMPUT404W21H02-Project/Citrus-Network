@@ -159,6 +159,7 @@
             return $.ajax({
                 url: url,
                 type: 'POST',
+                headers: { 'Access-Control-Allow-Origin': '*'},
                 contentType: "application/json",
                 body: JSON.stringify({ "type": "follow", "new_follower_ID": new_follower_id}),
                 success: function(result) {
