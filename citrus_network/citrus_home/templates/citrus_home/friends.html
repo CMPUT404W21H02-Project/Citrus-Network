@@ -54,9 +54,11 @@
                 //try because json.items is not present in response where status code != 200
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
+                        let url = "{% url 'render_profile' %}" + json.items[i].id;
                         $("#card_parent") 
                         .append('<div class="card">'+
-                                '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                json.items[i].displayName+'</div></a>'+
                                 '<div class="card-body" id = "card_body">'+
                                     '<button id = "'+json.items[i].id+'" onClick="removeFriend(this)">Remove Friend</button>'+
                                     '</div>'+
