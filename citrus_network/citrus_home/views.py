@@ -1860,11 +1860,44 @@ def handleStream(request):
         current_user = request.user
         citrus_author = CitrusAuthor.objects.get(user=current_user)
         # find friends of the citrus author and get their posts
+        json_posts = []
         try:
             friends = Friend.objects.get(uuid=citrus_author)
             # friends arr holds the uuid for each friend of the current user that is signed in
             friends_uuid_arr = friends.friends_uuid.split(CONST_SEPARATOR)
             friends_arr = []
+            # get all active nodes and check for team 3 and 18
+            # sort friends by server
+            server_list = []
+            try:
+                nodes = Node.objects.all()
+                # list of all hostnames 
+                for server in nodes:
+                    server_list.append(server.host)
+            except:
+                pass
+            team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
+            team3_url = "https://team3-socialdistribution.herokuapp.com/"
+            team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
+            team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
+            friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
+            friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            # citrus network database
+            for id in friends_uuid_arr:
+                # team 9 stores id's with a hyphen
+                author = CitrusAuthor.objects.get(id=id)
+                friends_arr.append(author)
+            
+            # query team18 database
+            for id in team18_friends:
+                request = f"{team18_url}/service/author/{id}/posts/"
+                # print(request)
+                response = requests.get(request)
+                # decode the response
+                content = json.loads(response.content)
+                post_list = content.get('posts')
+                for post in post_list:
+                    json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -1876,7 +1909,6 @@ def handleStream(request):
             visibility_list=['PUBLIC', 'PRIVATE_TO_FRIENDS']
             # for now we are only looking for public posts this will later be extended to private to author and private to friends
             posts = Post.objects.filter(author__in=friends_arr,visibility__in=visibility_list).order_by('-published')
-            json_posts = []
             for post in posts:
                 author = post.author
                 comments = Comment.objects.filter(post=post)
@@ -2300,3 +2332,23 @@ def return_like_object(type, like, post):
             "object": "localhost:8000/"
         }
         return response
+
+# return intersection of all users on team 18 and friends of current user
+def get_team18_friends(friends_uuid_arr, host_name):
+    # get all user id's on team 18's server
+    request = f"{host_name}/service/author/"
+    response = requests.get(request)
+    content = json.loads(response.content)
+    team_18_id = []
+    for author in content:
+        team_18_id.append((author.get('authorID')))
+    return set(friends_uuid_arr).intersection(team_18_id)
+
+# https://team3-socialdistribution.herokuapp.com/
+def get_team3_friends(friends_uuid_arr, host_name):
+    # get all user id's on team 18's server
+    team_3_id = []
+    response = get_team3_authors()
+    for author in response:
+        team_3_id.append((author.get('id')))
+    return set(friends_uuid_arr).intersection(team_3_id)
