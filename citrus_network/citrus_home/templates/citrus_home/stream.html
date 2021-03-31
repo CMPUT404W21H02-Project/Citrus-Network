@@ -95,7 +95,8 @@
                     var classAttr = document.createAttribute("class");
                     classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
                     newElement.setAttributeNode(classAttr);
-                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="#author">' + 
+                    let url = "{% url 'render_profile' %}" + json.posts[i].author.id
+                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
                         '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
                         '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
                         '</a>';

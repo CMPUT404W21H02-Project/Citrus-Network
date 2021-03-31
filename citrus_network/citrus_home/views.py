@@ -200,7 +200,83 @@ def render_profile(request):
     response.status_code = 200
     form = ProfileForm(current_profile)
     return render(request, 'citrus_home/profile.html',{'form': form, 'profile': current_profile})
-    
+
+"""
+render viewprofile html
+require authentication by successfully logging in
+"""
+@login_required(login_url='login_url')
+def render_author_profile(request, author_id):
+    if request.method == 'GET':
+        current_user = CitrusAuthor.objects.get(user=request.user)
+        if str(current_user.id) == str(author_id):
+            return redirect(render_profile)
+
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+            response = {
+                "type": "author",
+                "id": author.id,
+                "host": author.host,
+                "username": author.user,
+                "displayName": author.displayName,
+                "url": author.url,
+                "github": author.github
+            }
+            return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author.host + 'service/author/' + author.id + '/posts/' })
+        except ObjectDoesNotExist:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        author = req.json()
+                        response = {
+                            "type": "author",
+                            "id": author["id"].split('/author/')[1],
+                            "host": author["host"],
+                            "username": author["displayName"],
+                            "displayName": author["displayName"],
+                            "url": author["url"],
+                            "github": author["github"]
+                        }
+                        return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author["host"] + 'service/author/' + response["id"] + '/posts/' })
+                elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        author = req.json()
+                        response = {
+                            "type": "author",
+                            "id": author["id"],
+                            "host": author["host"],
+                            "username": author["displayName"],
+                            "displayName": author["displayName"],
+                            "url": author["url"],
+                            "github": author["github"]
+                        }
+                        return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author["host"] + 'author/' + response["id"] + '/posts/' })
+
+def get_authors_public_posts(request, author_id):
+    if request.method == 'GET':
+        try:
+            author = CitrusAuthor.objects.get(id=author_id)
+            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/')
+            # print(req)
+            return JsonResponse(req.json())
+        except ObjectDoesNotExist:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/')
+                        return JsonResponse(req.json())
+                elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    if req.status_code == 200:
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/')
+                        # print(req)
+                        return JsonResponse({"posts":req.json()})
 """
 handles get requests with id and retrieve author profile information: username, displayname, github
 handles post requests to state changes to author profile information: username, displayname, github 
