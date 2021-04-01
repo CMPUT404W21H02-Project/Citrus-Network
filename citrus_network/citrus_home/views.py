@@ -25,6 +25,7 @@ import base64
 from functools import reduce
 import operator
 from django.db.models import Q
+from urllib.parse import urlparse
 from requests.auth import HTTPBasicAuth
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
@@ -35,12 +36,22 @@ CONST_SEPARATOR = " "
 def basicAuthHandler(request):
     
     try:
+        current_user = CitrusAuthor.objects.get(user=request.user)
+        return True
+    except:
+        None
+    try:
+        src = request.META["HTTP_REFERER"]
+        parsed = urlparse(src)
+        url = parsed.scheme + "://" +parsed.netloc + "/"
+        node = Node.objects.get(url)
+        
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         token_type, _, credentials = auth_header.partition(' ')
 
         credentials = base64.b64decode(credentials)
         username, password = credentials.decode('utf-8').split(':')
-        if username == "CitrusNetwork" and password == "oranges" and token_type == "Basic":
+        if username == node.host_username and password == node.host_password and token_type == "Basic":
             return True
         return False
     except:
@@ -275,6 +286,11 @@ def render_author_profile(request, author_id):
                         return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author["host"] + 'author/' + response["id"] + '/posts/' })
 
 def get_authors_public_posts(request, author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
+
     if request.method == 'GET':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -307,6 +323,10 @@ URL:/service/author/{AUTHOR_ID}
 """
 # @login_required
 def manage_profile(request, id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == 'GET':
         profile = get_object_or_404(CitrusAuthor, id=id)
 
@@ -463,77 +483,77 @@ reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity
 """
 # @login_required
 def get_github_events(request, id):
-    if basicAuthHandler(request):
-        if request.method == 'GET': 
-            # look up user by their id, if not exist, return 404 response
-            profile = get_object_or_404(CitrusAuthor, id=id)
-            
-            #sanitize github url to get github username
-            git_username = sanitize_git_url(profile.github)
-
-            response = requests.get('https://api.github.com/users/{username}/events'.format(username=git_username))
-
-            # validate if username exists:
-            if response.status_code == 404:
-                err_response = JsonResponse({
-                    "message": "Profile not found"
-                })
-                err_response.status_code = 404
-                return err_response
-
-            # process data to customized json response
-            data = response.json()
-            results = []
-            
-            event_actions = {
-                'WatchEvent': 'starred',
-                'PushEvent': 'pushed to',
-                'CreateEvent': "created",
-                'DeleteEvent':'deleted',
-                'ForkEvent':'forked',
-                'CommitCommentEvent':'committed comment on',
-                'IssueCommentEvent': 'issued comment on',
-                'IssueEvent': 'issued event on',
-                'PullRequestEvent': 'made a pull request on',
-                'PullRequestReviewEvent': 'reviewed a pull request on',
-                'ReleaseEvent': 'made a realease on'
-            }
-            
-            for event in data:
-                if event['type'] in event_actions:
-                    name = event['actor']['display_login']
-                    action = event_actions[event['type']] 
-                    repo = event['repo']['name']
-                    time = event['created_at']
-                    action_str = {
-                        'type':event['type'],
-                        'name':name,
-                        'action':action,
-                        'repo':repo,
-                        'time':time,
-                    }
-                    results.append(action_str)
-                if event['type'] == 'ForkEvent':
-                    name = event['actor']['display_login']
-                    repo = event['repo']['name']  
-                    forked_repo = event['payload']['forkee']['full_name'] 
-                    time = event['created_at']
-                    action_str = {
-                        'type':event['type'],
-                        'name':name,
-                        'action':action,
-                        'forked_repo':forked_repo,
-                        'repo':repo,
-                        'time':time,
-                    }
-                    results.append(action_str)
-            response = JsonResponse({'events':results})
-            response.status_code = 200
-            return response
-    else:
+    if not basicAuthHandler(request):
         response = JsonResponse({'message':'not authenticated'})
         response.status_code = 401
         return response
+    if request.method == 'GET': 
+        # look up user by their id, if not exist, return 404 response
+        profile = get_object_or_404(CitrusAuthor, id=id)
+        
+        #sanitize github url to get github username
+        git_username = sanitize_git_url(profile.github)
+
+        response = requests.get('https://api.github.com/users/{username}/events'.format(username=git_username))
+
+        # validate if username exists:
+        if response.status_code == 404:
+            err_response = JsonResponse({
+                "message": "Profile not found"
+            })
+            err_response.status_code = 404
+            return err_response
+
+        # process data to customized json response
+        data = response.json()
+        results = []
+        
+        event_actions = {
+            'WatchEvent': 'starred',
+            'PushEvent': 'pushed to',
+            'CreateEvent': "created",
+            'DeleteEvent':'deleted',
+            'ForkEvent':'forked',
+            'CommitCommentEvent':'committed comment on',
+            'IssueCommentEvent': 'issued comment on',
+            'IssueEvent': 'issued event on',
+            'PullRequestEvent': 'made a pull request on',
+            'PullRequestReviewEvent': 'reviewed a pull request on',
+            'ReleaseEvent': 'made a realease on'
+        }
+        
+        for event in data:
+            if event['type'] in event_actions:
+                name = event['actor']['display_login']
+                action = event_actions[event['type']] 
+                repo = event['repo']['name']
+                time = event['created_at']
+                action_str = {
+                    'type':event['type'],
+                    'name':name,
+                    'action':action,
+                    'repo':repo,
+                    'time':time,
+                }
+                results.append(action_str)
+            if event['type'] == 'ForkEvent':
+                name = event['actor']['display_login']
+                repo = event['repo']['name']  
+                forked_repo = event['payload']['forkee']['full_name'] 
+                time = event['created_at']
+                action_str = {
+                    'type':event['type'],
+                    'name':name,
+                    'action':action,
+                    'forked_repo':forked_repo,
+                    'repo':repo,
+                    'time':time,
+                }
+                results.append(action_str)
+        response = JsonResponse({'events':results})
+        response.status_code = 200
+        return response
+
 
 """
 handles GET request: get a list of authors on the server
@@ -542,36 +562,35 @@ URL: ://service/authors
 """
 @csrf_exempt
 def get_authors(request):
-    if basicAuthHandler(request):
-        if request.method == "GET":  
-            all_user = CitrusAuthor.objects.all()
-
-            # generate json response for list of not followers
-            items = []
-            for user in all_user:
-                # get the author profile info
-                json = {
-                    "type": "Author",
-                    "id": str(user.id),
-                    "host": str(user.host),
-                    "displayName": str(user.displayName),
-                    "github": str(user.github),
-                }
-                items.append(json)
-
-            results = { "type": "author",      
-                        "items": items}
-
-            response = JsonResponse(results)
-            response.status_code = 200
-            return response
-        else:
-            response = JsonResponse({'message':'method not allowed'})
-            response.status_code = 405
-            return response
-    else:
+    if not basicAuthHandler(request):
         response = JsonResponse({'message':'not authenticated'})
         response.status_code = 401
+        return response
+    if request.method == "GET":  
+        all_user = CitrusAuthor.objects.all()
+
+        # generate json response for list of not followers
+        items = []
+        for user in all_user:
+            # get the author profile info
+            json = {
+                "type": "Author",
+                "id": str(user.id),
+                "host": str(user.host),
+                "displayName": str(user.displayName),
+                "github": str(user.github),
+            }
+            items.append(json)
+
+        results = { "type": "author",      
+                    "items": items}
+
+        response = JsonResponse(results)
+        response.status_code = 200
+        return response
+    else:
+        response = JsonResponse({'message':'method not allowed'})
+        response.status_code = 405
         return response
 
 '''
@@ -747,6 +766,10 @@ URL: ://service/authors/{AUTHOR_ID}/nonfollowers
 """
 @login_required
 def get_not_followers(request,author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == 'GET':
         author = get_object_or_404(CitrusAuthor, id=author_id)
         
@@ -874,6 +897,10 @@ Expected:
 URL: ://service/author/{AUTHOR_ID}/followers
 """
 def get_followers(request, author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == 'GET':
         # check for list of followers of author_id
         try:
@@ -950,6 +977,10 @@ URL: ://service/author/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 """
 @csrf_exempt
 def edit_followers(request, author_id, foreign_author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     # special case:
     if author_id == foreign_author_id:
         response = JsonResponse({"message":"author id and foreign author id are the same"})
@@ -1202,6 +1233,10 @@ URL: ://service/author/{AUTHOR_ID}/friends/
 # @login_required
 @csrf_exempt
 def get_friends(request, author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == 'GET':
         # check for list of followers of author_id
         try:
@@ -1269,6 +1304,10 @@ URL: ://service/author/{AUTHOR_ID}/friends/{FOREIGN_AUTHOR_ID}
 # @login_required
 @csrf_exempt
 def edit_friends(request, author_id, foreign_author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     # special case:
     if author_id == foreign_author_id:
         response = JsonResponse({"message":"author id and foreign author id are the same"})
@@ -1561,6 +1600,10 @@ def get_author_post(request, author_id, post_id):
 
 @csrf_exempt
 def handle_remote_comment(request, author_id, post_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     try:
         current_author = CitrusAuthor.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -1711,6 +1754,10 @@ URL: ://service/author/{AUTHOR_ID}/posts/{POST_ID} -> this will delete the post 
 # the csrf_exempt token is there if you're testing with postman
 @csrf_exempt
 def manage_post(request, id, **kwargs):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     pid = kwargs.get('pid')
     print(request.method)
     if request.method == "POST":
@@ -1848,6 +1895,10 @@ handles GET & POST requests for comments
 """
 @csrf_exempt
 def handle_comment(request, id, pid):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == "POST":
         print("inside handle comments")
         # create a comment and attach it to the post matching the provided post id
@@ -1946,6 +1997,10 @@ If a user is signed in a GET request to localhost:8000/home-test/ will return a 
 friends of the signed in user (most recent posts first that are all public)
 """
 def handleStream(request):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     # get current user and find corresponding citrus author
     if request.method == "GET":
         current_user = request.user
@@ -2079,6 +2134,10 @@ def handleStream(request):
     
 @csrf_exempt
 def handle_inbox(request, author_id):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     if request.method == "GET":
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -2269,6 +2328,10 @@ localhost:800/public-posts?q=arg1%20arg2
 """
 @csrf_exempt
 def browse_posts(request):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     # return all public posts
     if request.method == "GET":
         try:
@@ -2342,6 +2405,10 @@ def public_posts_redirect(request):
         return render(request, 'citrus_home/publicposts.html')
 
 def handle_likes(request, **kwargs):
+    if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
     # return either likes on post or comment
     if request.method == "GET":
         # look specifically for likes on comments
