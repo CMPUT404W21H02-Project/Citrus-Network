@@ -1425,6 +1425,9 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
     #pending_friends_18 = get_pending_friend_reqs(foreign_author_id,team_18_host)
     if basicAuthHandler(request):
         if request.method == 'GET':
+            print("foreign author id {}".format(foreign_author_id))
+            print("foreign author id {}".format(author_id))
+            
             url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
             body = { "type": "follow", "new_follower_ID": foreign_author_id} 
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
