@@ -25,6 +25,7 @@ import base64
 from functools import reduce
 import operator
 from django.db.models import Q
+from requests.auth import HTTPBasicAuth
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -32,6 +33,7 @@ CONST_SEPARATOR = " "
 # Username is CitrusNetwork and Password is oranges
 # https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware
 def basicAuthHandler(request):
+    
     try:
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         token_type, _, credentials = auth_header.partition(' ')
@@ -43,6 +45,24 @@ def basicAuthHandler(request):
         return False
     except:
         return False
+
+def get_team_3_user():
+    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    return node.node_username
+
+def get_team_3_password():
+    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    return node.node_password
+
+def get_team_18_user():
+    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    return node.node_username
+
+def get_team_18_password():
+    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    return node.node_password
+
+
 
 @login_required(login_url='login_url')
 def home_redirect(request):
@@ -443,71 +463,76 @@ reference: https://towardsdatascience.com/build-a-python-crawler-to-get-activity
 """
 # @login_required
 def get_github_events(request, id):
-    if request.method == 'GET': 
-        # look up user by their id, if not exist, return 404 response
-        profile = get_object_or_404(CitrusAuthor, id=id)
-        
-        #sanitize github url to get github username
-        git_username = sanitize_git_url(profile.github)
+    if basicAuthHandler(request):
+        if request.method == 'GET': 
+            # look up user by their id, if not exist, return 404 response
+            profile = get_object_or_404(CitrusAuthor, id=id)
+            
+            #sanitize github url to get github username
+            git_username = sanitize_git_url(profile.github)
 
-        response = requests.get('https://api.github.com/users/{username}/events'.format(username=git_username))
+            response = requests.get('https://api.github.com/users/{username}/events'.format(username=git_username))
 
-        # validate if username exists:
-        if response.status_code == 404:
-            err_response = JsonResponse({
-                "message": "Profile not found"
-            })
-            err_response.status_code = 404
-            return err_response
+            # validate if username exists:
+            if response.status_code == 404:
+                err_response = JsonResponse({
+                    "message": "Profile not found"
+                })
+                err_response.status_code = 404
+                return err_response
 
-        # process data to customized json response
-        data = response.json()
-        results = []
-        
-        event_actions = {
-            'WatchEvent': 'starred',
-            'PushEvent': 'pushed to',
-            'CreateEvent': "created",
-            'DeleteEvent':'deleted',
-            'ForkEvent':'forked',
-            'CommitCommentEvent':'committed comment on',
-            'IssueCommentEvent': 'issued comment on',
-            'IssueEvent': 'issued event on',
-            'PullRequestEvent': 'made a pull request on',
-            'PullRequestReviewEvent': 'reviewed a pull request on',
-            'ReleaseEvent': 'made a realease on'
-        }
-        
-        for event in data:
-            if event['type'] in event_actions:
-                name = event['actor']['display_login']
-                action = event_actions[event['type']] 
-                repo = event['repo']['name']
-                time = event['created_at']
-                action_str = {
-                    'type':event['type'],
-                    'name':name,
-                    'action':action,
-                    'repo':repo,
-                    'time':time,
-                }
-                results.append(action_str)
-            if event['type'] == 'ForkEvent':
-                name = event['actor']['display_login']
-                repo = event['repo']['name']  
-                forked_repo = event['payload']['forkee']['full_name'] 
-                time = event['created_at']
-                action_str = {
-                    'type':event['type'],
-                    'name':name,
-                    'action':action,
-                    'forked_repo':forked_repo,
-                    'repo':repo,
-                    'time':time,
-                }
-                results.append(action_str)
-        response = JsonResponse({'events':results})
-        response.status_code = 200
+            # process data to customized json response
+            data = response.json()
+            results = []
+            
+            event_actions = {
+                'WatchEvent': 'starred',
+                'PushEvent': 'pushed to',
+                'CreateEvent': "created",
+                'DeleteEvent':'deleted',
+                'ForkEvent':'forked',
+                'CommitCommentEvent':'committed comment on',
+                'IssueCommentEvent': 'issued comment on',
+                'IssueEvent': 'issued event on',
+                'PullRequestEvent': 'made a pull request on',
+                'PullRequestReviewEvent': 'reviewed a pull request on',
+                'ReleaseEvent': 'made a realease on'
+            }
+            
+            for event in data:
+                if event['type'] in event_actions:
+                    name = event['actor']['display_login']
+                    action = event_actions[event['type']] 
+                    repo = event['repo']['name']
+                    time = event['created_at']
+                    action_str = {
+                        'type':event['type'],
+                        'name':name,
+                        'action':action,
+                        'repo':repo,
+                        'time':time,
+                    }
+                    results.append(action_str)
+                if event['type'] == 'ForkEvent':
+                    name = event['actor']['display_login']
+                    repo = event['repo']['name']  
+                    forked_repo = event['payload']['forkee']['full_name'] 
+                    time = event['created_at']
+                    action_str = {
+                        'type':event['type'],
+                        'name':name,
+                        'action':action,
+                        'forked_repo':forked_repo,
+                        'repo':repo,
+                        'time':time,
+                    }
+                    results.append(action_str)
+            response = JsonResponse({'events':results})
+            response.status_code = 200
+            return response
+    else:
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
         return response
 
 """
@@ -583,7 +608,7 @@ RETURN: response
 def check_author_exist_team3(author_id):
     URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
     url = URL_TEAM3 + str(author_id)
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     return response
 
 '''
@@ -595,7 +620,7 @@ def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
     url = URL_TEAM18 + str(author_id) + FORWARD_SLASH
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     return response
 
 '''
@@ -608,7 +633,7 @@ def check_author_follows_actor_team18(author_id,actor_id):
     FOLLOWERS = "followers"
     FORWARD_SLASH = "/"
     url = URL_TEAM18 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) + FORWARD_SLASH
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     return response
 
 '''
@@ -621,7 +646,7 @@ def check_author_follows_actor_team3(author_id,actor_id):
     FOLLOWERS = "followers"
     FORWARD_SLASH = "/"
     url = URL_TEAM3 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) 
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     return response
 
 '''
@@ -680,7 +705,7 @@ Expected:
 """
 def get_team18_author_by_id(uuid):
     URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/" + uuid +"/"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     result = response.json()
     return result
 
@@ -691,7 +716,7 @@ Expected:
 def get_team3_author_by_id(uuid):
     URL = "https://team3-socialdistribution.herokuapp.com/author/" + uuid
     print(URL)
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
     return result
 
@@ -701,7 +726,7 @@ Expected:
 """
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
     return result
 
@@ -711,7 +736,7 @@ Expected:
 """
 def get_team18_authors():
     URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     result = response.json()
     return result
 
@@ -1344,8 +1369,6 @@ def render_find_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
-
-
     
 '''
 Follow someone from team 18 === send a friend request to someone from team 18's inbox
@@ -1359,30 +1382,47 @@ PARAMS:
 '''
 def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
     #pending_friends_18 = get_pending_friend_reqs(foreign_author_id,team_18_host)
-    
-    if request.method == 'GET':
-        url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
-        body = { "type": "follow", "new_follower_ID": foreign_author_id} 
-        response = requests.post(url, data = body)
-        result = response.json()
-        response = JsonResponse({"message from team 18's response":result})
-        response.status_code = 200
+    if basicAuthHandler(request):
+        if request.method == 'GET':
+            url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
+            body = { "type": "follow", "new_follower_ID": foreign_author_id} 
+            response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+            result = response.json()
+            response = JsonResponse({"message from team 18's response":result})
+            response.status_code = 200
+            return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
         return response
 
 
 def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
-    if request.method == "GET":
-        url = team_18_host + "service/author/" + str(author_id) + "/followers/" + str(foreign_author_id) + "/"
-        response = requests.put(url)
-        result = response.json()
-        response = JsonResponse({"message from team 18's response when following back":result})
-        response.status_code = 200
+    if basicAuthHandler(request):
+        if request.method == "GET":
+            url = team_18_host + "service/author/" + str(author_id) + "/followers/" + str(foreign_author_id) + "/"
+            response = requests.put(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+            result = response.json()
+            response = JsonResponse({"message from team 18's response when following back":result})
+            response.status_code = 200
+            return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
         return response
 
 
 def be_follow_back_team_3(request, author_id, foreign_author_id, team_18_host):
-    if request.method == "GET":
-        print("cant put to team 3 yet")
+    if basicAuthHandler(request):
+        if request.method == "GET":
+                response = JsonResponse({"message": "Cant FE team 3 yet."})
+                response.status_code = 451
+                return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
+        return response
+
    
 '''
 determine if someones friend request is pending when we follow - if so - post into our friend api
@@ -1392,12 +1432,6 @@ PARAMS:
 '''
 def get_pending_friend_reqs_team18(author_id,team_18_host):
     pass
-    #teamp 18s api cant friend request to remote servers
-    #url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
-    #response = requests.get(url)
-    #result = response.json()
-    #print(result)
-    #check if team
 
 '''
 Follow someone from team 3 === send a friend request to team 3
