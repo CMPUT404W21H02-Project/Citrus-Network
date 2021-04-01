@@ -2040,6 +2040,8 @@ def handleStream(request):
                 pass
             team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
             team3_url = "https://team3-socialdistribution.herokuapp.com/"
+            team18_friends = []
+            team3_friendss = []
             try:      
                 team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
                 team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
