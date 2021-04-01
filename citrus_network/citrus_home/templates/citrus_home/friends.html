@@ -65,27 +65,27 @@
                         var user_id;
                         console.log(json)
                         try{
-                            if (json.items[i].includes("host")){
-                                    if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                        follower_info_dict[json.items[i].id] = json.items[i].host
-                                        user_id = json.items[i].id
-                                    }else if (json.items[i].host == team_18_host){
-                                        follower_info_dict[json.items[i].authorID] = json.items[i].host
-                                        user_id = json.items[i].authorID
-                                    }else if (json.items[i].host == team_3_host){
-                                        follower_info_dict[json.items[i].id] = json.items[i].host
-                                        user_id = json.items[i].id
-                                    }else{
-                                        console.log("host was neither team18, team3  or citrus")
-                                    }
+                            if ("host" in json.items[i]){
+                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                    friends_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else if (json.items[i].host == team_18_host){
+                                    friends_info_dict[json.items[i].authorID] = json.items[i].host
+                                    user_id = json.items[i].authorID
+                                }else if (json.items[i].host == team_3_host){
+                                    friends_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
                                 }else{
-                                    console.log("Host was not provided")
+                                    console.log("host was neither team18, team3  or citrus")
                                 }
+                            }else{
+                                console.log("Host was not provided")
+                            }
                         }catch(err){
                             console.log(err)
                         }
 
-                        console.log(follower_info_dict)
+                        console.log(friends_info_dict)
 
                         let url = "{% url 'render_profile' %}" + user_id;
 
@@ -111,17 +111,17 @@
         function removeFriend(button){
             var uuid = "{{uuid}}";
             
-            if (follower_info_dict[button.id] == citrus_network_swag_host || follower_info_dict[button.id] == local_host){
+            if (friends_info_dict[button.id] == citrus_network_swag_host || friends_info_dict[button.id] == local_host){
                 var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
                 remove(url)
                 var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
                 remove(inverse_url)
                 set_button_citrus(button)
 
-            }else if (follower_info_dict[button.id] == team_18_host){
+            }else if (friends_info_dict[button.id] == team_18_host){
                 
                 set_button_18(button)
-            }else if (follower_info_dict[button.id] == team_3_host){
+            }else if (friends_info_dict[button.id] == team_3_host){
                 
                 set_button_3(button)
             }else{
