@@ -47,19 +47,21 @@ def basicAuthHandler(request):
         return False
 
 def get_team_3_user():
-    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
+    print("************************************************")
+    print(node)
     return node.node_username
 
 def get_team_3_password():
-    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
     return node.node_password
 
 def get_team_18_user():
-    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
     return node.node_username
 
 def get_team_18_password():
-    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
     return node.node_password
 
 
