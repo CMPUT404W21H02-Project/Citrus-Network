@@ -2383,7 +2383,7 @@ def browse_posts(request):
                 print(hostname)
                 if hostname == "https://cmput-404-socialdistribution.herokuapp.com/":
                     request = f"{hostname}service/allposts/"
-                    response = requests.get(request)
+                    response = requests.get(request,auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
                     # decode the response
                     content = json.loads(response.content)
                     post_list = content.get('posts')
