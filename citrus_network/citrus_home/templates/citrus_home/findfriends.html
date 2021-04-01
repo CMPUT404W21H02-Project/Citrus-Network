@@ -64,21 +64,25 @@
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
                         //creating a dictionary associating each id with its host to control for slight differences in each API
-                        if ("host" in json.items[i]){
-                            if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                non_follower_info_dict[json.items[i].id] = json.items[i].host
-                                user_id = json.items[i].id
-                            }else if (json.items[i].host == team_18_host){
-                                non_follower_info_dict[json.items[i].authorID] = json.items[i].host
-                                user_id = json.items[i].authorID
-                            }else if (json.items[i].host == team_3_host){
-                                non_follower_info_dict[json.items[i].id] = json.items[i].host
-                                user_id = json.items[i].id
+                        try{
+                            if ("host" in json.items[i]){
+                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                    non_follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else if (json.items[i].host == team_18_host){
+                                    non_follower_info_dict[json.items[i].authorID] = json.items[i].host
+                                    user_id = json.items[i].authorID
+                                }else if (json.items[i].host == team_3_host){
+                                    non_follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else{
+                                    console.log("host is not an accepted node: " + json.items[i].host)
+                                }
                             }else{
-                                console.log("host is not an accepted node: " + json.items[i].host)
+                                console.log("host was not in json.items. Someone did not provide host in API")
                             }
-                        }else{
-                            console.log("host was not in json.items. Someone did not provide host in API")
+                        }catch(err){
+                            console.log(err)
                         }
                         let url = "{% url 'render_profile' %}" + user_id;
                         $("#card_parent") 
@@ -88,6 +92,7 @@
                                 '</div></div>');
                     } 
                 }catch(err){
+                    console.log(err)
                         //if no list of people to follow - let user know they have followed everyone available
                         $("#card_parent") 
                         .append('<div class="card"><div class="card-header" id = "card_header">You Have Followed Everyone Available!'+
