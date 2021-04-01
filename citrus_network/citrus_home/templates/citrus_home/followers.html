@@ -92,23 +92,26 @@
                     for (var i = 0; i < json.items.length; i++) { 
                         let url = "{% url 'render_profile' %}" + json.items[i].id;
                         //true if a follower id is also present in friends ids - false otherwise
-
-                        if ("host" in json.items[i]){
-                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                    follower_info_dict[json.items[i].id] = json.items[i].host
-                                    user_id = json.items[i].id
-                                }else if (json.items[i].host == team_18_host){
-                                    follower_info_dict[json.items[i].authorID] = json.items[i].host
-                                    user_id = json.items[i].authorID
-                                }else if (json.items[i].host == team_3_host){
-                                    follower_info_dict[json.items[i].id] = json.items[i].host
-                                    user_id = json.items[i].id
+                        try{
+                            if (json.items[i].includes("host")){
+                                    if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                        follower_info_dict[json.items[i].id] = json.items[i].host
+                                        user_id = json.items[i].id
+                                    }else if (json.items[i].host == team_18_host){
+                                        follower_info_dict[json.items[i].authorID] = json.items[i].host
+                                        user_id = json.items[i].authorID
+                                    }else if (json.items[i].host == team_3_host){
+                                        follower_info_dict[json.items[i].id] = json.items[i].host
+                                        user_id = json.items[i].id
+                                    }else{
+                                        console.log("host was neither team18, team3  or citrus")
+                                    }
                                 }else{
-                                    console.log("host was neither team18, team3  or citrus")
+                                    console.log("Host was not provided by someone")
                                 }
-                            }else{
-                                console.log("Host was not provided by someone")
-                            }
+                        }catch(err){
+                            console.log(err)
+                        }
 
                         console.log(follower_info_dict)
 
