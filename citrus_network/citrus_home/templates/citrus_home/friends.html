@@ -46,21 +46,51 @@
             });
         }
 
+        /*** function to retrieve a list of people you may follow/ who have no accepted follow request**/
+        var friends_info_dict = {}; 
+        var local_host = "http://127.0.0.1:8000/"                                //id = 9d662ec4-deed-44d0-be6a-c45a590eabbd
+        var citrus_network_swag_host = "http://citrusnetwork.herokuapp.com/"     //id = 9d662ec4-deed-44d0-be6a-c45a590eabbd
+        var team_18_host = "https://cmput-404-socialdistribution.herokuapp.com/" //id = https://cmput-404-socialdistribution.herokuapp.com/author/3a21bf7563da414abd5c47a7b3d8ea ..... team_18_alternate_id: authorId = 3a21bf7563da414abd5c47a7b3d8eae2
+        var team_3_host = "https://team3-socialdistribution.herokuapp.com/"      //id= 9d662ec4-deed-44d0-be6a-c45a590eabbd 
+
         /**function to get a list of users friends**/
         function getFriends() {
             var uuid = "{{uuid}}";
             var url = "/service/author/" + uuid + "/friends/" 
+            
             fetchJSON(url).then((json) => { // another callback
                 //try because json.items is not present in response where status code != 200
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
-                        let url = "{% url 'render_profile' %}" + json.items[i].id;
+                        var user_id;
+                        console.log(json)
+                        if ("host" in json.items[i]){
+                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                    follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else if (json.items[i].host == team_18_host){
+                                    follower_info_dict[json.items[i].authorID] = json.items[i].host
+                                    user_id = json.items[i].authorID
+                                }else if (json.items[i].host == team_3_host){
+                                    follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else{
+                                    console.log("host was neither team18, team3  or citrus")
+                                }
+                            }else{
+                                console.log("Host was not provided")
+                            }
+
+                        console.log(follower_info_dict)
+
+                        let url = "{% url 'render_profile' %}" + user_id;
+
                         $("#card_parent") 
                         .append('<div class="card">'+
                                 '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
                                 json.items[i].displayName+'</div></a>'+
                                 '<div class="card-body" id = "card_body">'+
-                                    '<button id = "'+json.items[i].id+'" onClick="removeFriend(this)">Remove Friend</button>'+
+                                    '<button id = "'+user_id+'" onClick="removeFriend(this)">Remove Friend</button>'+
                                     '</div>'+
                                 '</div>'); 
                     } 
@@ -73,18 +103,48 @@
             });
         }
 
-         /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
+        /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
         function removeFriend(button){
             var uuid = "{{uuid}}";
-            var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
-            remove(url)
-            var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
-            remove(inverse_url)
+            
+            if (follower_info_dict[button.id] == citrus_network_swag_host || follower_info_dict[button.id] == local_host){
+                var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
+                remove(url)
+                var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
+                remove(inverse_url)
+                set_button_citrus(button)
 
-            //set elements after removing friend
+            }else if (follower_info_dict[button.id] == team_18_host){
+                
+                set_button_18(button)
+            }else if (follower_info_dict[button.id] == team_3_host){
+                
+                set_button_3(button)
+            }else{
+                console.log("following back host that doesnt exist")
+            }
+            
+        }
+
+        function set_button_citrus(button){
+            //set elements after following back*/
             button.style.background = "transparent";
             button.style.color = "black";
-            button.innerText = "Friend Succesfully Removed";
+            button.innerText = "you unfriended a citrus author!";
+        }
+
+        function set_button_18(button){
+            //set elements after following back*/
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "you unfriended someone on team 18 (unfriended only on our server) !";
+        }
+
+        function set_button_3(button){
+            //set elements after following back*/
+            button.style.background = "transparent";
+            button.style.color = "black";
+            button.innerText = "you deleted someone on team 3! (unfriended only on our server)";
         }
         
         /**DELETE request remove a friend and follower - need more error handling**/

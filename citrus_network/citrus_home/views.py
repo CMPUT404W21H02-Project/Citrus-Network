@@ -26,7 +26,7 @@ from functools import reduce
 import operator
 from django.db.models import Q
 from urllib.parse import urlparse
-
+from requests.auth import HTTPBasicAuth
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -34,6 +34,7 @@ CONST_SEPARATOR = " "
 # Username is CitrusNetwork and Password is oranges
 # https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware
 def basicAuthHandler(request):
+    
     try:
         current_user = CitrusAuthor.objects.get(user=request.user)
         return True
@@ -55,6 +56,24 @@ def basicAuthHandler(request):
         return False
     except:
         return False
+
+def get_team_3_user():
+    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    return node.node_username
+
+def get_team_3_password():
+    node = Node.objects.get("https://team3-socialdistribution.herokuapp.com/")
+    return node.node_password
+
+def get_team_18_user():
+    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    return node.node_username
+
+def get_team_18_password():
+    node = Node.objects.get("https://cmput-404-socialdistribution.herokuapp.com/")
+    return node.node_password
+
+
 
 @login_required(login_url='login_url')
 def home_redirect(request):
@@ -535,6 +554,7 @@ def get_github_events(request, id):
         response.status_code = 200
         return response
 
+
 """
 handles GET request: get a list of authors on the server
 Expected: 
@@ -573,38 +593,6 @@ def get_authors(request):
         response.status_code = 405
         return response
 
-
-
-# """
-# handles GET request: get a list of authors on the server
-# Expected: 
-# URL: ://service/authors
-# """
-# def get_authors(request):
-#     if request.method == "GET":  
-#         all_user = CitrusAuthor.objects.all()
-
-#         # generate json response for list of not followers
-#         items = []
-#         for user in all_user:
-#             # get the author profile info
-#             json = {
-#                 "type": "Author",
-#                 "id": str(user.id),
-#                 "host": str(user.host),
-#                 "displayName": str(user.displayName),
-#                 "github": str(user.github),
-#             }
-#             items.append(json)
-
-#         results = { "type": "author",      
-#                     "items": items}
-
-#         response = JsonResponse(results)
-#         response.status_code = 200
-#         return response
-
-
 '''
 function to check if team 3 server exist in connecting node
 RETURN: response
@@ -638,8 +626,8 @@ RETURN: response
 '''
 def check_author_exist_team3(author_id):
     URL_TEAM3 = "https://team3-socialdistribution.herokuapp.com/author/"
-    url = URL_TEAM3 + author_id
-    response = requests.get(url)
+    url = URL_TEAM3 + str(author_id)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     return response
 
 '''
@@ -650,8 +638,8 @@ RETURN: response
 def check_author_exist_team18(author_id):
     URL_TEAM18 = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     FORWARD_SLASH = "/"
-    url = URL_TEAM18 + author_id + FORWARD_SLASH #str(author_id) ?
-    response = requests.get(url)
+    url = URL_TEAM18 + str(author_id) + FORWARD_SLASH
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     return response
 
 '''
@@ -664,7 +652,7 @@ def check_author_follows_actor_team18(author_id,actor_id):
     FOLLOWERS = "followers"
     FORWARD_SLASH = "/"
     url = URL_TEAM18 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) + FORWARD_SLASH
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     return response
 
 '''
@@ -677,7 +665,7 @@ def check_author_follows_actor_team3(author_id,actor_id):
     FOLLOWERS = "followers"
     FORWARD_SLASH = "/"
     url = URL_TEAM3 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) 
-    response = requests.get(url)
+    response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     return response
 
 '''
@@ -736,7 +724,7 @@ Expected:
 """
 def get_team18_author_by_id(uuid):
     URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/" + uuid +"/"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     result = response.json()
     return result
 
@@ -747,7 +735,7 @@ Expected:
 def get_team3_author_by_id(uuid):
     URL = "https://team3-socialdistribution.herokuapp.com/author/" + uuid
     print(URL)
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
     return result
 
@@ -757,7 +745,7 @@ Expected:
 """
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
     return result
 
@@ -767,7 +755,7 @@ Expected:
 """
 def get_team18_authors():
     URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
     result = response.json()
     return result
 
@@ -1000,8 +988,10 @@ def edit_followers(request, author_id, foreign_author_id):
         return response        
     elif request.method == 'DELETE':
         # validate author id in model
+        print("AH STH")
         try:
-            author = Follower.objects.get(uuid=author_id)
+            author_obj = CitrusAuthor.objects.get(id=author_id)
+            author = Follower.objects.get(uuid=author_obj)
         except ObjectDoesNotExist:
             response = JsonResponse({"results":"author has no followers or incorrect id of author"})
             response.status_code = 404
@@ -1009,6 +999,7 @@ def edit_followers(request, author_id, foreign_author_id):
         
         # validate foregin id in list of followers:
         followers = str(author.followers_uuid)
+        print(followers)
         if str(foreign_author_id) not in followers:
             response = JsonResponse({"results":"foreign id is not a follower"})
             response.status_code = 304
@@ -1040,11 +1031,21 @@ def edit_followers(request, author_id, foreign_author_id):
         result.save()
 
         # unfriend author_id also meaning remove author_id from foreign_author_id friend list 
-        foreign_author = Friend.objects.get(uuid=foreign_author_id)
-        friends = str(foreign_author.friends_uuid)
-        friends = friends.replace(str(author_id),"")
-        foreign_author.friends_uuid = friends
-        foreign_author.save()
+        # check if this foreign author is from our server or their server
+        check_ours = check_author_exist_in_CitrusAuthor(foreign_author_id)
+        check18 = check_author_exist_team18(foreign_author_id)
+        check3 = check_author_exist_team3(foreign_author_id)
+
+        if check_ours == True:
+            foreign_author = Friend.objects.get(uuid=foreign_author_id)
+            friends = str(foreign_author.friends_uuid)
+            friends = friends.replace(str(author_id),"")
+            foreign_author.friends_uuid = friends
+            foreign_author.save()
+        elif check18.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 18 SERVER")
+        elif check3.status_code == 200:
+            print("DO STH TO REMOVE THIS ON TEAM 3 SERVER")
 
         response = JsonResponse({"results":"unfollow and unfriend success"})
         response.status_code = 200
@@ -1407,25 +1408,6 @@ def render_find_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
 
-'''
-Follow someone on citrus network === put request to our followers API
-
-PARAMS:
-    request - the request to endpoint 
-    author_id - the id of the author the request is being sent to
-    foreign_author_id - the id of the author on our server sending the request
-    citrus_host - citrus host name
-'''
-def be_follow_citrus(request, author_id, foreign_author_id, citrus_host):
-    pass
-    '''
-     if request.method == 'GET':
-        url =  "/service/author/" + str(author_id)+ "/followers/" + str(foreign_author_id)  + "/"
-        response = requests.put(url)
-        #result = response.json()
-        response = JsonResponse({"message from citrus network server":response.status_code})
-        response.status_code = 200
-        return response'''
     
 '''
 Follow someone from team 18 === send a friend request to someone from team 18's inbox
@@ -1439,16 +1421,47 @@ PARAMS:
 '''
 def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
     #pending_friends_18 = get_pending_friend_reqs(foreign_author_id,team_18_host)
-    
-    if request.method == 'GET':
-        url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
-        body = { "type": "follow", "new_follower_ID": foreign_author_id} 
-        response = requests.post(url, data = body)
-        result = response.json()
-        response = JsonResponse({"message from team 18's response":result})
-        response.status_code = 200
+    if basicAuthHandler(request):
+        if request.method == 'GET':
+            url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
+            body = { "type": "follow", "new_follower_ID": foreign_author_id} 
+            response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+            result = response.json()
+            response = JsonResponse({"message from team 18's response":result})
+            response.status_code = 200
+            return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
         return response
-    
+
+
+def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
+    if basicAuthHandler(request):
+        if request.method == "GET":
+            url = team_18_host + "service/author/" + str(author_id) + "/followers/" + str(foreign_author_id) + "/"
+            response = requests.put(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+            result = response.json()
+            response = JsonResponse({"message from team 18's response when following back":result})
+            response.status_code = 200
+            return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
+        return response
+
+
+def be_follow_back_team_3(request, author_id, foreign_author_id, team_18_host):
+    if basicAuthHandler(request):
+        if request.method == "GET":
+                response = JsonResponse({"message": "Cant FE team 3 yet."})
+                response.status_code = 451
+                return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
+        return response
+
    
 '''
 determine if someones friend request is pending when we follow - if so - post into our friend api
@@ -1458,12 +1471,6 @@ PARAMS:
 '''
 def get_pending_friend_reqs_team18(author_id,team_18_host):
     pass
-    #teamp 18s api cant friend request to remote servers
-    #url = team_18_host + "/service/author/" + foreign_author_id + "/friends/"
-    #response = requests.get(url)
-    #result = response.json()
-    #print(result)
-    #check if team
 
 '''
 Follow someone from team 3 === send a friend request to team 3
@@ -2036,7 +2043,9 @@ def handleStream(request):
                 content = json.loads(response.content)
                 post_list = content.get('posts')
                 for post in post_list:
-                    json_posts.append(post)
+                    # check to see if post is private to friends?
+                    if post.get('visibility') == 'PUBLIC' or 'FRIEND':
+                        json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -2170,7 +2179,7 @@ def handle_inbox(request, author_id):
                 actor_id = body["actor"]["id"]
                 # check the format of the id: either url format or just uuid
                 if ("author" in actor_id):
-                    actor_id = actor_id.split("/")[-2]
+                    actor_id = body["actor"]["authorID"]
                 # check author_id in our model
                 if check_author_exist_in_CitrusAuthor(author_id) == False:
                     response = JsonResponse({"results":"Author Id doesn't exist"})
@@ -2367,16 +2376,16 @@ def browse_posts(request):
 
             for hostname in server_list:
                 print(hostname)
-                if hostname == "https://cmput-404-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/service/allposts/"
+                if hostname == "https://cmput-404-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}service/allposts/"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
                     post_list = content.get('posts')
                     for post in post_list:
                         json_posts.append(post)
-                elif hostname == "https://team3-socialdistribution.herokuapp.com":
-                    request = f"{hostname}/posts"
+                elif hostname == "https://team3-socialdistribution.herokuapp.com/":
+                    request = f"{hostname}posts"
                     response = requests.get(request)
                     # decode the response
                     content = json.loads(response.content)
@@ -2409,10 +2418,11 @@ def handle_likes(request, **kwargs):
         if 'comment_id' in kwargs:
             # get comment_id since it was provided
             comment_id = kwargs.get('comment_id')
+            print(comment_id)
             list_of_comments = Like.objects.filter(comment_id=comment_id)
             for comment in list_of_comments:
                 # call function to create like object
-                like_object = return_like_object("Like", comment, False)
+                like_object = return_like_object("Like", comment, False, request)
                 response.append(like_object)
             jsonResponse =  JsonResponse({
                 "likes": response
@@ -2425,9 +2435,12 @@ def handle_likes(request, **kwargs):
             # get post_id since it was provided
             post_id = kwargs.get('post_id')
             list_of_likes = Like.objects.filter(post_id=post_id)
+            print(list_of_likes)
+            json_like_response = []
             for like in list_of_likes:
                 # call function to create like object
-                like_object = return_like_object("Like",like,True)
+                like_object = return_like_object("Like",like,True, request)
+                response.append(like_object)
             jsonResponse =  JsonResponse({
                 "likes": response
             })
@@ -2441,10 +2454,10 @@ def handle_likes(request, **kwargs):
             all_liked_objects = Like.objects.filter(author=author_id)
             for like in all_liked_objects:
                 if like.comment_id:
-                    like_object = return_like_object("Like",like,False)
+                    like_object = return_like_object("Like",like,False, request)
                     response.append(like_object)
                 else:
-                    like_object = return_like_object("Like",like,True)
+                    like_object = return_like_object("Like",like,True, request)
                     response.append(like_object)
             jsonResponse = JsonResponse({
                 "type": "liked",
@@ -2460,27 +2473,28 @@ def handle_likes(request, **kwargs):
 """
 this function probably needs to take in the request to properly parse the host address
 """
-def return_like_object(type, like, post):
+def return_like_object(type, like, post, request):
     # like object is a post
     author_id = like.author
     author = CitrusAuthor.objects.get(id=author_id)
     if post:
         response = {
-            "@context": "something",
+            "@context": request.META['HTTP_HOST'],
             "summary": author.displayName + " likes your post",
             "type": type, 
             "author": convertAuthorObj(author),
-            "object": "localhost:8000/"
+            "object": request.META['HTTP_HOST']
         }
+        print(response)
         return response
     # like object is a comment
     else:
         response = {
-            "@context": "something",
+            "@context": request.META['HTTP_HOST'],
             "summary": author.displayName + " likes your comment",
             "type": type, 
             "author": convertAuthorObj(author),
-            "object": "localhost:8000/"
+            "object": request.META['HTTP_HOST']
         }
         return response
 
