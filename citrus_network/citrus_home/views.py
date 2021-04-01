@@ -2349,10 +2349,11 @@ def handle_likes(request, **kwargs):
         if 'comment_id' in kwargs:
             # get comment_id since it was provided
             comment_id = kwargs.get('comment_id')
+            print(comment_id)
             list_of_comments = Like.objects.filter(comment_id=comment_id)
             for comment in list_of_comments:
                 # call function to create like object
-                like_object = return_like_object("Like", comment, False)
+                like_object = return_like_object("Like", comment, False, request)
                 response.append(like_object)
             jsonResponse =  JsonResponse({
                 "likes": response
@@ -2365,9 +2366,12 @@ def handle_likes(request, **kwargs):
             # get post_id since it was provided
             post_id = kwargs.get('post_id')
             list_of_likes = Like.objects.filter(post_id=post_id)
+            print(list_of_likes)
+            json_like_response = []
             for like in list_of_likes:
                 # call function to create like object
-                like_object = return_like_object("Like",like,True)
+                like_object = return_like_object("Like",like,True, request)
+                response.append(like_object)
             jsonResponse =  JsonResponse({
                 "likes": response
             })
@@ -2381,10 +2385,10 @@ def handle_likes(request, **kwargs):
             all_liked_objects = Like.objects.filter(author=author_id)
             for like in all_liked_objects:
                 if like.comment_id:
-                    like_object = return_like_object("Like",like,False)
+                    like_object = return_like_object("Like",like,False, request)
                     response.append(like_object)
                 else:
-                    like_object = return_like_object("Like",like,True)
+                    like_object = return_like_object("Like",like,True, request)
                     response.append(like_object)
             jsonResponse = JsonResponse({
                 "type": "liked",
@@ -2400,27 +2404,28 @@ def handle_likes(request, **kwargs):
 """
 this function probably needs to take in the request to properly parse the host address
 """
-def return_like_object(type, like, post):
+def return_like_object(type, like, post, request):
     # like object is a post
     author_id = like.author
     author = CitrusAuthor.objects.get(id=author_id)
     if post:
         response = {
-            "@context": "something",
+            "@context": request.META['HTTP_HOST'],
             "summary": author.displayName + " likes your post",
             "type": type, 
             "author": convertAuthorObj(author),
-            "object": "localhost:8000/"
+            "object": request.META['HTTP_HOST']
         }
+        print(response)
         return response
     # like object is a comment
     else:
         response = {
-            "@context": "something",
+            "@context": request.META['HTTP_HOST'],
             "summary": author.displayName + " likes your comment",
             "type": type, 
             "author": convertAuthorObj(author),
-            "object": "localhost:8000/"
+            "object": request.META['HTTP_HOST']
         }
         return response
 
