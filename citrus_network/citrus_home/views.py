@@ -749,8 +749,10 @@ Expected:
 """
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
-    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
+    #response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
+    response = requests.get(URL)
     result = response.json()
+    print(result)
     return result
 
 """
@@ -848,6 +850,8 @@ def get_not_followers(request,author_id):
         # check users in team 3 server
         if check_team3_in_node():
             authors3 = get_team3_authors()
+            print("*********************")
+            print(authors3)
             for user in authors3:
                 if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
                     items.append(user) # add them into items containing list of non-followers
@@ -1427,16 +1431,21 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
     #pending_friends_18 = get_pending_friend_reqs(foreign_author_id,team_18_host)
     if basicAuthHandler(request):
         if request.method == 'GET':
-            print("foreign author id {}".format(foreign_author_id))
-            print("foreign author id {}".format(author_id))
+            try:
+                url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
+                print(url)
+                body = { "type": "follow", "new_follower_ID": foreign_author_id} 
+                response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+                
+                result = response.json()
             
-            url = team_18_host + "service/author/" + str(author_id) + "/inbox/"
-            body = { "type": "follow", "new_follower_ID": foreign_author_id} 
-            response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
-            result = response.json()
-            response = JsonResponse({"message from team 18's response":result})
-            response.status_code = 200
-            return response
+                response = JsonResponse({"message from team 18's response":result})
+                response.status_code = 200
+                return response
+            except:
+                response = JsonResponse({"message":"check API endpoint?"})
+                response.status_code = 404
+                return response
     else:
         response = JsonResponse({"message": "Authorization required"})
         response.status_code = 401
@@ -2031,10 +2040,13 @@ def handleStream(request):
                 pass
             team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
             team3_url = "https://team3-socialdistribution.herokuapp.com/"
-            team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
-            team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
-            friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
-            friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            try:      
+                team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
+                team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
+                friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
+                friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            except:
+                pass
             # citrus network database
             for id in friends_uuid_arr:
                 # team 9 stores id's with a hyphen
@@ -2042,17 +2054,18 @@ def handleStream(request):
                 friends_arr.append(author)
             
             # query team18 database
-            for id in team18_friends:
-                request = f"{team18_url}/service/author/{id}/posts/"
-                # print(request)
-                response = requests.get(request)
-                # decode the response
-                content = json.loads(response.content)
-                post_list = content.get('posts')
-                for post in post_list:
-                    # check to see if post is private to friends?
-                    if post.get('visibility') == 'PUBLIC' or 'FRIEND':
-                        json_posts.append(post)
+            if team18_friends:
+                for id in team18_friends:
+                    request = f"{team18_url}/service/author/{id}/posts/"
+                    # print(request)
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    post_list = content.get('posts')
+                    for post in post_list:
+                        # check to see if post is private to friends?
+                        if post.get('visibility') == 'PUBLIC' or 'FRIEND':
+                            json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -2385,7 +2398,7 @@ def browse_posts(request):
                 print(hostname)
                 if hostname == "https://cmput-404-socialdistribution.herokuapp.com/":
                     request = f"{hostname}service/allposts/"
-                    response = requests.get(request)
+                    response = requests.get(request,auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
                     # decode the response
                     content = json.loads(response.content)
                     post_list = content.get('posts')
