@@ -44,7 +44,9 @@ def basicAuthHandler(request):
         src = request.META["HTTP_REFERER"]
         parsed = urlparse(src)
         url = parsed.scheme + "://" +parsed.netloc + "/"
-        node = Node.objects.get(url)
+        print(url)
+        node = Node.objects.get(host=url)
+        print(node)
         
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         token_type, _, credentials = auth_header.partition(' ')
@@ -2038,10 +2040,13 @@ def handleStream(request):
                 pass
             team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
             team3_url = "https://team3-socialdistribution.herokuapp.com/"
-            team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
-            team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
-            friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
-            friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            try:      
+                team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
+                team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
+                friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
+                friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
+            except:
+                pass
             # citrus network database
             for id in friends_uuid_arr:
                 # team 9 stores id's with a hyphen
@@ -2049,17 +2054,18 @@ def handleStream(request):
                 friends_arr.append(author)
             
             # query team18 database
-            for id in team18_friends:
-                request = f"{team18_url}/service/author/{id}/posts/"
-                # print(request)
-                response = requests.get(request)
-                # decode the response
-                content = json.loads(response.content)
-                post_list = content.get('posts')
-                for post in post_list:
-                    # check to see if post is private to friends?
-                    if post.get('visibility') == 'PUBLIC' or 'FRIEND':
-                        json_posts.append(post)
+            if team18_friends:
+                for id in team18_friends:
+                    request = f"{team18_url}/service/author/{id}/posts/"
+                    # print(request)
+                    response = requests.get(request)
+                    # decode the response
+                    content = json.loads(response.content)
+                    post_list = content.get('posts')
+                    for post in post_list:
+                        # check to see if post is private to friends?
+                        if post.get('visibility') == 'PUBLIC' or 'FRIEND':
+                            json_posts.append(post)
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
