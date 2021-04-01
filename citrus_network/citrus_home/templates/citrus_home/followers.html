@@ -152,6 +152,10 @@
                 fetchJSON(follow_back_18_url).then((json) =>{
                     console.log(json)
                 });***/
+                var url = "/service/author/" + button.id + "/friends/" + uuid + "/"
+                AddFollowerBack(url).done(function(response) {
+                    console.log(response);
+                });
                 set_button_18(button)
 
             }else if (follower_info_dict[button.id] == team_3_host){
@@ -159,6 +163,10 @@
                 fetchJSON(follow_back_3_url).then((json) =>{
                     console.log(json)
                 });***/
+                var url = "/service/author/" + button.id + "/friends/" + uuid + "/"
+                AddFollowerBack(url).done(function(response) {
+                    console.log(response);
+                });
                 set_button_3(button)
             }else{
                 console.log("following back host that doesnt exist")
