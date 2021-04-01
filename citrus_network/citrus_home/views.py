@@ -1391,8 +1391,8 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
             response.status_code = 200
             return response
     response = JsonResponse({"message": "Authorization required"})
-        response.status_code = 401
-        return response
+    response.status_code = 401
+    return response
 
 
 def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
