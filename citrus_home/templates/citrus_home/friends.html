@@ -8,8 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-
     <title>Citrus Network</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar-logged-in.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/citrus_home/friends.css' %}">
   </head>
 
   <body>
@@ -64,22 +66,26 @@
                     for (var i = 0; i < json.items.length; i++) { 
                         var user_id;
                         console.log(json)
-                        if ("host" in json.items[i]){
-                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                    follower_info_dict[json.items[i].id] = json.items[i].host
-                                    user_id = json.items[i].id
-                                }else if (json.items[i].host == team_18_host){
-                                    follower_info_dict[json.items[i].authorID] = json.items[i].host
-                                    user_id = json.items[i].authorID
-                                }else if (json.items[i].host == team_3_host){
-                                    follower_info_dict[json.items[i].id] = json.items[i].host
-                                    user_id = json.items[i].id
+                        try{
+                            if (json.items[i].includes("host")){
+                                    if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                        follower_info_dict[json.items[i].id] = json.items[i].host
+                                        user_id = json.items[i].id
+                                    }else if (json.items[i].host == team_18_host){
+                                        follower_info_dict[json.items[i].authorID] = json.items[i].host
+                                        user_id = json.items[i].authorID
+                                    }else if (json.items[i].host == team_3_host){
+                                        follower_info_dict[json.items[i].id] = json.items[i].host
+                                        user_id = json.items[i].id
+                                    }else{
+                                        console.log("host was neither team18, team3  or citrus")
+                                    }
                                 }else{
-                                    console.log("host was neither team18, team3  or citrus")
+                                    console.log("Host was not provided")
                                 }
-                            }else{
-                                console.log("Host was not provided by someone")
-                            }
+                        }catch(err){
+                            console.log(err)
+                        }
 
                         console.log(follower_info_dict)
 
@@ -103,7 +109,7 @@
             });
         }
 
-         /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
+        /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
         function removeFriend(button){
             var uuid = "{{uuid}}";
             
@@ -162,30 +168,3 @@
     </script>
   </body>
 </html>
-
-<style>
-    div.container{
-        margin-top: 2em;
-    }
-    a.card-link {
-        color: inherit;
-        text-decoration: inherit;
-    }
-    button{
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        background-color: #da2222;
-        border-color:#830f0f; 
-        color: white;
-        width: 100%;
-        height: 100%;
-        border-radius: 5px;
-        font-size: large;
-    }
-    button:hover{
-        box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
-        border-radius: 2px;
-    }
-    .card-header{
-        font-size: x-large;
-    }
-</style>

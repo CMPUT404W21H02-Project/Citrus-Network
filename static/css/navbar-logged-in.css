@@ -1,0 +1,85 @@
+.navbar {
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+.nav-item >.nav-link:hover{
+    box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
+    border-radius: 2px;
+}
+.navbar-brand{
+    font-size: x-large;
+}
+.nav-link{
+    padding-bottom: 0.15em;
+    font-size: large;
+}
+.profile-icon {
+    /* https://pics.freeicons.io/uploads/icons/png/13041701241579605654-512.png */
+    background-image: url('https://pics.freeicons.io/uploads/icons/png/6968626491553667180-512.png');
+    background-size: cover;
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+}
+.lemon {
+    background-image: url('https://pics.freeicons.io/uploads/icons/png/10132670581536062027-512.png');
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+.lime {
+    background-image: url('https://pics.freeicons.io/uploads/icons/png/11346849841536062027-512.png');
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+.orange {
+    background-image: url('https://pics.freeicons.io/uploads/icons/png/16592805281536062034-512.png');
+    background-size: cover;
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+}
+.inbox {
+    background-image: url('https://pics.freeicons.io/uploads/icons/png/1510172381557996993-512.png');
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+.friends{
+    background-image: url("https://img.icons8.com/color/96/000000/friends--v1.png");
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+.followers{
+    /*background-image: image('friends.png');*/
+    background-image: url("https://img.icons8.com/color/48/000000/add-user-group-woman-woman.png");
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+.find-friends{
+    /*background-image: image('add-friend.png');*/
+    background-image: url("https://img.icons8.com/color/48/000000/search--v2.png");
+    background-size: cover;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}

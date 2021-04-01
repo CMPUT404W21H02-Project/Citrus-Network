@@ -10,8 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-
     <title>Citrus Network</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar-logged-in.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/citrus_home/index.css' %}">
   </head>
   <body>
     {% include '../navbar-logged-in.html' %}
@@ -59,41 +61,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
   </body>
 </html>
-<style>
-    a.card-link {
-        color: inherit;
-        text-decoration: inherit;
-    }
-    div.header-buttons{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: row;
-    }
-    div.button-nav{
-        margin-top: 3em;
-        margin-bottom:1em ;
-    }
-    a.nav-link{
-        width: 100%;
-    }
-    #post-button{
-        background-color: #1fb141;
-        border-color: rgb(7, 128, 7) ;
-    }
-  
-    .header-buttons .nav-button{
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        color: white;
-        width: 100%;
-        height: 100%;
-        border-radius: 5px;
-        border-width: 3px;
-        font-size: large;
-    }
-    .header-buttons .nav-button:hover{
-       
-        box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
-        border-radius: 5px;
-    }
-</style>

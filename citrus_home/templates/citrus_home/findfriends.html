@@ -8,8 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-
     <title>Citrus Network</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar-logged-in.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/citrus_home/findfriends.css' %}">
   </head>
 
   <body>
@@ -62,21 +64,25 @@
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
                         //creating a dictionary associating each id with its host to control for slight differences in each API
-                        if ("host" in json.items[i]){
-                            if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
-                                non_follower_info_dict[json.items[i].id] = json.items[i].host
-                                user_id = json.items[i].id
-                            }else if (json.items[i].host == team_18_host){
-                                non_follower_info_dict[json.items[i].authorID] = json.items[i].host
-                                user_id = json.items[i].authorID
-                            }else if (json.items[i].host == team_3_host){
-                                non_follower_info_dict[json.items[i].id] = json.items[i].host
-                                user_id = json.items[i].id
+                        try{
+                            if ("host" in json.items[i]){
+                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                    non_follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else if (json.items[i].host == team_18_host){
+                                    non_follower_info_dict[json.items[i].authorID] = json.items[i].host
+                                    user_id = json.items[i].authorID
+                                }else if (json.items[i].host == team_3_host){
+                                    non_follower_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else{
+                                    console.log("host is not an accepted node: " + json.items[i].host)
+                                }
                             }else{
-                                console.log("host is not an accepted node: " + json.items[i].host)
+                                console.log("host was not in json.items. Someone did not provide host in API")
                             }
-                        }else{
-                            console.log("host was not in json.items. Someone did not provide host in API")
+                        }catch(err){
+                            console.log(err)
                         }
                         let url = "{% url 'render_profile' %}" + user_id;
                         $("#card_parent") 
@@ -86,6 +92,7 @@
                                 '</div></div>');
                     } 
                 }catch(err){
+                    console.log(err)
                         //if no list of people to follow - let user know they have followed everyone available
                         $("#card_parent") 
                         .append('<div class="card"><div class="card-header" id = "card_header">You Have Followed Everyone Available!'+
@@ -183,30 +190,3 @@
     </script>
   </body>
 </html>
-
-<style>
-    div.container{
-        margin-top: 2em;
-    }
-    a.card-link {
-        color: inherit;
-        text-decoration: inherit;
-    }
-    button{
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        background-color: #1fb141;
-        border-color: rgb(7, 128, 7);
-        color: white;
-        width: 100%;
-        height: 100%;
-        border-radius: 5px;
-        font-size: large;
-    }
-    button:hover{
-        box-shadow: 0 2px 4px 0 rgba(65, 64, 64, 0.24), 0 4px 8px 0 rgba(65,64,64,0.24);
-        border-radius: 2px;
-    }
-    .card-header{
-        font-size: x-large;
-    }
-</style>
