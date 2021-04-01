@@ -188,7 +188,8 @@
                                         success: function(data) {
                                             var commentHtml = ""
                                             for (var i in data.comments) {
-                                                commentHtml += '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="#commentauthor">' + 
+                                                let url = "{% url 'render_profile' %}" + data.comments[i].author.id
+                                                commentHtml += '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
                                                 '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
                                                 '</p></a></div><div class="card-body"><p>' + data.comments[i].comment + '</p>' + 
 

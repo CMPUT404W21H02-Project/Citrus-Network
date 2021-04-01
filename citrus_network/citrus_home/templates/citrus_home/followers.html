@@ -90,6 +90,7 @@
                 console.log(json)
                 try{
                     for (var i = 0; i < json.items.length; i++) { 
+                        let url = "{% url 'render_profile' %}" + json.items[i].id;
                         //true if a follower id is also present in friends ids - false otherwise
 
                         if ("host" in json.items[i]){
@@ -112,16 +113,19 @@
                         console.log(follower_info_dict)
 
                         if (friendsids.includes(json.items[i].id)){
+                            console.log(json.items[i]);
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        json.items[i].displayName+'</div></a>'+
                                         '<div class="card-body" id = "card_body">'+
                                         '<p id = "'+user_id+'">Already Following</p></div>'+
                                         '</div>'); 
                         }else{
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<div class="card-header" id = "card_header">'+json.items[i].displayName+'</div>'+
+                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        json.items[i].displayName+'</div></a>'+
                                         '<div class="card-body" id = "card_body">'+
                                         '<button id = "'+user_id+'" onClick="followBack(this)">Add Friend</button></div>'+
                                         '</div>');
