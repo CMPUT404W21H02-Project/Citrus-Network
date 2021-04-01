@@ -44,7 +44,9 @@ def basicAuthHandler(request):
         src = request.META["HTTP_REFERER"]
         parsed = urlparse(src)
         url = parsed.scheme + "://" +parsed.netloc + "/"
-        node = Node.objects.get(url)
+        print(url)
+        node = Node.objects.get(host=url)
+        print(node)
         
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         token_type, _, credentials = auth_header.partition(' ')
