@@ -25,6 +25,7 @@ import base64
 from functools import reduce
 import operator
 from django.db.models import Q
+from requests.auth import HTTPBasicAuth
 # separator of uuids in list of followers and friends
 CONST_SEPARATOR = " "
 
@@ -1390,9 +1391,10 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
             response = JsonResponse({"message from team 18's response":result})
             response.status_code = 200
             return response
-    response = JsonResponse({"message": "Authorization required"})
-    response.status_code = 401
-    return response
+    else:
+        response = JsonResponse({"message": "Authorization required"})
+        response.status_code = 401
+        return response
 
 
 def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
