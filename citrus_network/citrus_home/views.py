@@ -1608,7 +1608,6 @@ def get_author_post(request, author_id, post_id):
                     "description": post.description,
                     "contentType": post.contentType,
                     "content": post.content,
-                    # probably serialize author here and call it
                     "author": author_data,
                     "categories": categories,
                     "count": comments.count(),
@@ -1720,11 +1719,20 @@ def handle_remote_post_likes(request, author_id, post_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like.author.id == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        # Not yet implemented
+                        # req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password))
+                        return JsonResponse({"likes":0, "author_liked": False}, status=200)
     elif request.method == 'POST':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -1745,11 +1753,21 @@ def handle_remote_post_likes(request, author_id, post_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        # Post not yet implemented
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like.author.id == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        # Not yet implemented
+                        # req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password))
+                        return JsonResponse({"likes":0, "author_liked": False}, status=200)
     elif request.method == 'DELETE':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -1771,11 +1789,21 @@ def handle_remote_post_likes(request, author_id, post_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        # Delete not yet implemented
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like.author.id == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        # Not yet implemented
+                        # req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password))
+                        return JsonResponse({"likes":0, "author_liked": False}, status=200)
 
 @csrf_exempt
 def handle_remote_comment_likes(request, author_id, post_id, comment_id):

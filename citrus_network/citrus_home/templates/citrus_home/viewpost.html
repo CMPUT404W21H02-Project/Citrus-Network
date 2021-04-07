@@ -233,7 +233,7 @@
                     type: "GET",
                     dataType: 'json',
                     success: function(data) {   
-                        $(".like-count").text("x" + data.likes);
+                        $(".like-count").text(data.likes);
                         if (data.author_liked) {
                             $(".liked").removeAttr("hidden");
                             $(".not-liked").attr("hidden", true)
@@ -253,7 +253,7 @@
                     type: "DELETE",
                     dataType: 'json',
                     success: function(data) {   
-                        $(".like-count").text("x" + data.likes);
+                        $(".like-count").text(data.likes);
                         if (data.author_liked) {
                             $(".liked").removeAttr("hidden");
                             $(".not-liked").attr("hidden", true)
@@ -270,7 +270,7 @@
                     type: "POST",
                     dataType: 'json',
                     success: function(data) {   
-                        $(".like-count").text("x" + data.likes);
+                        $(".like-count").text(data.likes);
                         if (data.author_liked) {
                             $(".liked").removeAttr("hidden");
                             $(".not-liked").attr("hidden", true)
@@ -290,8 +290,7 @@
                     type: "DELETE",
                     dataType: 'json',
                     success: function(data) {   
-                        console.log(data);
-                        $(".like-count-" + data.id).text("x" + data.likes);
+                        $(".like-count-" + data.id).text(data.likes);
                         if (data.author_liked) {
                             $(".liked-" + data.id).removeAttr("hidden");
                             $(".not-liked-" + data.id).attr("hidden", true)
@@ -308,8 +307,7 @@
                     type: "POST",
                     dataType: 'json',
                     success: function(data) {   
-                        console.log(data);
-                        $(".like-count-" + data.id).text("x" + data.likes);
+                        $(".like-count-" + data.id).text(data.likes);
                         if (data.author_liked) {
                             $(".liked-" + data.id).removeAttr("hidden");
                             $(".not-liked-" + data.id).attr("hidden", true)
@@ -397,7 +395,7 @@
                             type: "GET",
                             dataType: 'json',
                             success: function(data) {   
-                                $(".like-count-" + data.id).text("x" + data.likes);
+                                $(".like-count-" + data.id).text(data.likes);
                                 if (data.author_liked) {
                                     $(".liked-" + data.id).removeAttr("hidden");
                                     $(".not-liked-" + data.id).attr("hidden", true)
