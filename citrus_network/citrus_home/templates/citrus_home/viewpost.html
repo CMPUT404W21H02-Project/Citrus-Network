@@ -326,6 +326,7 @@
                 type: "GET",
                 dataType: 'json',
                 success: function(data) {
+                    $('.comments').html("");
                     for (var i in data.comments) {
                         let url = "{% url 'render_profile' %}" + data.comments[i].author.id
                         var newElement = document.createElement('div');
@@ -334,11 +335,24 @@
                         newElement.setAttributeNode(classAttr);
                         newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
                         '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                        '</p></a></div><div class="card-body"><p>' + data.comments[i].comment + '</p>';
+                        '</p></a></div>';
+                        var cardBody = document.createElement('div');
+                        var cardBodyClass = document.createAttribute("class");
+                        cardBodyClass.value = 'card-body';
+                        cardBody.setAttributeNode(cardBodyClass);
+
+                        var commentContent = document.createElement('p');
+                        var commentValue = "";
+                        let comments = data.comments[i].comment.split('\n');
+                        for(var comment of comments) {
+                            commentValue += comment + '<br>'
+                        }
+                        commentContent.innerHTML = commentValue;
+                        // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
 
                         var inlineElement = document.createElement('div');
                         var inlineAttr = document.createAttribute("class");
-                        inlineAttr.value = "inline card-body";
+                        inlineAttr.value = "inline";
                         inlineElement.setAttributeNode(inlineAttr);
 
                         var likedButton = document.createElement('button');
@@ -380,7 +394,10 @@
                         inlineElement.appendChild(notLikedButton);
                         inlineElement.appendChild(likeCounter);
 
-                        newElement.appendChild(inlineElement);
+                        cardBody.appendChild(commentContent)
+                        cardBody.appendChild(inlineElement)
+
+                        newElement.appendChild(cardBody);
                         $('.comments').append(newElement);
 
                         // Like buttons not yet implemented due to no like API
