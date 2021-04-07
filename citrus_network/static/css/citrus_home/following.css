@@ -1,0 +1,10 @@
+div.container{
+    margin-top: 2em;
+}
+a.card-link {
+    color: inherit;
+    text-decoration: inherit;
+}
+.card-header{
+    font-size: x-large;
+}

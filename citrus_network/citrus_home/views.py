@@ -415,7 +415,7 @@ Helper function that raises and error if one of the fields is not available
 PARAMS: field validites - a list of booleans
 '''
 def validate_fields(field_validities):
-    print(field_validities)
+  
     if False in field_validities:
         raise forms.ValidationError(u'one of three fields  are already in use.')
     else:
@@ -750,7 +750,6 @@ def get_team3_authors():
     #response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     response = requests.get(URL)
     result = response.json()
-    print(result)
     return result
 
 """
@@ -895,6 +894,36 @@ def get_not_followers(request,author_id):
         return response
 
 """
+handles GET request: get a list of user the current user is following
+format of list of followers: uuids separated by CONST_SEPARATOR
+Expected: 
+URL: ://service/author/{AUTHOR_ID}/following
+PARAMS: 
+    request - request being made
+    author_id - the id of the author making the request (logged in)
+RETURN: JSON response
+"""
+def get_following(request, author_id):
+     if not basicAuthHandler(request):
+        response = JsonResponse({'message':'not authenticated'})
+        response.status_code = 401
+        return response
+    if request.method == "GET":
+        #return a list of following from the following table 
+        pass
+    elif request.method == "PUT":
+        #add a id to the following table
+        pass
+    elif request.method == "DELETE":
+        #remove the id from the users following table
+        pass
+    else:
+        response = JsonResponse({'message':'method not allowed'})
+        response.status_code = 405
+        return response
+
+
+"""
 handles GET request: get a list of authors who are their followers
 format of list of followers: uuids separated by CONST_SEPARATOR
 Expected: 
@@ -969,6 +998,15 @@ RETURN: request, followers page, current user id
 def render_followers_page(request):
     uuid = get_uuid(request)
     return render(request,'citrus_home/followers.html', {'uuid':uuid})
+
+'''
+function to render the following page
+PARAMS: request
+RETURN: request, following page, current user id
+'''
+def render_following_page(request):
+    uuid = get_uuid(request)
+    return render(request, 'citrus_home/following.html',{'uuid':uuid})
 
 
 """
@@ -1057,6 +1095,7 @@ def edit_followers(request, author_id, foreign_author_id):
 
     elif request.method == 'PUT':
         # validate author id in citrus_author model:
+        
         try:
             author = CitrusAuthor.objects.get(id=author_id)
         except ObjectDoesNotExist: 
@@ -1064,7 +1103,7 @@ def edit_followers(request, author_id, foreign_author_id):
             response.status_code = 404
             return response
 
-        # validate foregin id in citrus_author model:
+        # validate foreign id in citrus_author model:
         #need to also check here if the author exists in team18 and team3
         if (check_author_exist_in_CitrusAuthor(foreign_author_id) == False):
             response = JsonResponse({"results":"foreign id doesn't exist on our server or team18's"})
