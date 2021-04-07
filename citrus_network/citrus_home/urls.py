@@ -16,7 +16,9 @@ urlpatterns = [
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/get-posts/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$', views.get_author_post, name="get_author_post"),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/get-posts/$', views.get_authors_public_posts, name="get_authors_posts"),
   path('post/', views.make_post_redirect, name='make_post_url'),
+  path('service/author/<uuid:author_id>/view-post/<uuid:post_id>/comment/<uuid:comment_id>/likes/', views.handle_remote_comment_likes, name='remote_comment_likes_handler'),
   path('service/author/<uuid:author_id>/view-post/<uuid:post_id>/comment/', views.handle_remote_comment, name='remote_comment_handler'),
+  path('service/author/<uuid:author_id>/view-post/<uuid:post_id>/likes/', views.handle_remote_post_likes, name='remote_post_likes_handler'),
   path('service/author/<uuid:author_id>/view-post/<uuid:post_id>/', views.post_redirect, name='view_post_url'),
   path('home-test/', views.handleStream, name='get_stream'),
 
@@ -46,7 +48,9 @@ urlpatterns = [
   url(r'^profile/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/$', views.render_author_profile, name="render_profile"),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/get-posts/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$', views.get_author_post, name="get_authors_posts"),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/get-posts/$', views.get_authors_public_posts, name="get_authors_posts"),
+  url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/view-post/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/comment/(?P<comment_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/likes/$', views.handle_remote_comment_likes, name='remote_comment_likes_handler'),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/view-post/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/comment/$', views.handle_remote_comment, name='remote_comment_handler'),
+  url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/view-post/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/likes/$', views.handle_remote_post_likes, name='remote_post_likes_handler'),
   url(r'^service/author/(?P<author_id>[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12})/view-post/(?P<post_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$', views.post_redirect, name='view_post_url'),
   
   # INBOX
