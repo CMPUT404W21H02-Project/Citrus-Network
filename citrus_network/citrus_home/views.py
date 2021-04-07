@@ -850,8 +850,6 @@ def get_not_followers(request,author_id):
         # check users in team 3 server
         if check_team3_in_node():
             authors3 = get_team3_authors()
-            print("*********************")
-            print(authors3)
             for user in authors3:
                 if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
                     items.append(user) # add them into items containing list of non-followers
@@ -863,7 +861,7 @@ def get_not_followers(request,author_id):
                     items.append(user) # add them into items containing list of non-followers
         
         # check to see if list of not_followers from our server and items for non-followers from other server are empty:
-        if len(not_followers)==0 or len(items)==0:
+        if len(not_followers)==0 and len(items)==0:
             response = JsonResponse({"results":"no non-followers found"})
             response.status_code = 200
             return response
