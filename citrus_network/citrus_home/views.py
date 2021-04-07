@@ -61,8 +61,6 @@ def basicAuthHandler(request):
 
 def get_team_3_user():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
-    print("************************************************")
-    print(node)
     return node.node_username
 
 def get_team_3_password():
