@@ -261,7 +261,7 @@ def render_author_profile(request, author_id):
             nodes = Node.objects.all()
             for node in nodes:
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         author = req.json()
                         response = {
@@ -275,7 +275,7 @@ def render_author_profile(request, author_id):
                         }
                         return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author["host"] + 'service/author/' + response["id"] + '/posts/' })
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         author = req.json()
                         response = {
@@ -298,9 +298,7 @@ def get_authors_public_posts(request, author_id):
     if request.method == 'GET':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/')
-            # print(req)
-            return JsonResponse(req.json())
+            return manage_post(request, author_id)
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
             for node in nodes:
@@ -1723,7 +1721,7 @@ def handle_remote_post_likes(request, author_id, post_id):
                         like_count = 0
                         author_likes = False
                         for like in req:
-                            if like.author.id == str(current_author.id):
+                            if like["author"]["id"] == str(current_author.id):
                                 author_likes = True
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
