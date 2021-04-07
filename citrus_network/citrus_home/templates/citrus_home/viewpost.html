@@ -233,7 +233,7 @@
                         if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
-                            $('.post-content').html('<img src=\"' + post.content + '\"/>');
+                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%"/>');
                         } else {
                             let lines = post.content.split("\n")
                             for (var i of lines) {

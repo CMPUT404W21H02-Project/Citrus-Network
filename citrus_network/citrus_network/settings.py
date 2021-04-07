@@ -79,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'citrus_network.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -134,6 +133,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+
+MAX_UPLOAD_SIZE = "104857600"
 MEDIA_URL = '/images/'
 MEDIA_ROOT = os.path.join(BASE_DIR,"static/images")
 django_on_heroku.settings(locals()) # bottom of the file
