@@ -1596,22 +1596,44 @@ def get_author_post(request, author_id, post_id):
     if request.method == 'GET':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/' + post_id + '/')
-            return JsonResponse(req.json())
+            post = Post.objects.get(id=post_id)
+            author_data = convertAuthorObj(author)
+            categories = post.categories.split()
+            comments = Comment.objects.filter(post=post)
+            comments_arr = create_comment_list(post)
+            return_data = {
+                    "type": "post",
+                    "title": post.title,
+                    "id": post.id,
+                    "source": post.source,
+                    "origin": post.origin,
+                    "description": post.description,
+                    "contentType": post.contentType,
+                    "content": post.content,
+                    # probably serialize author here and call it
+                    "author": author_data,
+                    "categories": categories,
+                    "count": comments.count(),
+                    "comments": comments_arr, 
+                    "published": post.published,
+                    "visibility": post.visibility,
+                    "unlisted": "false"
+                }
+            return JsonResponse(return_data, status=200)
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
             for node in nodes:
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + post_id + '/').json()
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + post_id + '/', auth=(node.node_username, node.node_password)).json()
                         req["id"] = req["postID"]
                         req["author"]["id"] = req["authorID"]
                         return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + post_id)
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + post_id, auth=(node.node_username, node.node_password))
                         return JsonResponse(req.json())
 
 @csrf_exempt
@@ -1627,21 +1649,23 @@ def handle_remote_comment(request, author_id, post_id):
     if request.method == 'GET':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-            req = requests.get(author.host + 'service/author/' + str(author.id) + '/posts/' + str(post_id) + '/comment/')
-            return JsonResponse(req.json())
+            post = Post.objects.get(id=post_id)
+            comment_arr = create_comment_list(post)
+            return JsonResponse({
+                "comments": comment_arr
+            }, status=200)
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
             for node in nodes:
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        print(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/')
-                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/')
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/', auth=(node.node_username, node.node_password))
                         return JsonResponse(req.json())
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments')
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', auth=(node.node_username, node.node_password))
                         return JsonResponse({"comments": req.json()})
 
     elif request.method == 'POST':
@@ -1651,22 +1675,22 @@ def handle_remote_comment(request, author_id, post_id):
             return returnJsonResponse("Please provide a post body", 400)
         try:
             author = CitrusAuthor.objects.get(id=author_id)
-            print(current_author, str(author.id))
-            req = requests.post(author.host + 'service/author/' + str(current_author.id) + '/posts/' + str(post_id) + '/comment/', json=body)
-            return JsonResponse(req.json())
+            post = Post.objects.get(id=post_id)
+            Comment.objects.create(author=author, post=post, comment=body['comment'], id=uuid.uuid4()).save()
+            return returnJsonResponse(specific_message="comment added", status_code=200)
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
             for node in nodes:
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         body["author_write_comment_ID"] = str(current_author.id)
-                        req = requests.post(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/', json=body)
+                        req = requests.post(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/', json=body, auth=(node.node_username, node.node_password))
                         return JsonResponse(req.json())
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body)
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
                         return JsonResponse({"comments": req.json()})
 
 
