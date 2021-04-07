@@ -117,7 +117,7 @@
                         '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>';
                     
                     if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
-                        postHtml += '<img src=\"' + json.posts[i].content + '\"/>';
+                        postHtml += '<img src=\"' + json.posts[i].content + '\" style="max-width:100%;max-height:100%"/>';
                     } else if (json.posts[i].contentType === "text/markdown") {
                         postHtml += marked(json.posts[i].content)
                     } else{
