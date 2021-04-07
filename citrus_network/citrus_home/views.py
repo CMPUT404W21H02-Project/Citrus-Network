@@ -1704,7 +1704,7 @@ def handle_remote_post_likes(request, author_id, post_id):
         try:
             author = CitrusAuthor.objects.get(id=author_id)
             post = Post.objects.get(id=post_id)
-            likes = Like.objects.filter(author=author_id, post_id=post_id)
+            likes = Like.objects.filter(post_id=post_id)
             like_count = 0
             author_likes = False
             for like in likes:
@@ -1738,7 +1738,7 @@ def handle_remote_post_likes(request, author_id, post_id):
             author = CitrusAuthor.objects.get(id=author_id)
             post = Post.objects.get(id=post_id)
             Like.objects.create(author=str(current_author.id), post_id=post_id).save()
-            likes = Like.objects.filter(author=author_id, post_id=post_id)
+            likes = Like.objects.filter(post_id=post_id)
             like_count = 0
             author_likes = False
             for like in likes:
@@ -1772,9 +1772,9 @@ def handle_remote_post_likes(request, author_id, post_id):
         try:
             author = CitrusAuthor.objects.get(id=author_id)
             post = Post.objects.get(id=post_id)
-            like = Like.objects.get(author=str(current_author.id))
+            like = Like.objects.get(author=str(current_author.id), post_id=post_id)
             like.delete()
-            likes = Like.objects.filter(author=author_id, post_id=post_id)
+            likes = Like.objects.filter(post_id=post_id)
             like_count = 0
             author_likes = False
             for like in likes:
@@ -1819,7 +1819,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
         try:
             author = CitrusAuthor.objects.get(id=author_id)
             comment = Comment.objects.get(id=comment_id)
-            likes = Like.objects.filter(author=author_id, comment_id=comment_id)
+            likes = Like.objects.filter(comment_id=comment_id)
             like_count = 0
             author_likes = False
             for like in likes:
@@ -1844,7 +1844,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
             author = CitrusAuthor.objects.get(id=author_id)
             comment = Comment.objects.get(id=comment_id)
             Like.objects.create(author=str(current_author.id), comment_id=comment_id).save()
-            likes = Like.objects.filter(author=author_id, comment_id=comment_id)
+            likes = Like.objects.filter(comment_id=comment_id)
             like_count = 0
             author_likes = False
             for like in likes:
@@ -1870,7 +1870,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
             comment = Comment.objects.get(id=comment_id)
             like = Like.objects.get(author=str(current_author.id), comment_id=comment_id)
             like.delete()
-            likes = Like.objects.filter(author=author_id, comment_id=comment_id)
+            likes = Like.objects.filter(comment_id=comment_id)
             like_count = 0
             author_likes = False
             for like in likes:
