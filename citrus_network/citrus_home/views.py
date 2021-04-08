@@ -303,18 +303,18 @@ def get_authors_public_posts(request, author_id):
             nodes = Node.objects.all()
             for node in nodes:
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/').json()
+                        req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/', auth=(node.node_username, node.node_password)).json()
                         # print('team 18', req)
                         for i in req["posts"]:
                             i["id"] = i["postID"]
                             i["author"]["id"] = i["authorID"]
                         return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/')
+                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/')
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/', auth=(node.node_username, node.node_password))
                         return JsonResponse({"posts":req.json()})
 
 """
@@ -1751,7 +1751,7 @@ def handle_remote_post_likes(request, author_id, post_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        # Post not yet implemented
+                        
                         req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
                         author_likes = False
