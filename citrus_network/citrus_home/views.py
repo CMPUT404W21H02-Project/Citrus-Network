@@ -1751,7 +1751,13 @@ def handle_remote_post_likes(request, author_id, post_id):
                 if node.host == 'https://cmput-404-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'service/author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        
+                        body = {
+                            "type": "like",
+                            "summary": str(current_author.displayName) + " likes your post",
+                            "author_like_ID": str(current_author.id),
+                            "postID": str(post_id)
+                        }
+                        req = requests.post(node.host + 'service/author/' + str(author_id) + '/inbox/', json=body, auth=(node.node_username, node.node_password))
                         req = requests.get(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
                         author_likes = False
