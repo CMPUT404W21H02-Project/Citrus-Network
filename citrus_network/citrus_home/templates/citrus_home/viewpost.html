@@ -247,24 +247,7 @@
         })();
 
         function handlePostLike() {
-            if ($(".liked").attr("hidden") == undefined) {
-                $.ajax({
-                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
-                    type: "DELETE",
-                    dataType: 'json',
-                    success: function(data) {   
-                        $(".like-count").text(data.likes);
-                        if (data.author_liked) {
-                            $(".liked").removeAttr("hidden");
-                            $(".not-liked").attr("hidden", true)
-                        } else {
-                            $(".not-liked").removeAttr("hidden");
-                            $(".liked").attr("hidden", true)
-                        }
-                    }
-                });
-
-            } else {
+            if ($(".liked").attr("hidden") != undefined) {
                 $.ajax({
                     url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
                     type: "POST",
@@ -280,28 +263,12 @@
                         }
                     }
                 });
-            }
+
+            } 
         }
 
         function handleCommentLike(comment_id) {
-            if ($(".liked-" + comment_id).attr("hidden") == undefined) {
-                $.ajax({
-                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
-                    type: "DELETE",
-                    dataType: 'json',
-                    success: function(data) {   
-                        $(".like-count-" + data.id).text(data.likes);
-                        if (data.author_liked) {
-                            $(".liked-" + data.id).removeAttr("hidden");
-                            $(".not-liked-" + data.id).attr("hidden", true)
-                        } else {
-                            $(".not-liked-" + data.id).removeAttr("hidden");
-                            $(".liked-" + data.id).attr("hidden", true)
-                        }
-                    }
-                });
-
-            } else {
+            if ($(".liked-" + comment_id).attr("hidden") != undefined) {
                 $.ajax({
                     url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
                     type: "POST",
@@ -317,6 +284,7 @@
                         }
                     }
                 });
+
             }
         }
 
