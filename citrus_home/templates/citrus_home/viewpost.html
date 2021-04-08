@@ -126,13 +126,16 @@
                         <div class="card-body">
                             <h6 class="font-weight-bold post-title"></h6>
                             <p class="post-content"></p>
-                            <!-- Like API not yet implemented -->
-                            <!-- <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
-                                <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
-                            </button>
-                            <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
-                                <em class="bi-hand-thumbs-up-fill"></em>
-                            </button> -->
+                            <div class="inline">
+                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill liked" hidden="true" onClick="handlePostLike()">
+                                    <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
+                                </button>
+                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill not-liked" hidden="true" onClick="handlePostLike()">
+                                    <em class="bi-hand-thumbs-up-fill"></em>
+                                </button>
+                                <small class="like-count">
+                                </small>
+                            </div>
                             <br>
                             <div class="card-body">
                             <form class="needs-validation" novalidate>
@@ -184,28 +187,7 @@
                                 contentType: "application/json",
                                 data: JSON.stringify(comment),
                                 success: function(data) {
-                                    $.ajax({
-                                        url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
-                                        type: "GET",
-                                        dataType: 'json',
-                                        success: function(data) {
-                                            var commentHtml = ""
-                                            for (var i in data.comments) {
-                                                let url = "{% url 'render_profile' %}" + data.comments[i].author.id
-                                                commentHtml += '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
-                                                '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                                                '</p></a></div><div class="card-body"><p>' + data.comments[i].comment + '</p>' + 
-
-                                                // Like buttons not yet implemented due to no like API
-                                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                                // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
-                                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                                // '<em class="bi-hand-thumbs-up-fill"></em></button>' + 
-                                                '</div></div>';
-                                            }
-                                            $('.comments').html(commentHtml);
-                                        }
-                                    });
+                                    getComments();
                                 }
                             });
                             event.preventDefault();
@@ -220,7 +202,6 @@
                     type: "GET",
                     dataType: 'json',
                     success: function(post) {
-                        console.log(post);
                         $('.author-name').html(post.author.displayName)
                         $('.published').html(post.published)
                         var tagHtml = ''; 
@@ -240,27 +221,179 @@
                                 $('.post-content').append(i + '<br>');
                             }
                         }
-                        for (var i in post.comments) {
-                            let url = "{% url 'render_profile' %}" + post.comments[i].author.id
-                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
-                                '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 
-                                '</p></a></div><div class="card-body"><p>' + post.comments[i].comment + '</p>' + 
-
-                                // Like buttons not yet implemented due to no like API
-                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
-                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                // '<em class="bi-hand-thumbs-up-fill"></em></button>' + 
-                                '</div></div>';
-                            $('.comments').append(commentHtml);
-                        }
+                        getComments();
                     },
                     error: function() {
                         window.location.replace('/home')
                     }
                 });
+
+                $.ajax({
+                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                    type: "GET",
+                    dataType: 'json',
+                    success: function(data) {   
+                        $(".like-count").text(data.likes);
+                        if (data.author_liked) {
+                            $(".liked").removeAttr("hidden");
+                            $(".not-liked").attr("hidden", true)
+                        } else {
+                            $(".not-liked").removeAttr("hidden");
+                            $(".liked").attr("hidden", true)
+                        }
+                    }
+                });
             }, false);
         })();
+
+        function handlePostLike() {
+            if ($(".liked").attr("hidden") != undefined) {
+                $.ajax({
+                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                    type: "POST",
+                    dataType: 'json',
+                    success: function(data) {   
+                        $(".like-count").text(data.likes);
+                        if (data.author_liked) {
+                            $(".liked").removeAttr("hidden");
+                            $(".not-liked").attr("hidden", true)
+                        } else {
+                            $(".not-liked").removeAttr("hidden");
+                            $(".liked").attr("hidden", true)
+                        }
+                    }
+                });
+
+            } 
+        }
+
+        function handleCommentLike(comment_id) {
+            if ($(".liked-" + comment_id).attr("hidden") != undefined) {
+                $.ajax({
+                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
+                    type: "POST",
+                    dataType: 'json',
+                    success: function(data) {   
+                        $(".like-count-" + data.id).text(data.likes);
+                        if (data.author_liked) {
+                            $(".liked-" + data.id).removeAttr("hidden");
+                            $(".not-liked-" + data.id).attr("hidden", true)
+                        } else {
+                            $(".not-liked-" + data.id).removeAttr("hidden");
+                            $(".liked-" + data.id).attr("hidden", true)
+                        }
+                    }
+                });
+
+            }
+        }
+
+        function getComments() {
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
+                type: "GET",
+                dataType: 'json',
+                success: function(data) {
+                    $('.comments').html("");
+                    for (var i in data.comments) {
+                        let url = "{% url 'render_profile' %}" + data.comments[i].author.id
+                        var newElement = document.createElement('div');
+                        var classAttr = document.createAttribute("class");
+                        classAttr.value = "card mt-1 mb-1";
+                        newElement.setAttributeNode(classAttr);
+                        newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                        '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
+                        '</p></a></div>';
+                        var cardBody = document.createElement('div');
+                        var cardBodyClass = document.createAttribute("class");
+                        cardBodyClass.value = 'card-body';
+                        cardBody.setAttributeNode(cardBodyClass);
+
+                        var commentContent = document.createElement('p');
+                        var commentValue = "";
+                        let comments = data.comments[i].comment.split('\n');
+                        for(var comment of comments) {
+                            commentValue += comment + '<br>'
+                        }
+                        commentContent.innerHTML = commentValue;
+                        // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
+
+                        var inlineElement = document.createElement('div');
+                        var inlineAttr = document.createAttribute("class");
+                        inlineAttr.value = "inline";
+                        inlineElement.setAttributeNode(inlineAttr);
+
+                        var likedButton = document.createElement('button');
+                        var likedButtonClassAttr = document.createAttribute("class");
+                        var likedButtonIdAttr = document.createAttribute("id");
+                        var likedButtonHiddenAttr = document.createAttribute("hidden");
+                        likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
+                        likedButtonHiddenAttr.value = "true"
+                        likedButtonIdAttr.value = data.comments[i].id
+                        likedButton.setAttributeNode(likedButtonClassAttr);
+                        likedButton.setAttributeNode(likedButtonHiddenAttr);
+                        likedButton.setAttributeNode(likedButtonIdAttr);
+                        likedButton.addEventListener('click', function(data) {
+                            handleCommentLike(data.target.id);
+                        });
+                        likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;" id="' + data.comments[i].id + '"></em>';
+
+                        var notLikedButton = document.createElement('button');
+                        var notLikedButtonClassAttr = document.createAttribute("class");
+                        var notLikedButtonIdAttr = document.createAttribute("id");
+                        var notLikedButtonHiddenAttr = document.createAttribute("hidden");
+                        notLikedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill not-liked-' + data.comments[i].id
+                        notLikedButtonHiddenAttr.value = "true"
+                        notLikedButtonIdAttr.value = data.comments[i].id
+                        notLikedButton.setAttributeNode(notLikedButtonClassAttr);
+                        notLikedButton.setAttributeNode(notLikedButtonHiddenAttr);
+                        notLikedButton.setAttributeNode(notLikedButtonIdAttr);
+                        notLikedButton.addEventListener('click', function(data) {
+                            handleCommentLike(data.target.id);
+                        });
+                        notLikedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
+
+                        var likeCounter = document.createElement('small');
+                        var likeCounterClassAttr = document.createAttribute("class");
+                        likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
+                        likeCounter.setAttributeNode(likeCounterClassAttr);
+
+                        inlineElement.appendChild(likedButton);
+                        inlineElement.appendChild(notLikedButton);
+                        inlineElement.appendChild(likeCounter);
+
+                        cardBody.appendChild(commentContent)
+                        cardBody.appendChild(inlineElement)
+
+                        newElement.appendChild(cardBody);
+                        $('.comments').append(newElement);
+
+                        // Like buttons not yet implemented due to no like API
+                        // '<div class="inline">' + 
+                        // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id + '" hidden="true" onclick="handleCommentLike(\'' +  data.comments[i].id + '\')">' + 
+                        // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
+                        // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill not-liked-' + data.comments[i].id + '" hidden="true" onclick="handleCommentLike(' + data.comments[i].id + ')">' + 
+                        // '<em class="bi-hand-thumbs-up-fill"></em></button><small class="like-count-' + data.comments[i].id + '"></small></div>' + 
+                        // '</div>';
+                        $.ajax({
+                            url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
+                            type: "GET",
+                            dataType: 'json',
+                            success: function(data) {   
+                                $(".like-count-" + data.id).text(data.likes);
+                                if (data.author_liked) {
+                                    $(".liked-" + data.id).removeAttr("hidden");
+                                    $(".not-liked-" + data.id).attr("hidden", true)
+                                } else {
+                                    $(".not-liked-" + data.id).removeAttr("hidden");
+                                    $(".liked-" + data.id).attr("hidden", true)
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
     </script>
     <!-- Allow user to edit post only if they are the author -->
     {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
