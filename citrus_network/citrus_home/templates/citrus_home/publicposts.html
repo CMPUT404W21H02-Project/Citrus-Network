@@ -42,52 +42,56 @@
         function getStream() {
             fetchJSON("{% url 'public_posts' %}").then((json) => {
                 for(var i in json.message){
-                    if (json.message[i].author.id.includes("/author/")) {
-                        json.message[i].author.id = json.message[i].author.id.split("/author/")[1]
-                    }
-                    if (json.message[i].id.includes("/posts/")) {
-                        json.message[i].id = json.message[i].id.split("/posts/")[1]
-                    }
-                    var newElement = document.createElement('div');
-                    var classAttr = document.createAttribute("class");
-                    classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
-                    newElement.setAttributeNode(classAttr);
-                    let url = "{% url 'render_profile' %}" + json.message[i].author.id
-                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                        '<p style="margin: 0;"><strong>' + json.message[i].author.displayName + '</strong></p>' +
-                        '<p style="margin: 0;">' + json.message[i].published + ' | ' + json.message[i].origin + '</p>' +
-                        '</a>';
-
-                    for (var j in json.message[i].categories) {
-                        postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.message[i].categories[j] + '</a>'
-                    }
-                    postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
-                        json.message[i].author.id + '/view-post/' + json.message[i].id + '/>' + 
-                        '<h6><strong>';
-                            
-                    let lines = json.message[i].title.split("\n");
-                    for (var j of lines) {
-                        postHtml += j + "<br>"
-                    }        
-                    postHtml += '</strong></h6>';
-                    
-                    if (json.message[i].contentType === "image/png;base64" || json.message[i].contentType === "image/jpeg;base64"){
-                        postHtml += '<img src=\"' + json.message[i].content + '\" style="max-width:100%;max-height:100%"/>';
-                    } else if (json.message[i].contentType === "text/markdown") {
-                        postHtml += marked(json.message[i].content)
-                    } else{
-                        let lines = json.message[i].content.split('\n');
-                        
-                        postHtml += '<p>';
-                        for (var j of lines) {
-                            postHtml += j + '<br>'
+                    try {
+                        if (json.message[i].author.id.includes("/author/")) {
+                            json.message[i].author.id = json.message[i].author.id.split("/author/")[1]
                         }
-                        postHtml +='</p>';
-                        // console.log(marked(json.message[i].content));
-                    }
-                    newElement.innerHTML = postHtml;
+                        if (json.message[i].id.includes("/posts/")) {
+                            json.message[i].id = json.message[i].id.split("/posts/")[1]
+                        }
+                        var newElement = document.createElement('div');
+                        var classAttr = document.createAttribute("class");
+                        classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
+                        newElement.setAttributeNode(classAttr);
+                        let url = "{% url 'render_profile' %}" + json.message[i].author.id
+                        var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + json.message[i].author.displayName + '</strong></p>' +
+                            '<p style="margin: 0;">' + json.message[i].published + ' | ' + json.message[i].origin + '</p>' +
+                            '</a>';
 
-                    document.querySelector(".stream-post").appendChild(newElement);
+                        for (var j in json.message[i].categories) {
+                            postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.message[i].categories[j] + '</a>'
+                        }
+                        postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
+                            json.message[i].author.id + '/view-post/' + json.message[i].id + '/>' + 
+                            '<h6><strong>';
+                                
+                        let lines = json.message[i].title.split("\n");
+                        for (var j of lines) {
+                            postHtml += j + "<br>"
+                        }        
+                        postHtml += '</strong></h6>';
+                        
+                        if (json.message[i].contentType === "image/png;base64" || json.message[i].contentType === "image/jpeg;base64"){
+                            postHtml += '<img src=\"' + json.message[i].content + '\" style="max-width:100%;max-height:100%"/>';
+                        } else if (json.message[i].contentType === "text/markdown") {
+                            postHtml += marked(json.message[i].content)
+                        } else{
+                            let lines = json.message[i].content.split('\n');
+                            
+                            postHtml += '<p>';
+                            for (var j of lines) {
+                                postHtml += j + '<br>'
+                            }
+                            postHtml +='</p>';
+                            // console.log(marked(json.message[i].content));
+                        }
+                        newElement.innerHTML = postHtml;
+
+                        document.querySelector(".stream-post").appendChild(newElement);
+                    } catch {
+                        null;
+                    }
                 }
             });
         }

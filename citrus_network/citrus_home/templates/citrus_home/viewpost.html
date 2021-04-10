@@ -323,70 +323,74 @@
                 success: function(data) {
                     $('.comments').html("");
                     for (var i in data.comments) {
-                        let url = "{% url 'render_profile' %}" + data.comments[i].author.id
-                        var newElement = document.createElement('div');
-                        var classAttr = document.createAttribute("class");
-                        classAttr.value = "card mt-1 mb-1";
-                        newElement.setAttributeNode(classAttr);
-                        newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                        '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                        '</p></a></div>';
-                        var cardBody = document.createElement('div');
-                        var cardBodyClass = document.createAttribute("class");
-                        cardBodyClass.value = 'card-body';
-                        cardBody.setAttributeNode(cardBodyClass);
+                        try {
+                            let url = "{% url 'render_profile' %}" + data.comments[i].author.id
+                            var newElement = document.createElement('div');
+                            var classAttr = document.createAttribute("class");
+                            classAttr.value = "card mt-1 mb-1";
+                            newElement.setAttributeNode(classAttr);
+                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
+                            '</p></a></div>';
+                            var cardBody = document.createElement('div');
+                            var cardBodyClass = document.createAttribute("class");
+                            cardBodyClass.value = 'card-body';
+                            cardBody.setAttributeNode(cardBodyClass);
 
-                        var commentContent = document.createElement('p');
-                        var commentValue = "";
-                        let comments = data.comments[i].comment.split('\n');
-                        for(var comment of comments) {
-                            commentValue += comment + '<br>'
-                        }
-                        commentContent.innerHTML = commentValue;
-                        // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
-
-                        var inlineElement = document.createElement('div');
-                        var inlineAttr = document.createAttribute("class");
-                        inlineAttr.value = "inline";
-                        inlineElement.setAttributeNode(inlineAttr);
-
-                        var likedButton = document.createElement('button');
-                        var likedButtonClassAttr = document.createAttribute("class");
-                        var likedButtonIdAttr = document.createAttribute("id");
-                        likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
-                        likedButtonIdAttr.value = data.comments[i].id
-                        likedButton.setAttributeNode(likedButtonClassAttr);
-                        likedButton.setAttributeNode(likedButtonIdAttr);
-                        likedButton.addEventListener('click', function(data) {
-                            handleCommentLike(data.target.id);
-                        });
-                        likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
-
-                        var likeCounter = document.createElement('small');
-                        var likeCounterClassAttr = document.createAttribute("class");
-                        likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
-                        likeCounter.setAttributeNode(likeCounterClassAttr);
-
-                        inlineElement.appendChild(likedButton);
-                        inlineElement.appendChild(likeCounter);
-
-                        cardBody.appendChild(commentContent)
-                        cardBody.appendChild(inlineElement)
-
-                        newElement.appendChild(cardBody);
-                        $('.comments').append(newElement);
-                        $.ajax({
-                            url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
-                            type: "GET",
-                            dataType: 'json',
-                            success: function(data) {   
-                                $(".like-count-" + data.id).text(data.likes);
-                                if (data.author_liked) {
-                                    $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
-                                    $(".liked-" + data.id).attr("disabled", true)
-                                } 
+                            var commentContent = document.createElement('p');
+                            var commentValue = "";
+                            let comments = data.comments[i].comment.split('\n');
+                            for(var comment of comments) {
+                                commentValue += comment + '<br>'
                             }
-                        });
+                            commentContent.innerHTML = commentValue;
+                            // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
+
+                            var inlineElement = document.createElement('div');
+                            var inlineAttr = document.createAttribute("class");
+                            inlineAttr.value = "inline";
+                            inlineElement.setAttributeNode(inlineAttr);
+
+                            var likedButton = document.createElement('button');
+                            var likedButtonClassAttr = document.createAttribute("class");
+                            var likedButtonIdAttr = document.createAttribute("id");
+                            likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
+                            likedButtonIdAttr.value = data.comments[i].id
+                            likedButton.setAttributeNode(likedButtonClassAttr);
+                            likedButton.setAttributeNode(likedButtonIdAttr);
+                            likedButton.addEventListener('click', function(data) {
+                                handleCommentLike(data.target.id);
+                            });
+                            likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
+
+                            var likeCounter = document.createElement('small');
+                            var likeCounterClassAttr = document.createAttribute("class");
+                            likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
+                            likeCounter.setAttributeNode(likeCounterClassAttr);
+
+                            inlineElement.appendChild(likedButton);
+                            inlineElement.appendChild(likeCounter);
+
+                            cardBody.appendChild(commentContent)
+                            cardBody.appendChild(inlineElement)
+
+                            newElement.appendChild(cardBody);
+                            $('.comments').append(newElement);
+                            $.ajax({
+                                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
+                                type: "GET",
+                                dataType: 'json',
+                                success: function(data) {   
+                                    $(".like-count-" + data.id).text(data.likes);
+                                    if (data.author_liked) {
+                                        $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
+                                        $(".liked-" + data.id).attr("disabled", true)
+                                    } 
+                                }
+                            });
+                        } catch {
+                            null;
+                        }
                     }
                 }
             });
