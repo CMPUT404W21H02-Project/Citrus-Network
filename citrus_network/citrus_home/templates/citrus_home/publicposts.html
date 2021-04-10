@@ -63,7 +63,13 @@
                     }
                     postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
                         json.message[i].author.id + '/view-post/' + json.message[i].id + '/>' + 
-                        '<h6 class="font-weight-bold">' + json.message[i].title + '</h6>';
+                        '<h6><strong>';
+                            
+                    let lines = json.message[i].title.split("\n");
+                    for (var j of lines) {
+                        postHtml += j + "<br>"
+                    }        
+                    postHtml += '</strong></h6>';
                     
                     if (json.message[i].contentType === "image/png;base64" || json.message[i].contentType === "image/jpeg;base64"){
                         postHtml += '<img src=\"' + json.message[i].content + '\" style="max-width:100%;max-height:100%"/>';
