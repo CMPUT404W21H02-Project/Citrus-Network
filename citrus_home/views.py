@@ -1682,9 +1682,8 @@ def handle_remote_comment(request, author_id, post_id):
         except:
             return returnJsonResponse("Please provide a post body", 400)
         try:
-            author = CitrusAuthor.objects.get(id=author_id)
             post = Post.objects.get(id=post_id)
-            Comment.objects.create(author=author, post=post, comment=body['comment'], id=uuid.uuid4()).save()
+            Comment.objects.create(author=current_author, post=post, comment=body['comment'], id=uuid.uuid4()).save()
             return returnJsonResponse(specific_message="comment added", status_code=200)
         except ObjectDoesNotExist:
             nodes = Node.objects.all()
