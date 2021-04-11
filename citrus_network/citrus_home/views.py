@@ -63,19 +63,19 @@ def get_team_3_user():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
     print("************************************************")
     print(node)
-    return node.node_username
+    return node.host_username
 
 def get_team_3_password():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
-    return node.node_password
+    return node.host_password
 
 def get_team_18_user():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.node_username
+    return node.host_username
 
 def get_team_18_password():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.node_password
+    return node.host_password
 
 
 
@@ -736,7 +736,6 @@ Expected:
 """
 def get_team3_author_by_id(uuid):
     URL = "https://team3-socialdistribution.herokuapp.com/author/" + uuid
-    print(URL)
     response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
     return result
@@ -747,10 +746,8 @@ Expected:
 """
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
-    #response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-    response = requests.get(URL)
+    response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
     result = response.json()
-    print(result)
     return result
 
 """
@@ -788,6 +785,7 @@ def get_not_followers(request,author_id):
                 if (str(user.id) != str(author_id)):
                     not_followers.append(user)
 
+            # BUG: IF OUR SERVER HAS 1, IT WONT CHECK OTHER SERVER
             if len(not_followers)==0:
                 response = JsonResponse({"results":"no non-followers found"})
                 response.status_code = 200
@@ -848,16 +846,18 @@ def get_not_followers(request,author_id):
         # check users in team 3 server
         if check_team3_in_node():
             authors3 = get_team3_authors()
-            for user in authors3:
-                if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
-                    items.append(user) # add them into items containing list of non-followers
+            if "Authentication credentials" not in authors3["detail"]:
+                for user in authors3:
+                    if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
+                        items.append(user) # add them into items containing list of non-followers
         # check users in team 18 server
         if check_team18_in_node():
-            authors18 = get_team18_authors() 
-            for user in authors18:
-                if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
-                    items.append(user) # add them into items containing list of non-followers
-        
+            authors18 = get_team18_authors()
+            if "Authentication credentials" not in authors3["detail"]:    
+                for user in authors18:
+                    if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
+                        items.append(user) # add them into items containing list of non-followers
+            
         # check to see if list of not_followers from our server and items for non-followers from other server are empty:
         if len(not_followers)==0 and len(items)==0:
             response = JsonResponse({"results":"no non-followers found"})
