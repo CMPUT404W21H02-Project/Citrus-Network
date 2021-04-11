@@ -856,8 +856,7 @@ def get_not_followers(request,author_id):
 
         # check users in team 3 server
         if check_team3_in_node():
-            authors3 = get_team3_authors()
-            print(authors3.get('detail'))                
+            authors3 = get_team3_authors()               
             if authors3.get('detail') is not None:
                 for user in authors3:
                     if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
@@ -865,7 +864,6 @@ def get_not_followers(request,author_id):
         # check users in team 18 server
         if check_team18_in_node():
             authors18 = get_team18_authors()
-            print(authors18.get('detail'))
             if authors18.get('detail') is not None:
                 for user in authors18:
                     if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
