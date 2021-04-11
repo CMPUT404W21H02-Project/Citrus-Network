@@ -62,20 +62,20 @@ def basicAuthHandler(request):
 def get_team_3_user():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
     print("************************************************")
-    print(node)
-    return node.host_username
+    print(node.node_username, node.node_password)
+    return node.node_username
 
 def get_team_3_password():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
-    return node.host_password
+    return node.node_password
 
 def get_team_18_user():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.host_username
+    return node.node_username
 
 def get_team_18_password():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.host_password
+    return node.node_password
 
 
 
@@ -747,6 +747,10 @@ Expected:
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
     response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
+    print(response)
+    if response.status_code != 200:
+        print("server error on team 3")
+        return {}
     result = response.json()
     return result
 
@@ -757,6 +761,10 @@ Expected:
 def get_team18_authors():
     URL = "https://cmput-404-socialdistribution.herokuapp.com/service/author/"
     response = requests.get(URL, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+
+    if response.status_code != 200:
+        print("server error on team 18")
+        return {}
     result = response.json()
     return result
 
@@ -786,10 +794,11 @@ def get_not_followers(request,author_id):
                     not_followers.append(user)
 
             # BUG: IF OUR SERVER HAS 1, IT WONT CHECK OTHER SERVER
-            if len(not_followers)==0:
-                response = JsonResponse({"results":"no non-followers found"})
-                response.status_code = 200
-                return response
+            # if len(not_followers)==0:
+            #     print("bug")
+            #     response = JsonResponse({"results":"no non-followers found"})
+            #     response.status_code = 200
+            #     return response
 
             # generate json response for list of not followers
             items = []
@@ -807,11 +816,13 @@ def get_not_followers(request,author_id):
             # adding all user from team 3 server
             if check_team3_in_node():
                 authors3 = get_team3_authors()
+                print(authors3)
                 for author in authors3:
                     items.append(author)
             # adding all user from team 18 server
             if check_team18_in_node():
                 authors18 = get_team18_authors() 
+                print(authors18)
                 for author in authors18:
                     items.append(author)
 
@@ -846,14 +857,16 @@ def get_not_followers(request,author_id):
         # check users in team 3 server
         if check_team3_in_node():
             authors3 = get_team3_authors()
-            if "Authentication credentials" not in authors3["detail"]:
+            print(authors3.get('detail'))                
+            if authors3.get('detail') is not None:
                 for user in authors3:
                     if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
                         items.append(user) # add them into items containing list of non-followers
         # check users in team 18 server
         if check_team18_in_node():
             authors18 = get_team18_authors()
-            if "Authentication credentials" not in authors3["detail"]:    
+            print(authors18.get('detail'))
+            if authors18.get('detail') is not None:
                 for user in authors18:
                     if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
                         items.append(user) # add them into items containing list of non-followers
