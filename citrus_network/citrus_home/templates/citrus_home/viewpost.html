@@ -111,7 +111,33 @@
                     </div>
                 </div>
             {% endif %}
-
+            <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="shareModalLabel">Share this post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form>
+                            <div class="modal-body">
+                                <label for="selectVisibility" class="form-label">Visibility:</label>
+                                <select class="form-select" id="selectVisibility">
+                                    <option value="PUBLIC" selected>Public</option>
+                                    <option value="PRIVATE_TO_FRIENDS">Private to Friends</option>
+                                    <option value="PRIVATE_TO_AUTHOR">Private to Author</option>
+                                </select>
+                                <br>
+                                <label for="sharedAuthor" class="form-label">Share With (id):</label>
+                                <input type="text" class="form-control" id="shareText" disabled>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onClick="setupShare()">Share</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <div class="row justify-content-center mt-4 mb-1">
                 <div class="col-md-10 col-sm-12 position-relative">
                     <div class="card mb-5">
@@ -124,17 +150,18 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <h6 class="font-weight-bold post-title"></h6>
+                            <h6><strong class="post-title"></strong></h6>
                             <p class="post-content"></p>
                             <div class="inline">
-                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill liked" hidden="true" onClick="handlePostLike()">
-                                    <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
-                                </button>
-                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill not-liked" hidden="true" onClick="handlePostLike()">
+                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill" id="likeBtn" hidden="true" onClick="handlePostLike()">
                                     <em class="bi-hand-thumbs-up-fill"></em>
                                 </button>
                                 <small class="like-count">
                                 </small>
+                                
+                                <button type="button" class="btn btn-light btn-lg rounded-pill" id="shareBtn" hidden="true" style="margin-left:1em;" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                    <em class="bi-share-fill"></em>
+                                </button>
                             </div>
                             <br>
                             <div class="card-body">
@@ -162,10 +189,20 @@
         crossorigin="anonymous">
     </script>
     <script>
+        var postJson = null;
         // Example starter JavaScript for disabling form submissions if there are invalid fields
         (function() {
             'use strict';
             window.addEventListener('load', function() {
+                var visibilitySelect = document.getElementById('selectVisibility');
+                visibilitySelect.addEventListener('change', function() {
+                    if (this.value == "PRIVATE_TO_AUTHOR") {
+                        $("#shareText").removeAttr("disabled");
+                    } else {
+                        $("#shareText").attr("disabled", true);
+                        $("#shareText").val("");
+                    }
+                });
                 // Fetch all the forms we want to apply custom Bootstrap validation styles to
                 var forms = document.getElementsByClassName('needs-validation');
                 // Loop over them and prevent submission
@@ -202,6 +239,7 @@
                     type: "GET",
                     dataType: 'json',
                     success: function(post) {
+                        postJson = post;
                         $('.author-name').html(post.author.displayName)
                         $('.published').html(post.published)
                         var tagHtml = ''; 
@@ -210,7 +248,10 @@
                             post.categories[i] + '</a>';
                         }
                         $('.post-tag').html(tagHtml);
-                        $('.post-title').html(post.title);
+                        let lines = post.title.split("\n")
+                        for (var i of lines) {
+                            $('.post-title').append(i + '<br>')
+                        }
                         if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
@@ -221,71 +262,57 @@
                                 $('.post-content').append(i + '<br>');
                             }
                         }
+                        $.ajax({
+                            url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                            type: "GET",
+                            dataType: 'json',
+                            success: function(data) {   
+                                $(".like-count").text(data.likes);
+                                $("#shareBtn").removeAttr("hidden");
+                                $("#likeBtn").removeAttr("hidden");
+                                if (data.author_liked) {
+                                    $("#likeBtn").attr("style", "color: cornflowerblue;");
+                                    $("#likeBtn").attr("disabled", true);
+                                }
+                            }
+                        });
                         getComments();
                     },
                     error: function() {
                         window.location.replace('/home')
                     }
                 });
-
-                $.ajax({
-                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
-                    type: "GET",
-                    dataType: 'json',
-                    success: function(data) {   
-                        $(".like-count").text(data.likes);
-                        if (data.author_liked) {
-                            $(".liked").removeAttr("hidden");
-                            $(".not-liked").attr("hidden", true)
-                        } else {
-                            $(".not-liked").removeAttr("hidden");
-                            $(".liked").attr("hidden", true)
-                        }
-                    }
-                });
             }, false);
         })();
 
         function handlePostLike() {
-            if ($(".liked").attr("hidden") != undefined) {
-                $.ajax({
-                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
-                    type: "POST",
-                    dataType: 'json',
-                    success: function(data) {   
-                        $(".like-count").text(data.likes);
-                        if (data.author_liked) {
-                            $(".liked").removeAttr("hidden");
-                            $(".not-liked").attr("hidden", true)
-                        } else {
-                            $(".not-liked").removeAttr("hidden");
-                            $(".liked").attr("hidden", true)
-                        }
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                type: "POST",
+                dataType: 'json',
+                success: function(data) {   
+                    $(".like-count").text(data.likes);
+                    if (data.author_liked) {
+                        $("#likeBtn").attr("style", "color: cornflowerblue;");
+                        $("#likeBtn").attr("disabled", true);
                     }
-                });
-
-            } 
+                }
+            });
         }
 
         function handleCommentLike(comment_id) {
-            if ($(".liked-" + comment_id).attr("hidden") != undefined) {
-                $.ajax({
-                    url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
-                    type: "POST",
-                    dataType: 'json',
-                    success: function(data) {   
-                        $(".like-count-" + data.id).text(data.likes);
-                        if (data.author_liked) {
-                            $(".liked-" + data.id).removeAttr("hidden");
-                            $(".not-liked-" + data.id).attr("hidden", true)
-                        } else {
-                            $(".not-liked-" + data.id).removeAttr("hidden");
-                            $(".liked-" + data.id).attr("hidden", true)
-                        }
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
+                type: "POST",
+                dataType: 'json',
+                success: function(data) {   
+                    $(".like-count-" + data.id).text(data.likes);
+                    if (data.author_liked) {
+                        $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
+                        $(".liked-" + data.id).attr("disabled", true)
                     }
-                });
-
-            }
+                }
+            });
         }
 
         function getComments() {
@@ -296,103 +323,109 @@
                 success: function(data) {
                     $('.comments').html("");
                     for (var i in data.comments) {
-                        let url = "{% url 'render_profile' %}" + data.comments[i].author.id
-                        var newElement = document.createElement('div');
-                        var classAttr = document.createAttribute("class");
-                        classAttr.value = "card mt-1 mb-1";
-                        newElement.setAttributeNode(classAttr);
-                        newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                        '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                        '</p></a></div>';
-                        var cardBody = document.createElement('div');
-                        var cardBodyClass = document.createAttribute("class");
-                        cardBodyClass.value = 'card-body';
-                        cardBody.setAttributeNode(cardBodyClass);
+                        try {
+                            let url = "{% url 'render_profile' %}" + data.comments[i].author.id
+                            var newElement = document.createElement('div');
+                            var classAttr = document.createAttribute("class");
+                            classAttr.value = "card mt-1 mb-1";
+                            newElement.setAttributeNode(classAttr);
+                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
+                            '</p></a></div>';
+                            var cardBody = document.createElement('div');
+                            var cardBodyClass = document.createAttribute("class");
+                            cardBodyClass.value = 'card-body';
+                            cardBody.setAttributeNode(cardBodyClass);
 
-                        var commentContent = document.createElement('p');
-                        var commentValue = "";
-                        let comments = data.comments[i].comment.split('\n');
-                        for(var comment of comments) {
-                            commentValue += comment + '<br>'
-                        }
-                        commentContent.innerHTML = commentValue;
-                        // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
-
-                        var inlineElement = document.createElement('div');
-                        var inlineAttr = document.createAttribute("class");
-                        inlineAttr.value = "inline";
-                        inlineElement.setAttributeNode(inlineAttr);
-
-                        var likedButton = document.createElement('button');
-                        var likedButtonClassAttr = document.createAttribute("class");
-                        var likedButtonIdAttr = document.createAttribute("id");
-                        var likedButtonHiddenAttr = document.createAttribute("hidden");
-                        likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
-                        likedButtonHiddenAttr.value = "true"
-                        likedButtonIdAttr.value = data.comments[i].id
-                        likedButton.setAttributeNode(likedButtonClassAttr);
-                        likedButton.setAttributeNode(likedButtonHiddenAttr);
-                        likedButton.setAttributeNode(likedButtonIdAttr);
-                        likedButton.addEventListener('click', function(data) {
-                            handleCommentLike(data.target.id);
-                        });
-                        likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;" id="' + data.comments[i].id + '"></em>';
-
-                        var notLikedButton = document.createElement('button');
-                        var notLikedButtonClassAttr = document.createAttribute("class");
-                        var notLikedButtonIdAttr = document.createAttribute("id");
-                        var notLikedButtonHiddenAttr = document.createAttribute("hidden");
-                        notLikedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill not-liked-' + data.comments[i].id
-                        notLikedButtonHiddenAttr.value = "true"
-                        notLikedButtonIdAttr.value = data.comments[i].id
-                        notLikedButton.setAttributeNode(notLikedButtonClassAttr);
-                        notLikedButton.setAttributeNode(notLikedButtonHiddenAttr);
-                        notLikedButton.setAttributeNode(notLikedButtonIdAttr);
-                        notLikedButton.addEventListener('click', function(data) {
-                            handleCommentLike(data.target.id);
-                        });
-                        notLikedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
-
-                        var likeCounter = document.createElement('small');
-                        var likeCounterClassAttr = document.createAttribute("class");
-                        likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
-                        likeCounter.setAttributeNode(likeCounterClassAttr);
-
-                        inlineElement.appendChild(likedButton);
-                        inlineElement.appendChild(notLikedButton);
-                        inlineElement.appendChild(likeCounter);
-
-                        cardBody.appendChild(commentContent)
-                        cardBody.appendChild(inlineElement)
-
-                        newElement.appendChild(cardBody);
-                        $('.comments').append(newElement);
-
-                        // Like buttons not yet implemented due to no like API
-                        // '<div class="inline">' + 
-                        // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id + '" hidden="true" onclick="handleCommentLike(\'' +  data.comments[i].id + '\')">' + 
-                        // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
-                        // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill not-liked-' + data.comments[i].id + '" hidden="true" onclick="handleCommentLike(' + data.comments[i].id + ')">' + 
-                        // '<em class="bi-hand-thumbs-up-fill"></em></button><small class="like-count-' + data.comments[i].id + '"></small></div>' + 
-                        // '</div>';
-                        $.ajax({
-                            url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
-                            type: "GET",
-                            dataType: 'json',
-                            success: function(data) {   
-                                $(".like-count-" + data.id).text(data.likes);
-                                if (data.author_liked) {
-                                    $(".liked-" + data.id).removeAttr("hidden");
-                                    $(".not-liked-" + data.id).attr("hidden", true)
-                                } else {
-                                    $(".not-liked-" + data.id).removeAttr("hidden");
-                                    $(".liked-" + data.id).attr("hidden", true)
-                                }
+                            var commentContent = document.createElement('p');
+                            var commentValue = "";
+                            let comments = data.comments[i].comment.split('\n');
+                            for(var comment of comments) {
+                                commentValue += comment + '<br>'
                             }
-                        });
+                            commentContent.innerHTML = commentValue;
+                            // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
+
+                            var inlineElement = document.createElement('div');
+                            var inlineAttr = document.createAttribute("class");
+                            inlineAttr.value = "inline";
+                            inlineElement.setAttributeNode(inlineAttr);
+
+                            var likedButton = document.createElement('button');
+                            var likedButtonClassAttr = document.createAttribute("class");
+                            var likedButtonIdAttr = document.createAttribute("id");
+                            likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
+                            likedButtonIdAttr.value = data.comments[i].id
+                            likedButton.setAttributeNode(likedButtonClassAttr);
+                            likedButton.setAttributeNode(likedButtonIdAttr);
+                            likedButton.addEventListener('click', function(data) {
+                                handleCommentLike(data.target.id);
+                            });
+                            likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
+
+                            var likeCounter = document.createElement('small');
+                            var likeCounterClassAttr = document.createAttribute("class");
+                            likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
+                            likeCounter.setAttributeNode(likeCounterClassAttr);
+
+                            inlineElement.appendChild(likedButton);
+                            inlineElement.appendChild(likeCounter);
+
+                            cardBody.appendChild(commentContent)
+                            cardBody.appendChild(inlineElement)
+
+                            newElement.appendChild(cardBody);
+                            $('.comments').append(newElement);
+                            $.ajax({
+                                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
+                                type: "GET",
+                                dataType: 'json',
+                                success: function(data) {   
+                                    $(".like-count-" + data.id).text(data.likes);
+                                    if (data.author_liked) {
+                                        $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
+                                        $(".liked-" + data.id).attr("disabled", true)
+                                    } 
+                                }
+                            });
+                        } catch {
+                            null;
+                        }
                     }
                 }
             });
+        }
+
+        function setupShare() {
+            let visibilitySelect = document.getElementById('selectVisibility');
+            let shareText = document.getElementById('shareText');
+            sharePost(visibilitySelect.value, shareText.value);
+        }
+
+        function sharePost(visibility, shared_with="") {
+            body = {
+                "title": "Shared post from " + postJson.author.displayName + ":\n" + postJson.title,
+                "description": postJson.description,
+                "categories": "",
+                "content": postJson.content,
+                "origin": postJson.origin,
+                "visibility": visibility,
+                "shared_with": shared_with,
+                "contentType": postJson.contentType
+            }
+            for (var i of postJson.categories) {
+                body["categories"] += i + " ";
+            }
+            $.ajax({
+                url: "/service/author/{{uuid}}/posts/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(body),
+                success: function(data) {
+                    window.location.replace('/home')
+                }
+            })
         }
     </script>
     <!-- Allow user to edit post only if they are the author -->
