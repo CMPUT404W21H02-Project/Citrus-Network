@@ -34,6 +34,7 @@ urlpatterns = [
   path("findfriends/",views.render_find_friends_page,name='findfriends_url'),
   path("friends/",views.render_friends_page,name='friends_url'),
   path("followers/",views.render_followers_page, name='followers_url'),
+  #path("following/", views.render_following_page, name = 'following_url'),
   path('service/author/<uuid:author_id>/friends/', views.get_friends, name='get_friends'),
   path('service/author/<uuid:author_id>/friends/<uuid:foreign_author_id>/', views.edit_friends, name='edit_friends'),
   path('service/author/<uuid:author_id>/nonfollowers/', views.get_not_followers, name='not_followers'),
@@ -65,7 +66,7 @@ urlpatterns = [
   path('service/author/<str:author_id>/follow_remote_18/<uuid:foreign_author_id>/<path:team_18_host>', views.be_follow_team_18,name='follow_18'),
   path('service/author/<uuid:author_id>/follow_remote_3/<uuid:foreign_author_id>/<path:team_3_host>', views.be_follow_team_3,name='follow_3'),
 
-  path('service/author/<str:author_id>/follow_back_remote_18/<uuid:foreign_author_id>/<path:team_18_host>', views.be_follow_back_team_18, name='follow_back_18'),
+  #path('service/author/<str:author_id>/follow_back_remote_18/<uuid:foreign_author_id>/<path:team_18_host>', views.be_follow_back_team_18, name='follow_back_18'),
   path('service/author/<str:author_id>/follow_back_remote_3/<uuid:foreign_author_id>/<path:team_3_host>', views.be_follow_back_team_3, name='follow_back_3')
 
 ]

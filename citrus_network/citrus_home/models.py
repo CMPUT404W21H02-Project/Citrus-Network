@@ -90,9 +90,9 @@ class Follower(models.Model):
     uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
     followers_uuid    = models.TextField(validators=[int_list_validator])
 
-class Following(models.Model):
-    uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
-    following_uuid    = models.TextField(validators=[int_list_validator])
+#class Following(models.Model):
+    #uuid              = models.ForeignKey(CitrusAuthor, on_delete=models.CASCADE)
+    #following_uuid    = models.TextField(validators=[int_list_validator])
 
 class Node(models.Model):
     # add a node with URL

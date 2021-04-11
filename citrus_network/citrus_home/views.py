@@ -904,7 +904,7 @@ PARAMS:
 RETURN: JSON response
 """
 def get_following(request, author_id):
-     if not basicAuthHandler(request):
+    if not basicAuthHandler(request):
         response = JsonResponse({'message':'not authenticated'})
         response.status_code = 401
         return response
@@ -1004,9 +1004,9 @@ function to render the following page
 PARAMS: request
 RETURN: request, following page, current user id
 '''
-def render_following_page(request):
-    uuid = get_uuid(request)
-    return render(request, 'citrus_home/following.html',{'uuid':uuid})
+#def render_following_page(request):
+    #uuid = get_uuid(request)
+    #return render(request, 'citrus_home/following.html',{'uuid':uuid})
 
 
 """
@@ -1487,21 +1487,6 @@ def be_follow_team_18(request, author_id, foreign_author_id, team_18_host):
         return response
 
 
-def be_follow_back_team_18(request, author_id, foreign_author_id, team_18_host):
-    if basicAuthHandler(request):
-        if request.method == "GET":
-            url = team_18_host + "service/author/" + str(author_id) + "/followers/" + str(foreign_author_id) + "/"
-            response = requests.put(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
-            result = response.json()
-            response = JsonResponse({"message from team 18's response when following back":result})
-            response.status_code = 200
-            return response
-    else:
-        response = JsonResponse({"message": "Authorization required"})
-        response.status_code = 401
-        return response
-
-
 def be_follow_back_team_3(request, author_id, foreign_author_id, team_18_host):
     if basicAuthHandler(request):
         if request.method == "GET":
@@ -1514,15 +1499,6 @@ def be_follow_back_team_3(request, author_id, foreign_author_id, team_18_host):
         return response
 
    
-'''
-determine if someones friend request is pending when we follow - if so - post into our friend api
-PARAMS:
-    foreign_author_id - the id of the author on our server sending the request
-    team_18_host - team 18s host name
-'''
-def get_pending_friend_reqs_team18(author_id,team_18_host):
-    pass
-
 '''
 Follow someone from team 3 === send a friend request to team 3
 https://github.com/CMPUT404W21-Team3/social-distribution/wiki/API-Reference#follower-detail-view

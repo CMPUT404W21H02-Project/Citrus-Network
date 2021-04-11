@@ -120,6 +120,7 @@
                 fetchJSON(be_follow_team_18_url).then((json) =>{
                     console.log("RESPONSE FROM TEAM 18 API")
                     console.log(json)
+                    //if {message: "check API endpoint?"}
                     set_button_18(button)
                 });
             }else if (non_follower_info_dict[button.id] == team_3_host){
