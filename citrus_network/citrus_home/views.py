@@ -63,19 +63,19 @@ def get_team_3_user():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
     print("************************************************")
     print(node)
-    return node.host_username
+    return node.node_username
 
 def get_team_3_password():
     node = Node.objects.get(host = "https://team3-socialdistribution.herokuapp.com/")
-    return node.host_password
+    return node.node_password
 
 def get_team_18_user():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.host_username
+    return node.node_username
 
 def get_team_18_password():
     node = Node.objects.get(host = "https://cmput-404-socialdistribution.herokuapp.com/")
-    return node.host_password
+    return node.node_password
 
 
 
@@ -787,6 +787,7 @@ def get_not_followers(request,author_id):
 
             # BUG: IF OUR SERVER HAS 1, IT WONT CHECK OTHER SERVER
             if len(not_followers)==0:
+                print("bug")
                 response = JsonResponse({"results":"no non-followers found"})
                 response.status_code = 200
                 return response
