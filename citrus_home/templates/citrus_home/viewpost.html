@@ -413,8 +413,12 @@
                 "shared_with": shared_with,
                 "contentType": postJson.contentType
             }
-            for (var i of postJson.categories) {
-                body["categories"] += i + " ";
+            try {
+                for (var i of postJson.categories) {
+                    body["categories"] += i + " ";
+                }
+            } catch {
+                null;
             }
             $.ajax({
                 url: "/service/author/{{uuid}}/posts/",
