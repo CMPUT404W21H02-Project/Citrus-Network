@@ -1777,7 +1777,7 @@ def handle_remote_post_likes(request, author_id, post_id):
                         like_count = 0
                         author_likes = False
                         for like in req:
-                            if like.author.id == str(current_author.id):
+                            if like["author"]["id"] == str(current_author.id):
                                 author_likes = True
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
@@ -1851,7 +1851,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                     if req.status_code == 200:
                         body = {
                             "type": "like",
-                            "summary": str(current_author.displayName) + " likes your post",
+                            "summary": str(current_author.displayName) + " likes your comment",
                             "author_like_ID": str(current_author.id),
                             "postID": str(post_id),
                             "commentID": str(comment_id)
