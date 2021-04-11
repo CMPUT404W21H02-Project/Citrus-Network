@@ -274,9 +274,9 @@
                                     $("#likeBtn").attr("style", "color: cornflowerblue;");
                                     $("#likeBtn").attr("disabled", true);
                                 }
+                                getComments();
                             }
                         });
-                        getComments();
                     },
                     error: function() {
                         window.location.replace('/home')
