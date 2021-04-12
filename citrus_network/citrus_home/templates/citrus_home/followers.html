@@ -151,7 +151,7 @@
 
             if (follower_info_dict[button.id] == citrus_network_swag_host || follower_info_dict[button.id] == local_host){
                 //make a put request to our friends table (well already be following each other)
-                var url = "/service/author/" + button.id + "/friends/" + uuid + "/"
+                var url = "/service/author/" + button.id + "/followers/" + uuid + "/"
                 AddFollowerBack(url).done(function(json) {
                     print("RESPONSE FROM PUT TO FRIENDS API")
                     console.log(json);
