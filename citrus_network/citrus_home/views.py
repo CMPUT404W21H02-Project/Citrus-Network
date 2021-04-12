@@ -1547,7 +1547,7 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
 
         try:
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-            results = response.json()
+            result = response.json()
             return_response = JsonResponse({"Team 3's  inbox response": result})
             return return_response
         except:
