@@ -2467,11 +2467,7 @@ def handle_inbox(request, author_id):
                     elif check_team18.status_code==200:
                         # check if author_id already follows actor id:
                         check_follow_team18 = check_author_follows_actor_team18(author_id,actor_id).json()
-                        print("*************")
-                        print(check_follow_team18)
                         # if yes, condition satisfied (both are following each other), befriend
-                        print("*************")
-                        print(check_follow_team18['message'] )
                         if  check_follow_team18['message'] == True:
 
                             # if yes, condition satisfied (both are following each other), befriend
@@ -2507,12 +2503,70 @@ def handle_inbox(request, author_id):
                     new_follower_object = Follower(uuid = author,followers_uuid= followers)
                     new_follower_object.save()
 
+            elif ("unfollow" in body["type"].lower()):
+                # get the id of the follower
+                actor_id = body["actor"]["id"]
+                # check the format of the id: either url format or just uuid
+                if ("author" in actor_id):
+                    actor_id = body["actor"]["authorID"]
+                # check author_id in our model
+                if check_author_exist_in_CitrusAuthor(author_id) == False:
+                    response = JsonResponse({"results":"Author Id doesn't exist"})
+                    response.status_code = 404
+                    return response
+                # check if is actor_id is in our sharing node:
+                elif check_author_exist_team3(actor_id).status_code == 200 and (not check_team3_in_node()):
+                    response = JsonResponse({"results":"actor id is not in any existing sharing node. Contact admin server to add your node to our server"})
+                    response.status_code = 405
+                    return response
+                elif check_author_exist_team18(actor_id).status_code == 200 and (not check_team18_in_node()):
+                    response = JsonResponse({"results":"actor id is not in any existing sharing node. Contact admin server to add your node to our server"})
+                    response.status_code = 405
+                    return response                    
+                
+                if check_author_exist_in_Follower(author_id): # add actor_id into the list of followers
+                    # get Citrus Author object with author id
+                    author = CitrusAuthor.objects.get(id=author_id)
+                    # get follower object with citrus author object
+                    result = Follower.objects.get(uuid=author)
+                    # check if foreign id is already a follower
+                    followers = str(result.followers_uuid)
+                    if str(actor_id) in followers:
+                
+                        # unfollow that person
+                        followers = followers.replace(str(actor_id),"")
+                        result.followers_uuid = followers
+                        result.save()
+
+                        # check if they're also friend                
+                        # validate author id in model
+                        try:
+                            result = Friend.objects.get(uuid=author_id)
+                        except ObjectDoesNotExist: # they are not friend because author has no friend
+                            print("unfollow success")
+
+                        # validate foregin id in list of friends:
+                        friends = str(result.friends_uuid)
+                        if str(actor_id) not in friends:
+                            print("unfollow success")
+                        
+                        # unfriend foreign_author_id
+                        friends = friends.replace(str(actor_id),"")
+                        result.friends_uuid = friends
+                        result.save()
+
+                    else:
+                        response = JsonResponse({"results":"actor id was not a follower"})
+                        response.status_code = 304
+                        return response
+
                      
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)
             items.insert(0, body)
             inbox.items = json.dumps(items)
             inbox.save()
+        
         except ObjectDoesNotExist:
             inbox = Inbox.objects.create(author=author, items='[' + json.dumps(body) + ']')
             return returnJsonResponse(specific_message="success", status_code=201)
