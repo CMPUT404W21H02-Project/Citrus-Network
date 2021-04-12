@@ -103,7 +103,11 @@
                                 urlString += url.pathname;
                             }
                             urlString = urlString.replace("posts", "view-post");
-                            urlString = urlString.replace("comment/", "");
+                            // urlString = urlString.replace("comment/", "");
+                            if (urlString.includes("comment/")) {
+                                urlString = urlString.substring(0, urlString.indexOf("comment/"))
+                            }
+                            console.log(urlString);
                             var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
                                 '<a class="card card-link" href="' + urlString + '"">' + 
                                 '<div class="card-header"><p><b>' + 
