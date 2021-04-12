@@ -95,12 +95,14 @@
                             
                             newElement.innerHTML = postHtml;
                         } else {
+                            var url = i.object.replace("posts", "view-post")
+                            url = url.replace("comment/", "")
                             var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
-                                '<div class="card">' + 
+                                '<a class="card card-link" href="' + url + '"">' + 
                                 '<div class="card-header"><p><b>' + 
                                 i.author.displayName + '</b></p></div>' 
                                 postHtml += '<div class="card-body"><p>' + i.summary +  
-                                    '</p></div></div></div>'
+                                    '</p></div></a></div>'
                             
                             newElement.innerHTML = postHtml;
                         }
