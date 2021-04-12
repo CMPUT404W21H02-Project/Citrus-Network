@@ -168,7 +168,7 @@
                     set_button_18(button)
 
                     //then make a put request to our friends table because were following each other 
-                    var friend_local_url = "/service/author/" + button.id + "/friends/" + uuid + "/"
+                    var friend_local_url = "/service/author/" + uuid + "/friends/" + button.id + "/"
                     AddFollowerBack(friend_local_url).done(function(response) {
                         console.log("RESPONSE FROM PUT TO FRIENDS API")
                         console.log(response);
