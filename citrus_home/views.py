@@ -1749,6 +1749,13 @@ def handle_remote_post_likes(request, author_id, post_id):
             author = CitrusAuthor.objects.get(id=author_id)
             post = Post.objects.get(id=post_id)
             Like.objects.create(author=str(current_author.id), post_id=post_id).save()
+            body = {
+                "summary": current_author.displayName + " likes your post",
+                "type": "Like",
+                "author": convertAuthorObj(current_author),
+                "object": request.scheme + "://" + request.META["HTTP_HOST"] + "/service/author/" + str(author_id) + "/posts/" + str(post_id) + "/"
+            }
+            req = requests.post(request.scheme + "://" + request.META["HTTP_HOST"] + "/service/author/" + str(author_id) + "/inbox/", json=body, headers={'Referer': "https://citrusnetwork.herokuapp.com/"}, auth=("CitrusNetwork", "oranges"))
             likes = Like.objects.filter(post_id=post_id)
             like_count = 0
             author_likes = False
@@ -1832,6 +1839,13 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
             author = CitrusAuthor.objects.get(id=author_id)
             comment = Comment.objects.get(id=comment_id)
             Like.objects.create(author=str(current_author.id), comment_id=comment_id).save()
+            body = {
+                "summary": current_author.displayName + " likes your comment",
+                "type": "Like",
+                "author": convertAuthorObj(current_author),
+                "object": request.scheme + "://" + request.META["HTTP_HOST"] + "/service/author/" + str(author_id) + "/posts/" + str(post_id) + "/comment/"
+            }
+            req = requests.post(request.scheme + "://" + request.META["HTTP_HOST"] + "/service/author/" + str(author_id) + "/inbox/", json=body, headers={'Referer': "https://citrusnetwork.herokuapp.com/"}, auth=("CitrusNetwork", "oranges"))
             likes = Like.objects.filter(comment_id=comment_id)
             like_count = 0
             author_likes = False
@@ -2559,6 +2573,14 @@ def handle_inbox(request, author_id):
                         response = JsonResponse({"results":"actor id was not a follower"})
                         response.status_code = 304
                         return response
+
+            elif ("like" in body["type"].lower()):
+                try:
+                    if "commentID" not in body:
+                        body["commentID"] = ""
+                    Like.objects.create(author=body["author"]["authorID"], post_id=body["postID"], comment_id=body["commentID"]).save()
+                except:
+                    None
 
                      
             inbox = Inbox.objects.get(author=author)
