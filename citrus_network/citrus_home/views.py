@@ -2574,6 +2574,14 @@ def handle_inbox(request, author_id):
                         response.status_code = 304
                         return response
 
+            elif ("like" in body["type"].lower()):
+                try:
+                    if "commentID" not in body:
+                        body["commentID"] = ""
+                    Like.objects.create(author=body["author"]["authorID"], post_id=body["postID"], comment_id=body["commentID"]).save()
+                except:
+                    None
+
                      
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)

@@ -95,10 +95,17 @@
                             
                             newElement.innerHTML = postHtml;
                         } else {
-                            var url = i.object.replace("posts", "view-post")
-                            url = url.replace("comment/", "")
+                            var url = new URL(i.object);
+                            var urlString = "{{request.scheme}}://{{request.META.HTTP_HOST}}";
+                            if (url.hostname == "cmput-404-socialdistribution.herokuapp.com") {
+                                urlString += "/service" + url.pathname + "/"
+                            } else {
+                                urlString += url.pathname;
+                            }
+                            urlString = urlString.replace("posts", "view-post");
+                            urlString = urlString.replace("comment/", "");
                             var postHtml = '<div class="col-md-6 col-sm-10 position-relative">' + 
-                                '<a class="card card-link" href="' + url + '"">' + 
+                                '<a class="card card-link" href="' + urlString + '"">' + 
                                 '<div class="card-header"><p><b>' + 
                                 i.author.displayName + '</b></p></div>' 
                                 postHtml += '<div class="card-body"><p>' + i.summary +  
