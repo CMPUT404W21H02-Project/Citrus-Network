@@ -2042,7 +2042,7 @@ def manage_post(request, id, **kwargs):
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
-                url = f"http://localhost:8000/service/author/{author_id}/inbox/"
+                url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
 
