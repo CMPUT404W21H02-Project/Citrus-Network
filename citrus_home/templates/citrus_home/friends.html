@@ -103,14 +103,14 @@
             });
         }
 
-        /**function called when clicking on button "remove friend" removes both users from each others friends and followers list**/
+        /**Function called when clicking on button "remove friend" removes both users from each others friends and followers list**/
         function removeFriend(button){
             var uuid = "{{uuid}}";
             
             if (friends_info_dict[button.id] == citrus_network_swag_host || friends_info_dict[button.id] == local_host){
                 //delete local author 1 from local authors 2's followers 
-                var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
-                remove(url).done(function(json){
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
+                remove(remove_from_local_url).done(function(json){
                     console.log("response from our followers API")
                     console.log(json)
                     set_button_citrus(button)
@@ -118,7 +118,7 @@
 
                 //delete local author 2 from local author 1's followers
                 var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
-                remove(url).done(function(json){
+                remove(inverse_url).done(function(json){
                     console.log("response from our followers API")
                     console.log(json)
                     set_button_citrus(button)
@@ -128,8 +128,8 @@
                
                 //Delete the remote author from our local authors followers table
                 //button id is the id of the user we are removing from our followers
-                var url = "/service/author/" + uuid + "/followers/" + button.id + "/"
-                remove(url).done(function(json){
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/"
+                remove(remove_from_local_url).done(function(json){
                     console.log("response from our followers API")
                     console.log(json)
                     set_button_18(button)
@@ -139,13 +139,12 @@
 
                 //Delete the remote athor from our local authors followers table 
                 //button id is the id of the user we are removing from our followers
-                var url = "/service/author/" + uuid + "/followers/" + button.id + "/"
-                remove(url).done(function(json){
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/"
+                remove(remove_from_local_url).done(function(json){
                     console.log("response from our followers API")
                     console.log(json)
                     set_button_3(button)
                 })
-            
 
             }else{
                 console.log("Following back host that doesnt exist")

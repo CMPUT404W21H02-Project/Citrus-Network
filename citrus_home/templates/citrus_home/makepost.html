@@ -39,6 +39,11 @@
                 <div class="row justify-content-center mb-2">
                     {{form.content|as_crispy_field}}
                 </div>
+                <div class="row mb-2">
+                    <div class="col-md-4" id="sharing" hidden="true">
+                        {{form.shared_with|as_crispy_field}}
+                    </div>
+                </div>
                 <div class="row mt-1 mb-2">
                     <div class="col-md-4">
                         <div id="categories" hidden="true"> 
@@ -52,17 +57,8 @@
                 </div>
                 <div class="row mt-4 mb-2">
                     <div class="col-md-4">
-                        <!-- <button type="button" class="btn btn-outline-primary">
-                            <span class="material-icons">insert_photo</span>
-                            Add Image
-                        </button> -->
                         <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
                         </input>
-                    </div>
-                </div>
-                <div class="row mt-4 mb-5" hidden="true">
-                    <div class="col-md-4">
-                        {{form.shared_with|as_crispy_field}}
                     </div>
                 </div>
                 <div class="row justify-content-center mt-4 mb-2">
@@ -95,16 +91,22 @@
         }
     </script>
     <script>
+        $("#id_visibility").change(function(){
+            let shared_w = $("#sharing");
+            if ($("#id_visibility").val() == "PRIVATE_TO_AUTHOR"){
+                shared_w.removeAttr('hidden');
+            } else {
+                shared_w.attr('hidden', 'true');
+            }
+        });
         $("#id_contentType").change(function(){
+            let content = $("#div_id_content");
+            let img = $("#id_image");
             if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
-                let content = $("#div_id_content");
                 content.parent().hide();
-                let img = $("#id_image");
                 img.removeAttr('hidden');
             } else {
-                let content = $("#div_id_content");
                 content.parent().show();
-                let img = $("#id_image");
                 img.attr('hidden', 'true');
             }
         });
@@ -126,43 +128,5 @@
             };
         }
     </script>
-    <!-- <script>
-        window.onload = getFriends;
-        /**
-         * Get the JSON response from given url.
-        **/
-        function fetchJSON(url) {
-            var request = new Request(url);
-            return fetch(request).then((response) => {
-                if (response.status === 200 || response.status == 404) { 
-                    return response.json(); // return a Promise
-                } else {
-                    alert("Something went wrong: " + response.status);
-                }});
-        }
-        /**
-         * Function that gets all friends a user has.
-        **/
-        function getFriends() {
-            var uuid = "{{uuid}}";
-            var pre_url = "/service/author/"
-            var url = pre_url + uuid + "/friends/" 
-            fetchJSON(url).then((json) => { //another callback
-                try{
-                    //https://www.geeksforgeeks.org/how-to-combine-multiple-elements-and-append-the-result-into-a-div-using-javascript/
-                    for (var i = 0; i < json.items.length; i++) { 
-                        // console.log(json.items[i].displayName)
-                        // console.log(json.items[i].id)
-                        $("#friends-select")
-                        .append('<option value="'+ json.items[i].id +'">' + json.items[i].displayName + '</option>');
-                        } 
-                    }catch(err){
-                        // console.log(uuid)
-                        $("#friends-select") 
-                        .append('<option value="public">Public</option>');
-                    }
-                });
-        }
-    </script> -->
   </body>
 </html>
