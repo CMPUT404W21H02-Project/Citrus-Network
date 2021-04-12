@@ -1990,10 +1990,12 @@ def manage_post(request, id, **kwargs):
         response.status_code = 401
         return response
     pid = kwargs.get('pid')
-    print(request.method)
+    # this contains the id of the author
+    # /service/author/d94bd15b-5865-4247-b672-51bedb9daf96/posts
+    print(request.path)
     if request.method == "POST":
-        #
         body = json.loads(request.body)
+        # try this and if it works the author is on citrus network in our database
         author = CitrusAuthor.objects.get(id=id)
         post = Post.objects.create(id=str(uuid.uuid4()), 
                                 title=body['title'], 
@@ -2006,6 +2008,44 @@ def manage_post(request, id, **kwargs):
                                 source=body['origin'],
                                 visibility=body['visibility'],
                                 shared_with=body['shared_with'])
+        if body['visibility'] == 'PRIVATE_TO_FRIENDS':
+            # create post body
+            shared_post = {
+            "id": str(post.id),
+            "type": "post",
+            "title": body['title'],
+            "source": body['origin'],
+            "origin": body['origin'],
+            "description": body['description'],
+            "contentType": body['contentType'],
+            "content": body['content'],
+            "author": convertAuthorObj(author),
+            "categories": body['categories'],
+            "comments": [],
+            "published": "12/01/01",
+            "visibility": body['visibility'],
+            "unlisted": post.unlisted
+            }
+            # find the id of all friends and store in list
+            friends = Friend.objects.get(uuid=author)
+            # all friends of author (in our database)
+            friends_arr = friends.friends_uuid.split()
+            for i in friends_arr:
+                print("friends_arr id: ",i, type(i))
+            team18_friends = get_team18_friends(id, "https://cmput-404-socialdistribution.herokuapp.com/")
+            for item in team18_friends:
+                print(item, type(item))
+            # loop through list and make call to inbox function
+            for author_id in team18_friends:
+                friends_arr.remove(author_id)
+                url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
+                requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+
+            for author_id in friends_arr:
+                url = f"http://localhost:8000/service/author/{author_id}/inbox/"
+                requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+
+
         return returnJsonResponse(specific_message="post created", status_code=201)
 
     
@@ -2803,15 +2843,18 @@ def return_like_object(type, like, post, request):
         return response
 
 # return intersection of all users on team 18 and friends of current user
-def get_team18_friends(friends_uuid_arr, host_name):
+def get_team18_friends(author_id, host_name):
     # get all user id's on team 18's server
-    request = f"{host_name}/service/author/"
-    response = requests.get(request)
+    request = f"{host_name}service/author/{author_id}/friends/"
+    response = requests.get(request, auth=HTTPBasicAuth("socialdistribution_t18","c404t18"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
     content = json.loads(response.content)
-    team_18_id = []
-    for author in content:
-        team_18_id.append((author.get('authorID')))
-    return set(friends_uuid_arr).intersection(team_18_id)
+    # print(content)
+    arr = content.get('items')
+    friend_ids = []
+    for friend in arr:
+        x = friend.get('authorID')
+        friend_ids.append(x)
+    return friend_ids
 
 # https://team3-socialdistribution.herokuapp.com/
 def get_team3_friends(friends_uuid_arr, host_name):
