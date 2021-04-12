@@ -2467,8 +2467,13 @@ def handle_inbox(request, author_id):
                     elif check_team18.status_code==200:
                         # check if author_id already follows actor id:
                         check_follow_team18 = check_author_follows_actor_team18(author_id,actor_id).json()
+                        print("*************")
+                        print(check_follow_team18)
                         # if yes, condition satisfied (both are following each other), befriend
+                        print("*************")
+                        print(check_follow_team18['message'] )
                         if  check_follow_team18['message'] == True:
+
                             # if yes, condition satisfied (both are following each other), befriend
                             # check if author_id already in Friend model
                             # existed so add actor_id in
