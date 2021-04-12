@@ -17,4 +17,4 @@ Documentation
 References:
 ========================
 These are references of all external source code in our code:
-* All of our API and AJAX call documentations can be found here [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
+* All of our references to external source code can be found here [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
