@@ -1517,33 +1517,38 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
             response = JsonResponse({"message":"citrus author does not exist"})
             response.status_code = 404
             return response
+        
+        print("****profile***")
+        print(profile)
 
-       
         body = {
-            "type": "follow",
-            "summary": profile.displayName +  "wants to follow you. id = " + str(author_id),
-            "sender": {
-                "type": "author",
-                "id": str(foreign_author_id),
-                "displayName": profile.displayName,
-                "bio": "",
-                "location": "",
-                "birth_date": "",
-                "github": ""
-            },
-            "receiver": {
-                "type": "author",
-                "id": str(author_id),
-                "displayName": "you. id=" + str(author_id),
-                "bio": "",
-                "location": "",
-                "birth_date": "",
-                "github": ""
+                "type": "follow",
+                "summary": profile.displayName +  "wants to follow you. id = " + str(author_id),
+                "sender": {
+                    "type": "author",
+                    "id": str(foreign_author_id),
+                    "displayName": profile.displayName,
+                    "bio": "",
+                    "location": "",
+                    "birth_date": "",
+                    "github": ""
+                },
+                "receiver": {
+                    "type": "author",
+                    "id": str(author_id),
+                    "displayName": "you. id=" + str(author_id),
+                    "bio": "",
+                    "location": "",
+                    "birth_date": "",
+                    "github": ""
+                }
             }
-        }
 
+        
+
+        print("************body***********")
         print(body)
-        url = "/api/inbox/" + str(author_id)
+        url = "/api/inbox/" + str(author_id) + "/" 
 
         try:
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
