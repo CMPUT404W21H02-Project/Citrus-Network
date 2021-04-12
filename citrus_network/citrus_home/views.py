@@ -2850,15 +2850,20 @@ def return_like_object(type, like, post, request):
 # return intersection of all users on team 18 and friends of current user
 def get_team18_friends(author_id, host_name):
     # get all user id's on team 18's server
-    request = f"{host_name}service/author/{author_id}/friends/"
-    response = requests.get(request, auth=HTTPBasicAuth("socialdistribution_t18","c404t18"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
-    content = json.loads(response.content)
-    # print(content)
-    arr = content.get('items')
-    friend_ids = []
-    for friend in arr:
-        x = friend.get('authorID')
-        friend_ids.append(x)
+    try:
+        request = f"{host_name}service/author/{author_id}/friends/"
+        response = requests.get(request, auth=HTTPBasicAuth("socialdistribution_t18","c404t18"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+        if response.status_code != 200:
+            return []
+        content = json.loads(response.content)
+        # print(content)
+        arr = content.get('items')
+        friend_ids = []
+        for friend in arr:
+            x = friend.get('authorID')
+            friend_ids.append(x)
+    except:
+        friend_ids = []
     return friend_ids
 
 # https://team3-socialdistribution.herokuapp.com/
