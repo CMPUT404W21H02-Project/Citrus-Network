@@ -2848,6 +2848,8 @@ def get_team18_friends(author_id, host_name):
     try:
         request = f"{host_name}service/author/{author_id}/friends/"
         response = requests.get(request, auth=HTTPBasicAuth("socialdistribution_t18","c404t18"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+        if response.status_code != 200:
+            return []
         content = json.loads(response.content)
         # print(content)
         arr = content.get('items')
