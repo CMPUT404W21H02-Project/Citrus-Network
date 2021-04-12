@@ -818,13 +818,15 @@ def get_not_followers(request,author_id):
             # adding all user from team 3 server
             if check_team3_in_node():
                 authors3 = get_team3_authors()
-                for author in authors3:
-                    items.append(author)
+                if type(authors3) is list:
+                    for author in authors3:
+                        items.append(author)
             # adding all user from team 18 server
             if check_team18_in_node():
-                authors18 = get_team18_authors() 
-                for author in authors18:
-                    items.append(author)
+                authors18 = get_team18_authors()
+                if type(authors18) is list:
+                    for author in authors18:
+                        items.append(author)
 
             # check to see nothing is in items list
             if len(items) == 0:
@@ -865,7 +867,7 @@ def get_not_followers(request,author_id):
         # check users in team 18 server
         if check_team18_in_node():
             authors18 = get_team18_authors()
-            if authors18.get('detail') is not None:
+            if type(authors18) is list:
                 for user in authors18:
                     if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
                         items.append(user) # add them into items containing list of non-followers
