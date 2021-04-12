@@ -657,6 +657,8 @@ def check_author_follows_actor_team18(author_id,actor_id):
     FORWARD_SLASH = "/"
     url = URL_TEAM18 + str(actor_id) + FORWARD_SLASH + FOLLOWERS + FORWARD_SLASH + str(author_id) + FORWARD_SLASH
     response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()))
+    print("*****************")
+    print(response.json())
     return response
 
 '''
