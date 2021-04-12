@@ -19,6 +19,6 @@ class TestUrls(TestCase):
         url = reverse('logout_url')
         self.assertEquals(resolve(url).func, views.logout_redirect)
     
-    def test_render_profile(self):
-        url = reverse('profile')
-        self.assertEquals(resolve(url).func, views.render_profile)
+    # def test_render_profile(self):
+    #     url = reverse('profile')
+    #     self.assertEquals(resolve(url).func, views.render_profile)

@@ -743,17 +743,17 @@ def get_team3_author_by_id(uuid):
     return result
 
 """
+return a json
 get a list of authors from team 3
 Expected: 
 """
 def get_team3_authors():
     URL = "https://team3-socialdistribution.herokuapp.com/authors"
     response = requests.get(URL, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-    print(response)
     if response.status_code != 200:
         print("server error on team 3")
         return {}
-    result = response.json()
+    result = response.json() 
     return result
 
 """
@@ -818,15 +818,15 @@ def get_not_followers(request,author_id):
             # adding all user from team 3 server
             if check_team3_in_node():
                 authors3 = get_team3_authors()
-                print(authors3)
-                for author in authors3:
-                    items.append(author)
+                if type(authors3) is list:
+                    for author in authors3:
+                        items.append(author)
             # adding all user from team 18 server
             if check_team18_in_node():
-                authors18 = get_team18_authors() 
-                print(authors18)
-                for author in authors18:
-                    items.append(author)
+                authors18 = get_team18_authors()
+                if type(authors18) is list:
+                    for author in authors18:
+                        items.append(author)
 
             # check to see nothing is in items list
             if len(items) == 0:
@@ -858,15 +858,16 @@ def get_not_followers(request,author_id):
 
         # check users in team 3 server
         if check_team3_in_node():
-            authors3 = get_team3_authors()               
-            if authors3.get('detail') is not None:
+            authors3 = get_team3_authors()
+            # TEAM 3 returns a list of json
+            if type(authors3) is list:
                 for user in authors3:
                     if (str(user['id']) not in str(followers) and str(user['id']) != str(author_id)):
                         items.append(user) # add them into items containing list of non-followers
         # check users in team 18 server
         if check_team18_in_node():
             authors18 = get_team18_authors()
-            if authors18.get('detail') is not None:
+            if type(authors18) is list:
                 for user in authors18:
                     if (str(user["authorID"]) not in str(followers) and str(user["authorID"]) != str(author_id)):
                         items.append(user) # add them into items containing list of non-followers
