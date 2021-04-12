@@ -111,7 +111,7 @@
                 //delete local author 1 from local authors 2's followers 
                 var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
                 remove(url).done(function(json){
-                    print("response from our followers API")
+                    console.log("response from our followers API")
                     console.log(json)
                     set_button_citrus(button)
                 })
@@ -119,11 +119,10 @@
                 //delete local author 2 from local author 1's followers
                 var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
                 remove(url).done(function(json){
-                    print("response from our followers API")
+                    console.log("response from our followers API")
                     console.log(json)
                     set_button_citrus(button)
                 })
-
             
             }else if (friends_info_dict[button.id] == team_18_host){
                
@@ -131,7 +130,7 @@
                 //button id is the id of the user we are removing from our followers
                 var url = "/service/author/" + uuid + "/followers/" + button.id + "/"
                 remove(url).done(function(json){
-                    print("response from our followers API")
+                    console.log("response from our followers API")
                     console.log(json)
                     set_button_18(button)
                 })
@@ -142,7 +141,7 @@
                 //button id is the id of the user we are removing from our followers
                 var url = "/service/author/" + uuid + "/followers/" + button.id + "/"
                 remove(url).done(function(json){
-                    print("response from our followers API")
+                    console.log("response from our followers API")
                     console.log(json)
                     set_button_3(button)
                 })

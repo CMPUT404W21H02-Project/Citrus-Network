@@ -151,9 +151,9 @@
 
             if (follower_info_dict[button.id] == citrus_network_swag_host || follower_info_dict[button.id] == local_host){
                 //make a put request to our friends table (well already be following each other)
-                var url = "/service/author/" + button.id + "/friends/" + uuid + "/"
+                var url = "/service/author/" + button.id + "/followers/" + uuid + "/"
                 AddFollowerBack(url).done(function(json) {
-                    print("RESPONSE FROM PUT TO FRIENDS API")
+                    console.log("RESPONSE FROM PUT TO followers API")
                     console.log(json);
                     set_button_citrus(button)
                 });
@@ -170,7 +170,7 @@
                     //then make a put request to our friends table because were following each other 
                     var friend = "/service/author/" + button.id + "/friends/" + uuid + "/"
                     AddFollowerBack(url).done(function(response) {
-                        print("RESPONSE FROM PUT TO FRIENDS API")
+                        console.log("RESPONSE FROM PUT TO FRIENDS API")
                         console.log(response);
                         set_button_18(button)
                     });
@@ -188,7 +188,7 @@
                     //make a put request to our friends table if we successfully followed them
                     var url = "/service/author/" + button.id + "/friends/" + uuid + "/"
                     AddFollowerBack(url).done(function(json) {
-                        print("RESPONSE FROM PUT TO FRIENDS API")
+                        console.log("RESPONSE FROM PUT TO FRIENDS API")
                         console.log(json);
                         set_button_3(button)
                     });
