@@ -1548,7 +1548,7 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
 
         print("************body***********")
         print(body)
-        url = "/api/inbox/" + str(author_id) + "/" 
+        url = team_3_host + "api/inbox/" + str(author_id) + "/" 
 
         try:
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
