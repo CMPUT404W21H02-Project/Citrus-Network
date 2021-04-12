@@ -111,7 +111,7 @@
                 //make a PUT request to our followers API
                 var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" 
                 follow_citrus(url).done(function(json) {
-                    print("RESPONSE FROM CITRUS NETWORK")
+                    console.log("RESPONSE FROM CITRUS NETWORK")
                     console.log(json);
                     set_button_citrus(button)
                 });
