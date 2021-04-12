@@ -60,6 +60,11 @@
                                                 {{form.content|as_crispy_field}}
                                             </div>
                                         </div>
+                                        <div class="row justify-content-center mt-3" id="sharing" hidden="true">
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.shared_with|as_crispy_field}}
+                                            </div>
+                                        </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
                                                 <div id="categories" hidden="true"> 
@@ -73,19 +78,8 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="row justify-content-center mt-3" hidden="true">
-                                            <div class="col-md-12 col-sm-12 col-10">
-                                                {{form.shared_with|as_crispy_field}}
-                                            </div>
-                                        </div>
                                         <div class="row justify-content-center mt-3 mb-5">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <!-- <button type="button" class="btn btn-outline-primary" disabled>
-                                                    <span class="material-icons">
-                                                        insert_photo
-                                                    </span>
-                                                    Add Image
-                                                </button> -->
                                                 <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
                                                 </input>
                                             </div>
@@ -452,16 +446,22 @@
                     view.removeAttr('hidden');
                 }
             }
+            $("#id_visibility").change(function(){
+                let shared_w = $("#sharing");
+                if ($("#id_visibility").val() == "PRIVATE_TO_AUTHOR"){
+                    shared_w.removeAttr('hidden');
+                } else {
+                    shared_w.attr('hidden', 'true');
+                }
+            });
             $("#id_contentType").change(function(){
+                let content = $("#div_id_content");
+                let img = $("#id_image");
                 if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
-                    let content = $("#div_id_content");
                     content.parent().hide();
-                    let img = $("#id_image");
                     img.removeAttr('hidden');
                 } else {
-                    let content = $("#div_id_content");
                     content.parent().show();
-                    let img = $("#id_image");
                     img.attr('hidden', 'true');
                 }
             });

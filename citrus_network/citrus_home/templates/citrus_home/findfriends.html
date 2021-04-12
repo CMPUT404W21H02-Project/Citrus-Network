@@ -109,9 +109,9 @@
 
             if (non_follower_info_dict[button.id] == citrus_network_swag_host || non_follower_info_dict[button.id] == local_host){
                 //make a PUT request to our followers API
-                var url = "/service/author/" + button.id + "/followers/" + uuid  + "/" 
-                follow_citrus(url).done(function(json) {
-                    print("RESPONSE FROM CITRUS NETWORK")
+                var local_follower_url = "/service/author/" + button.id + "/followers/" + uuid  + "/" 
+                follow_citrus(local_follower_url).done(function(json) {
+                    console.log("RESPONSE FROM CITRUS NETWORK")
                     console.log(json);
                     set_button_citrus(button)
                 });
