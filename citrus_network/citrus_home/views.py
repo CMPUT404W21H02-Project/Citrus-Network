@@ -1508,7 +1508,9 @@ PARAMS:
 '''
 def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
     if request.method == 'GET':
-        #foreign_author_id is sender
+        #author id is them
+        #foreign_author_id is you (sender)
+        
         uuid = get_uuid(request)
        
         try:
@@ -1518,9 +1520,6 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
             response.status_code = 404
             return response
         
-        print("****profile***")
-        print(profile)
-
         body = {
                 "type": "follow",
                 "summary": profile.displayName +  "wants to follow you. id = " + str(author_id),
@@ -1544,16 +1543,13 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
                 }
             }
 
-        
-
-        print("************body***********")
-        print(body)
-        url = team_3_host + "api/inbox/" + str(author_id) + "/" 
+        url = team_3_host + "api/inbox/" + str(author_id) 
 
         try:
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-            response = JsonResponse({"Team 3's  inbox response": response})
-            return response
+            results = response.json()
+            return_response = JsonResponse({"Team 3's  inbox response": result})
+            return return_response
         except:
             response = JsonResponse({"message": "error in post request to team 3 inbox"})
             response.status_code = 400
