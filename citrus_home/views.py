@@ -2009,6 +2009,22 @@ def manage_post(request, id, **kwargs):
                                 source=body['origin'],
                                 visibility=body['visibility'],
                                 shared_with=body['shared_with'])
+        shared_post = {
+            "id": str(post.id),
+            "type": "post",
+            "title": body['title'],
+            "source": body['origin'],
+            "origin": body['origin'],
+            "description": body['description'],
+            "contentType": body['contentType'],
+            "content": body['content'],
+            "author": convertAuthorObj(author),
+            "categories": body['categories'],
+            "comments": [],
+            "published": "12/01/01",
+            "visibility": body['visibility'],
+            "unlisted": post.unlisted
+            }
         if body['visibility'] == 'PRIVATE_TO_FRIENDS':
             # create post body
             shared_post = {
@@ -2045,7 +2061,26 @@ def manage_post(request, id, **kwargs):
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+        
+        elif body['visibility'] == 'PRIVATE_TO_AUTHOR':
+            # get list of author id's
+            author_ids = (body['shared_with'].split())
+            # figure out which server each user is on and send to their inbox
+            for id in author_ids:
+                # check on citrus network
+                if CitrusAuthor.objects.filter(id=id).exists():
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
+                    requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                else:
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/"
+                    response = requests.get(url)
+                    if response.status_code == 200:
+                        # send to team 18 inbox
+                        url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
+                        requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                          
 
+            
 
         return returnJsonResponse(specific_message="post created", status_code=201)
 
