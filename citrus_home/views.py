@@ -2777,10 +2777,10 @@ def browse_posts(request):
                         json_posts.append(post)
                 elif hostname == "https://team3-socialdistribution.herokuapp.com/":
                     request = f"{hostname}posts"
-                    response = requests.get(request)
+                    node = Node.objects.get(host=hostname)
+                    response = requests.get(request, auth=(node.node_username, node.node_password))
                     # decode the response
-                    node = Node.objects.get(Host=hostname)
-                    content = json.loads(response.content, auth=(node.node_username, node.node_password))
+                    content = json.loads(response.content)
                     for post in content:
                         json_posts.append(post)
         except:
