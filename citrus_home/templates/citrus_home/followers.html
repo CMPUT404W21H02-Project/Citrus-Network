@@ -120,17 +120,17 @@
                             console.log(json.items[i]);
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        '<a class="card-link" href="' + url + '"><div class="card-header">' + 
                                         json.items[i].displayName+'</div></a>'+
-                                        '<div class="card-body" id = "card_body">'+
+                                        '<div class="card-body">'+
                                         '<p id = "'+user_id+'">Already Following</p></div>'+
                                         '</div>'); 
                         }else{
                             $("#card_parent") 
                                 .append('<div class="card">'+
-                                        '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                        '<a class="card-link" href="' + url + '"><div class="card-header">' + 
                                         json.items[i].displayName+'</div></a>'+
-                                        '<div class="card-body" id = "card_body">'+
+                                        '<div class="card-body">'+
                                         '<button id = "'+user_id+'" onClick="followBack(this)">Add Friend</button></div>'+
                                         '</div>');
                             } 
@@ -138,8 +138,8 @@
                 }catch(err){
                         //if no one is requesting to be users friend
                         $("#card_parent") 
-                        .append('<div class="card"><div class="card-header" id = "card_header">You Have No Friend Requests!'+
-                                '</div><div class="card-body" id = "card_body"><br></div></div>');
+                        .append('<div class="card"><div class="card-header">You Have No Friend Requests!'+
+                                '</div><div class="card-body"><br></div></div>');
                 }
             });
         }

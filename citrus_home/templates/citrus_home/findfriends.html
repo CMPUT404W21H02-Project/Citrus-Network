@@ -86,8 +86,8 @@
                         }
                         let url = "{% url 'render_profile' %}" + user_id;
                         $("#card_parent") 
-                        .append('<div class="card"><a class="card-link" href="' + url + '"><div class="card-header" id ="card_header">'+
-                                json.items[i].displayName+'</div></a><div class="card-body" id="card_body">'+
+                        .append('<div class="card"><a class="card-link" href="' + url + '"><div class="card-header">'+
+                                json.items[i].displayName+'</div></a><div class="card-body">'+
                                 '<button id="'+user_id+'" onClick="followNonFollower(this)">Follow</button>'+
                                 '</div></div>');
                     } 
@@ -95,8 +95,8 @@
                     console.log(err)
                         //if no list of people to follow - let user know they have followed everyone available
                         $("#card_parent") 
-                        .append('<div class="card"><div class="card-header" id = "card_header">You Have Followed Everyone Available!'+
-                                '</div><div class="card-body" id = "card_body"><br></div></div>');
+                        .append('<div class="card"><div class="card-header">You Have Followed Everyone Available!'+
+                                '</div><div class="card-body"><br></div></div>');
                 }
 
                 console.log(non_follower_info_dict)
