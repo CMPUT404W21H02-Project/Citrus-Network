@@ -1509,7 +1509,9 @@ PARAMS:
 '''
 def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
     if request.method == 'GET':
-        #foreign_author_id is sender
+        #author id is them
+        #foreign_author_id is you (sender)
+        
         uuid = get_uuid(request)
        
         try:
@@ -1518,38 +1520,37 @@ def be_follow_team_3(request, author_id, foreign_author_id, team_3_host):
             response = JsonResponse({"message":"citrus author does not exist"})
             response.status_code = 404
             return response
-
-       
+        
         body = {
-            "type": "follow",
-            "summary": profile.displayName +  "wants to follow you. id = " + str(author_id),
-            "sender": {
-                "type": "author",
-                "id": str(foreign_author_id),
-                "displayName": profile.displayName,
-                "bio": "",
-                "location": "",
-                "birth_date": "",
-                "github": ""
-            },
-            "receiver": {
-                "type": "author",
-                "id": str(author_id),
-                "displayName": "you. id=" + str(author_id),
-                "bio": "",
-                "location": "",
-                "birth_date": "",
-                "github": ""
+                "type": "follow",
+                "summary": profile.displayName +  "wants to follow you. id = " + str(author_id),
+                "sender": {
+                    "type": "author",
+                    "id": str(foreign_author_id),
+                    "displayName": profile.displayName,
+                    "bio": "",
+                    "location": "",
+                    "birth_date": "",
+                    "github": ""
+                },
+                "receiver": {
+                    "type": "author",
+                    "id": str(author_id),
+                    "displayName": "you. id=" + str(author_id),
+                    "bio": "",
+                    "location": "",
+                    "birth_date": "",
+                    "github": ""
+                }
             }
-        }
 
-        print(body)
-        url = "/api/inbox/" + str(author_id)
+        url = team_3_host + "api/inbox/" + str(author_id) 
 
         try:
             response = requests.post(url, data = body, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-            response = JsonResponse({"Team 3's  inbox response": response})
-            return response
+            result = response.json()
+            return_response = JsonResponse({"Team 3's  inbox response": result})
+            return return_response
         except:
             response = JsonResponse({"message": "error in post request to team 3 inbox"})
             response.status_code = 400
@@ -2043,7 +2044,7 @@ def manage_post(request, id, **kwargs):
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
-                url = f"http://localhost:8000/service/author/{author_id}/inbox/"
+                url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
 
@@ -2849,6 +2850,8 @@ def get_team18_friends(author_id, host_name):
     try:
         request = f"{host_name}service/author/{author_id}/friends/"
         response = requests.get(request, auth=HTTPBasicAuth("socialdistribution_t18","c404t18"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+        if response.status_code != 200:
+            return []
         content = json.loads(response.content)
         # print(content)
         arr = content.get('items')
