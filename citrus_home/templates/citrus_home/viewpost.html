@@ -60,14 +60,14 @@
                                                 {{form.content|as_crispy_field}}
                                             </div>
                                         </div>
-                                        <div class="row justify-content-center mt-3" id="sharing" hidden="true">
+                                        <div class="row justify-content-center mt-3" id="sharing" hidden>
                                             <div class="col-md-12 col-sm-12 col-10">
                                                 {{form.shared_with|as_crispy_field}}
                                             </div>
                                         </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <div id="categories" hidden="true"> 
+                                                <div id="categories" hidden> 
                                                     {{form.categories|as_crispy_field}}
                                                 </div>
                                                 <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
@@ -80,7 +80,7 @@
                                         </div>
                                         <div class="row justify-content-center mt-3 mb-5">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
+                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden>
                                                 </input>
                                             </div>
                                         </div>
@@ -98,8 +98,8 @@
                     <div class="col-md-10 col-sm-12 position-relative">
                         <div class="button-nav">
                             <div class = "header-buttons">
-                                <a  class=  "nav-link"><button id = "post-button" type="button" class="nav-button" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button></a>
-                                <a  class=  "nav-link"><button id = "delete-button" type="button" class="nav-button" onClick="deletePost()">Delete</button></a>
+                                <button id = "post-button" type="button" class="nav-button nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button>
+                                <button id = "delete-button" type="button" class="nav-button nav-link" onClick="deletePost()">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@
                                     <option value="PRIVATE_TO_AUTHOR">Private to Author</option>
                                 </select>
                                 <br>
-                                <label for="sharedAuthor" class="form-label">Share With (id):</label>
+                                <label for="shareText" class="form-label">Share With (id):</label>
                                 <input type="text" class="form-control" id="shareText" disabled>
                             </div>
                             <div class="modal-footer">
@@ -249,7 +249,7 @@
                         if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
-                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%"/>');
+                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%" alt=""/>');
                         } else {
                             let lines = post.content.split("\n")
                             for (var i of lines) {
@@ -348,14 +348,14 @@
                             var likedButton = document.createElement('button');
                             var likedButtonClassAttr = document.createAttribute("class");
                             var likedButtonIdAttr = document.createAttribute("id");
-                            likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
+                            likedButtonClassAttr.value = 'ml-3 btn btn-light bi-hand-thumbs-up-fill btn-sm rounded-pill liked-' + data.comments[i].id
                             likedButtonIdAttr.value = data.comments[i].id
                             likedButton.setAttributeNode(likedButtonClassAttr);
                             likedButton.setAttributeNode(likedButtonIdAttr);
                             likedButton.addEventListener('click', function(data) {
+                                console.log(data);
                                 handleCommentLike(data.target.id);
                             });
-                            likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
 
                             var likeCounter = document.createElement('small');
                             var likeCounterClassAttr = document.createAttribute("class");

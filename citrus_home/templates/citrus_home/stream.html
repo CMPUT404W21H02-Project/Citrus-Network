@@ -31,8 +31,8 @@
             <div class="col-md-10 col-sm-12 position-relative">
                 <div class="button-nav">
                     <div class = "header-buttons">
-                        <a  class=  "nav-link" href="{% url 'make_post_url' %}"><button id = "post-button" type="button" class="nav-button">Post</button></a>
-                        <a class = "nav-link"><button id = "github-button" type="button" class="nav-button" onclick="getGithubActivity();">GitHub Activity</button></a>
+                        <a id = "post-button" type="button" class="btn nav-button nav-link" href="{% url 'make_post_url' %}">Post</a>
+                        <button id = "github-button" type="button" class="btn nav-button" onclick="getGithubActivity();">GitHub Activity</button>
                     </div>
                 </div>
             </div>
@@ -49,10 +49,10 @@
                                     <a style="margin: 0" id = "gitHubName" href = "#"></a>
                                 </div>
                                 <div class="col-2 justify-content-end"> 
-                                    <div type="button" class="btn btn-block" onclick="toggleGithubActivity();">
+                                    <button type="button" class="btn btn-block" onclick="toggleGithubActivity();">
                                         <em class="bi-caret-down" style="display:none;"></em>
                                         <em class="bi-caret-up"></em>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +132,7 @@
                         postHtml += '</strong></h6>';
                         
                         if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
-                            postHtml += '<img src=\"' + json.posts[i].content + '\" style="max-width:100%;max-height:100%"/>';
+                            postHtml += '<img src=\"' + json.posts[i].content + '\" style="max-width:100%;max-height:100%" alt=""/>';
                         } else if (json.posts[i].contentType === "text/markdown") {
                             postHtml += marked(json.posts[i].content)
                         } else{
