@@ -123,6 +123,11 @@
                                 <br>
                                 <label for="shareText" class="form-label">Share With (id):</label>
                                 <input type="text" class="form-control" id="shareText" disabled>
+                                <br>
+                               <select class="form-select" id="selectUnlisted">
+                                    <option value="False" selected>Listed in your public posts</option>
+                                    <option value="True">Not listed in your public posts</option>
+                                </select>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -192,9 +197,15 @@
                 visibilitySelect.addEventListener('change', function() {
                     if (this.value == "PRIVATE_TO_AUTHOR") {
                         $("#shareText").removeAttr("disabled");
+                        $("#selectUnlisted").hide();
+                    } else if (this.value == "PRIVATE_TO_FRIENDS") {
+                        $("#shareText").attr("disabled", true);
+                        $("#shareText").val("");
+                        $("#selectUnlisted").hide();
                     } else {
                         $("#shareText").attr("disabled", true);
                         $("#shareText").val("");
+                        $("#selectUnlisted").show();
                     }
                 });
                 // Fetch all the forms we want to apply custom Bootstrap validation styles to
@@ -393,10 +404,11 @@
         function setupShare() {
             let visibilitySelect = document.getElementById('selectVisibility');
             let shareText = document.getElementById('shareText');
-            sharePost(visibilitySelect.value, shareText.value);
+            let unlistedSelect = document.getElementById('selectUnlisted');
+            sharePost(visibilitySelect.value, shareText.value, unlistedSelect.value);
         }
 
-        function sharePost(visibility, shared_with="") {
+        function sharePost(visibility, shared_with="", unlisted="False") {
             body = {
                 "title": "Shared post from " + postJson.author.displayName + ":\n" + postJson.title,
                 "description": postJson.description,
@@ -405,7 +417,8 @@
                 "origin": postJson.origin,
                 "visibility": visibility,
                 "shared_with": shared_with,
-                "contentType": postJson.contentType
+                "contentType": postJson.contentType,
+                "unlisted": unlisted
             }
             try {
                 for (var i of postJson.categories) {
