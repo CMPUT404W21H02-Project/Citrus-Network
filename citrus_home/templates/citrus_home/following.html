@@ -97,9 +97,9 @@
 
                         $("#card_parent") 
                             .append('<div class="card">'+
-                                    '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                    '<a class="card-link" href="' + url + '"><div class="card-header">' + 
                                     json.items[i].displayName+'</div></a>'+
-                                    '<div class="card-body" id = "card_body">'+
+                                    '<div class="card-body">'+
                                     '<p id = "'+user_id+'">Already Following</p></div>'+
                                     '</div>'); 
                         
@@ -107,8 +107,8 @@
                 }catch(err){
                         //if no one is requesting to be users friend
                         $("#card_parent") 
-                        .append('<div class="card"><div class="card-header" id = "card_header">Following API not setup!'+
-                                '</div><div class="card-body" id = "card_body"><br></div></div>');
+                        .append('<div class="card"><div class="card-header">Following API not setup!'+
+                                '</div><div class="card-body"><br></div></div>');
                 }
             });
         }
