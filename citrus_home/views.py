@@ -1639,7 +1639,7 @@ def get_author_post(request, author_id, post_id):
                         req["author"]["id"] = req["authorID"]
                         return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + post_id, auth=(node.node_username, node.node_password))
                         return JsonResponse(req.json())
@@ -1673,7 +1673,7 @@ def handle_remote_comment(request, author_id, post_id):
                             comment["id"] = comment["commentID"]
                         return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', auth=(node.node_username, node.node_password))
                         return JsonResponse({"comments": req.json()})
@@ -1697,10 +1697,11 @@ def handle_remote_comment(request, author_id, post_id):
                         req = requests.post(node.host + 'service/author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/', json=body, auth=(node.node_username, node.node_password))
                         return JsonResponse(req.json())
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
-                        return JsonResponse({"comments": req.json()})
+                        # Not yet implemented
+                        # req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
+                        return JsonResponse({"comments": []})
 
 @csrf_exempt
 def handle_remote_post_likes(request, author_id, post_id):
@@ -1740,11 +1741,15 @@ def handle_remote_post_likes(request, author_id, post_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        # Not yet implemented
-                        # req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password))
-                        return JsonResponse({"likes":0, "author_liked": False}, status=200)
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            like_count += 1
+
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     elif request.method == 'POST':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -1788,11 +1793,16 @@ def handle_remote_post_likes(request, author_id, post_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         # Not yet implemented
-                        # req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes/', auth=(node.node_username, node.node_password))
-                        return JsonResponse({"likes":0, "author_liked": False}, status=200)
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            like_count += 1
+
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     
 @csrf_exempt
 def handle_remote_comment_likes(request, author_id, post_id, comment_id):
@@ -2769,7 +2779,8 @@ def browse_posts(request):
                     request = f"{hostname}posts"
                     response = requests.get(request)
                     # decode the response
-                    content = json.loads(response.content)
+                    node = Node.objects.get(Host=hostname)
+                    content = json.loads(response.content, auth=(node.node_username, node.node_password))
                     for post in content:
                         json_posts.append(post)
         except:
