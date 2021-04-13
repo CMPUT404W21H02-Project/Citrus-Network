@@ -2069,14 +2069,15 @@ def manage_post(request, id, **kwargs):
             for id in author_ids:
                 # check on citrus network
                 if CitrusAuthor.objects.filter(id=id).exists():
-                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
+                    print("here")
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
                     requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                 else:
-                    url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/"
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
                     response = requests.get(url)
                     if response.status_code == 200:
                         # send to team 18 inbox
-                        url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
+                        url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
                         requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                           
 
