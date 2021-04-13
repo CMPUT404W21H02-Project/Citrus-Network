@@ -277,7 +277,8 @@ def render_author_profile(request, author_id):
                         }
                         return render(request, 'citrus_home/viewprofile.html', {'author': response, 'postsURL': author["host"] + 'service/author/' + response["id"] + '/posts/' })
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
+                    print(req)
                     if req.status_code == 200:
                         author = req.json()
                         response = {
@@ -314,9 +315,9 @@ def get_authors_public_posts(request, author_id):
                             i["author"]["id"] = i["authorID"]
                         return JsonResponse(req)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/', auth=(node.node_username, node.node_password))
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts', auth=(node.node_username, node.node_password))
                         return JsonResponse({"posts":req.json()})
 
 """
