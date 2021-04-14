@@ -1785,9 +1785,12 @@ def handle_remote_comment(request, author_id, post_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        # Not yet implemented
-                        # req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
-                        return JsonResponse({"comments": []})
+                        body["summary"] = current_author.displayName + " commented on your post"
+                        body["type"] = "comment"
+                        body["author"] = convertAuthorObj(current_author)
+                        body["author"]["authorID"] = str(current_author.id)
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
+                        return returnJsonResponse(specific_message="comment added", status_code=200)
 
 @csrf_exempt
 def handle_remote_post_likes(request, author_id, post_id):
@@ -1834,7 +1837,7 @@ def handle_remote_post_likes(request, author_id, post_id):
                         author_likes = False
                         for like in req:
                             like_count += 1
-                            if like["author"]["id"] == str(current_author.id):
+                            if like["author"] != None and like["author"]["id"] == str(current_author.id):
                                 author_likes=True
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     elif request.method == 'POST':
