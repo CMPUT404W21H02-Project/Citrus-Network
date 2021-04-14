@@ -2116,6 +2116,11 @@ def manage_post(request, id, **kwargs):
             # get list of author id's
             author_ids = (body['shared_with'].split())
             # figure out which server each user is on and send to their inbox
+            team_18_post = {
+                "type": "post",
+                "postID": str(pid),
+                "authorID": str(id)
+            }
             for id in author_ids:
                 # check on citrus network
                 if CitrusAuthor.objects.filter(id=id).exists():
@@ -2131,7 +2136,7 @@ def manage_post(request, id, **kwargs):
                         if response.status_code == 200:
                             # send to team 18 inbox
                             url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
-                            requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                     
                     # check to see if the node for team 3 has been added to our server
                     if Node.objects.filter(host="https://team3-socialdistribution.herokuapp.com/").exists():
@@ -2414,15 +2419,15 @@ def handleStream(request):
                             json_posts.append(post)
             
             # handle team 3
-            if "https://team3-socialdistribution.herokuapp.com/" in server_list:
-                team_3_friends = get_team3_friends(friends_uuid_arr, "https://team3-socialdistribution.herokuapp.com/")
-                for id in team_3_friends:
-                    # get all posts of this user on team 3's server
-                    url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/posts"
-                    response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
-                    content = json.loads(response.content)
-                    for post in content:
-                        json_posts.append(post)
+            # if "https://team3-socialdistribution.herokuapp.com/" in server_list:
+            #     team_3_friends = get_team3_friends(friends_uuid_arr, "https://team3-socialdistribution.herokuapp.com/")
+            #     for id in team_3_friends:
+            #         # get all posts of this user on team 3's server
+            #         url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/posts"
+            #         response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
+            #         content = json.loads(response.content)
+            #         for post in content:
+            #             json_posts.append(post)
 
             # citrus network database
             for id in friends_uuid_arr:
