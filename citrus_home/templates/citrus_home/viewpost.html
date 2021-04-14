@@ -339,12 +339,13 @@
                             var classAttr = document.createAttribute("class");
                             classAttr.value = "card mt-1 mb-1";
                             newElement.setAttributeNode(classAttr);
-                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            var innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
                             '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ';
                             if (data.comments[i].published != undefined) {
-                                newElement.innerHTML += data.comments[i].published;
+                                innerHTML += data.comments[i].published;
                             }
-                            newElement.innerHTML += '</p></a></div>';
+                            innerHTML += '</p></a></div>';
+                            newElement.innerHTML = innerHTML;
                             var cardBody = document.createElement('div');
                             var cardBodyClass = document.createAttribute("class");
                             cardBodyClass.value = 'card-body';
