@@ -2084,7 +2084,7 @@ def manage_post(request, id, **kwargs):
                     requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                 else:
                     url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
-                    requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    response = requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                     if response.status_code == 200:
                         # send to team 18 inbox
                         url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
