@@ -2021,7 +2021,8 @@ def manage_post(request, id, **kwargs):
                                 origin=body['origin'],
                                 source=body['origin'],
                                 visibility=body['visibility'],
-                                shared_with=body['shared_with'])
+                                shared_with=body['shared_with'],
+                                unlisted=body['unlisted'])
         shared_post = {
             "id": str(post.id),
             "type": "post",
@@ -2136,6 +2137,7 @@ def manage_post(request, id, **kwargs):
             post.contentType = body['contentType']
             post.visibility = body['visibility']
             post.shared_with = body['shared_with']
+            post.unlisted = body['unlisted']
             post.save()
             return returnJsonResponse(specific_message="post updated", status_code=200)
         else:
@@ -2177,7 +2179,7 @@ def manage_post(request, id, **kwargs):
             # return all posts of the given user
             author = CitrusAuthor.objects.get(id=id)
             visibility_list = ['PUBLIC']
-            posts = Post.objects.filter(author=author,visibility__in=visibility_list).order_by('-published')
+            posts = Post.objects.filter(author=author, unlisted=False, visibility__in=visibility_list).order_by('-published')
             json_posts = []
             for post in posts:
                 author = post.author
@@ -2731,10 +2733,10 @@ def browse_posts(request):
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
-            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
+            public_posts = Post.objects.filter(visibility='PUBLIC', unlisted=False).filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
         except:
             print("here")
-            public_posts = Post.objects.filter(visibility='PUBLIC').order_by('-published')
+            public_posts = Post.objects.filter(visibility='PUBLIC', unlisted=False).order_by('-published')
         json_posts = []
         for post in public_posts:
             author = post.author
