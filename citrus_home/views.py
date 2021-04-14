@@ -2104,7 +2104,8 @@ def manage_post(request, id, **kwargs):
                 print(item, type(item))
             # loop through list and make call to inbox function
             for author_id in team18_friends:
-                friends_arr.remove(author_id)
+                if author_id in friends_arr:
+                    friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
