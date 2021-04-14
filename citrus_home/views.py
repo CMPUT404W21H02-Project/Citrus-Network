@@ -2104,7 +2104,8 @@ def manage_post(request, id, **kwargs):
                 print(item, type(item))
             # loop through list and make call to inbox function
             for author_id in team18_friends:
-                friends_arr.remove(author_id)
+                if author_id in friends_arr:
+                    friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
                 requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
@@ -2732,6 +2733,8 @@ def handle_inbox(request, author_id):
                 try:
                     if "commentID" not in body:
                         body["commentID"] = ""
+                    else:
+                        body["postID"] = ""
                     Like.objects.create(author=body["author"]["authorID"], post_id=body["postID"], comment_id=body["commentID"]).save()
                 except:
                     None
