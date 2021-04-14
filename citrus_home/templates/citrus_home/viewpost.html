@@ -52,6 +52,11 @@
                                         </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.unlisted|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
                                                 {{form.description|as_crispy_field}}
                                             </div>
                                         </div>
@@ -60,14 +65,14 @@
                                                 {{form.content|as_crispy_field}}
                                             </div>
                                         </div>
-                                        <div class="row justify-content-center mt-3" id="sharing" hidden="true">
+                                        <div class="row justify-content-center mt-3" id="sharing" hidden>
                                             <div class="col-md-12 col-sm-12 col-10">
                                                 {{form.shared_with|as_crispy_field}}
                                             </div>
                                         </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <div id="categories" hidden="true"> 
+                                                <div id="categories" hidden> 
                                                     {{form.categories|as_crispy_field}}
                                                 </div>
                                                 <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
@@ -80,7 +85,7 @@
                                         </div>
                                         <div class="row justify-content-center mt-3 mb-5">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
+                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden>
                                                 </input>
                                             </div>
                                         </div>
@@ -98,8 +103,8 @@
                     <div class="col-md-10 col-sm-12 position-relative">
                         <div class="button-nav">
                             <div class = "header-buttons">
-                                <a  class=  "nav-link"><button id = "post-button" type="button" class="nav-button" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button></a>
-                                <a  class=  "nav-link"><button id = "delete-button" type="button" class="nav-button" onClick="deletePost()">Delete</button></a>
+                                <button id = "post-button" type="button" class="nav-button nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button>
+                                <button id = "delete-button" type="button" class="nav-button nav-link" onClick="deletePost()">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -121,8 +126,13 @@
                                     <option value="PRIVATE_TO_AUTHOR">Private to Author</option>
                                 </select>
                                 <br>
-                                <label for="sharedAuthor" class="form-label">Share With (id):</label>
+                                <label for="shareText" class="form-label">Share With (id):</label>
                                 <input type="text" class="form-control" id="shareText" disabled>
+                                <br>
+                               <select class="form-select" id="selectUnlisted">
+                                    <option value="False" selected>Listed</option>
+                                    <option value="True">Unlisted</option>
+                                </select>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -192,9 +202,15 @@
                 visibilitySelect.addEventListener('change', function() {
                     if (this.value == "PRIVATE_TO_AUTHOR") {
                         $("#shareText").removeAttr("disabled");
+                        $("#selectUnlisted").hide();
+                    } else if (this.value == "PRIVATE_TO_FRIENDS") {
+                        $("#shareText").attr("disabled", true);
+                        $("#shareText").val("");
+                        $("#selectUnlisted").hide();
                     } else {
                         $("#shareText").attr("disabled", true);
                         $("#shareText").val("");
+                        $("#selectUnlisted").show();
                     }
                 });
                 // Fetch all the forms we want to apply custom Bootstrap validation styles to
@@ -249,7 +265,7 @@
                         if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
-                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%"/>');
+                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%" alt=""/>');
                         } else {
                             let lines = post.content.split("\n")
                             for (var i of lines) {
@@ -323,9 +339,13 @@
                             var classAttr = document.createAttribute("class");
                             classAttr.value = "card mt-1 mb-1";
                             newElement.setAttributeNode(classAttr);
-                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                            '</p></a></div>';
+                            var innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ';
+                            if (data.comments[i].published != undefined) {
+                                innerHTML += data.comments[i].published;
+                            }
+                            innerHTML += '</p></a></div>';
+                            newElement.innerHTML = innerHTML;
                             var cardBody = document.createElement('div');
                             var cardBodyClass = document.createAttribute("class");
                             cardBodyClass.value = 'card-body';
@@ -333,7 +353,11 @@
 
                             var commentContent = document.createElement('p');
                             var commentValue = "";
-                            let comments = data.comments[i].comment.split('\n');
+                            if (data.comments[i].comment != undefined) {
+                                var comments = data.comments[i].comment.split('\n');
+                            } else {
+                                var comments = data.comments[i].content.split('\n');
+                            }
                             for(var comment of comments) {
                                 commentValue += comment + '<br>'
                             }
@@ -348,14 +372,14 @@
                             var likedButton = document.createElement('button');
                             var likedButtonClassAttr = document.createAttribute("class");
                             var likedButtonIdAttr = document.createAttribute("id");
-                            likedButtonClassAttr.value = 'ml-3 btn btn-light btn-sm rounded-pill liked-' + data.comments[i].id
+                            likedButtonClassAttr.value = 'ml-3 btn btn-light bi-hand-thumbs-up-fill btn-sm rounded-pill liked-' + data.comments[i].id
                             likedButtonIdAttr.value = data.comments[i].id
                             likedButton.setAttributeNode(likedButtonClassAttr);
                             likedButton.setAttributeNode(likedButtonIdAttr);
                             likedButton.addEventListener('click', function(data) {
+                                console.log(data);
                                 handleCommentLike(data.target.id);
                             });
-                            likedButton.innerHTML = '<em class="bi-hand-thumbs-up-fill" id="' + data.comments[i].id + '"></em>';
 
                             var likeCounter = document.createElement('small');
                             var likeCounterClassAttr = document.createAttribute("class");
@@ -393,10 +417,11 @@
         function setupShare() {
             let visibilitySelect = document.getElementById('selectVisibility');
             let shareText = document.getElementById('shareText');
-            sharePost(visibilitySelect.value, shareText.value);
+            let unlistedSelect = document.getElementById('selectUnlisted');
+            sharePost(visibilitySelect.value, shareText.value, unlistedSelect.value);
         }
 
-        function sharePost(visibility, shared_with="") {
+        function sharePost(visibility, shared_with="", unlisted="False") {
             body = {
                 "title": "Shared post from " + postJson.author.displayName + ":\n" + postJson.title,
                 "description": postJson.description,
@@ -405,7 +430,8 @@
                 "origin": postJson.origin,
                 "visibility": visibility,
                 "shared_with": shared_with,
-                "contentType": postJson.contentType
+                "contentType": postJson.contentType,
+                "unlisted": unlisted
             }
             try {
                 for (var i of postJson.categories) {

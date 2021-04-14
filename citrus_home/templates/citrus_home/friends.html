@@ -87,9 +87,9 @@
 
                         $("#card_parent") 
                         .append('<div class="card">'+
-                                '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                '<a class="card-link" href="' + url + '"><div class="card-header">' + 
                                 json.items[i].displayName+'</div></a>'+
-                                '<div class="card-body" id = "card_body">'+
+                                '<div class="card-body">'+
                                     '<button id = "'+user_id+'" onClick="removeFriend(this)">Remove Friend</button>'+
                                     '</div>'+
                                 '</div>'); 
@@ -97,8 +97,8 @@
                 }catch(err){
                     //if you have no friends to remove
                     $("#card_parent") 
-                    .append('<div class="card"><div class="card-header" id = "card_header">You Have No Friends!'+
-                            '</div><div class="card-body" id = "card_body"><br></div></div>');
+                    .append('<div class="card"><div class="card-header">You Have No Friends!'+
+                            '</div><div class="card-body"><br></div></div>');
                 }
             });
         }
