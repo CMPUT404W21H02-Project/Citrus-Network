@@ -2066,7 +2066,7 @@ def manage_post(request, id, **kwargs):
             for author_id in team18_friends:
                 friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
-                requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
@@ -2080,15 +2080,15 @@ def manage_post(request, id, **kwargs):
                 # check on citrus network
                 if CitrusAuthor.objects.filter(id=id).exists():
                     print("here")
-                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
                     requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                 else:
-                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
-                    response = requests.get(url)
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                    requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                     if response.status_code == 200:
                         # send to team 18 inbox
-                        url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
-                        requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                        requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                           
 
             
