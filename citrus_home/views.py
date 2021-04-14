@@ -1750,7 +1750,8 @@ def handle_remote_post_likes(request, author_id, post_id):
                         author_likes = False
                         for like in req:
                             like_count += 1
-
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes=True
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     elif request.method == 'POST':
         try:
@@ -1798,11 +1799,21 @@ def handle_remote_post_likes(request, author_id, post_id):
                     req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         # Not yet implemented
+                        body = {
+                            "type": "like",
+                            "author": convertAuthorObj(current_author),
+                            "summary": str(current_author.displayName) + " likes your post",
+                            "object": "https://team3-socialdistribution.herokuapp.com/author/" + str(author_id) + "/posts/" + str(post_id),
+                            "postID": str(post_id),
+                        }
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/inbox', json=body, auth=(node.node_username, node.node_password))
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
                         author_likes = False
                         for like in req:
                             like_count += 1
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes=True
 
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     
@@ -1846,7 +1857,15 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
+
     elif request.method == 'POST':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -1893,7 +1912,23 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        body = {
+                            "type": "like",
+                            "author": convertAuthorObj(current_author),
+                            "summary": str(current_author.displayName) + " likes your post",
+                            "object": "https://team3-socialdistribution.herokuapp.com/author/" + str(author_id) + "/posts/" + str(post_id) + '/comments/' + str(comment_id),
+                            "postID": str(post_id),
+                            "commentID": str(comment_id)
+                        }
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/inbox', json=body, auth=(node.node_username, node.node_password))
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
 
     
 
@@ -2298,7 +2333,7 @@ def convertAuthorObj(author):
             "id": author.id,
             "host": author.host,
             "displayName": author.displayName,
-            "url": "somerandomUrl for now",
+            "url": author.url,
             "github": author.github
         }
         return author_data
