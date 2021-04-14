@@ -2407,7 +2407,8 @@ def handleStream(request):
                 team_18_friends = get_team18_friends(citrus_author.id, "https://cmput-404-socialdistribution.herokuapp.com/")
                 for id in team_18_friends:
                     # remove from friends arr UNCOMMENT THIS
-                    friends_uuid_arr.remove(id)
+                    if id in friends_uuid_arr:
+                        friends_uuid_arr.remove(id)
                     # get all posts of this user on team 18's server
                     url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/posts/"
                     response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
