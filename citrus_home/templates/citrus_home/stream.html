@@ -31,8 +31,8 @@
             <div class="col-md-10 col-sm-12 position-relative">
                 <div class="button-nav">
                     <div class = "header-buttons">
-                        <a  class=  "nav-link" href="{% url 'make_post_url' %}"><button id = "post-button" type="button" class="nav-button">Post</button></a>
-                        <a class = "nav-link"><button id = "github-button" type="button" class="nav-button" onclick="getGithubActivity();">GitHub Activity</button></a>
+                        <a id = "post-button" type="button" class="btn nav-button nav-link" href="{% url 'make_post_url' %}">Post</a>
+                        <button id = "github-button" type="button" class="btn nav-button" onclick="getGithubActivity();">GitHub Activity</button>
                     </div>
                 </div>
             </div>
@@ -49,10 +49,10 @@
                                     <a style="margin: 0" id = "gitHubName" href = "#"></a>
                                 </div>
                                 <div class="col-2 justify-content-end"> 
-                                    <div type="button" class="btn btn-block" onclick="toggleGithubActivity();">
+                                    <button type="button" class="btn btn-block" onclick="toggleGithubActivity();">
                                         <em class="bi-caret-down" style="display:none;"></em>
                                         <em class="bi-caret-up"></em>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -73,6 +73,13 @@
     <script 
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
     </script>
+
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+    </script>
+
     <script>
         function fetchJSON(url) {
             var request = new Request(url);
@@ -93,46 +100,57 @@
                 //console.log(json.posts);
                 console.log(json)
                 for(var i in json.posts){
-                    var newElement = document.createElement('div');
-                    var classAttr = document.createAttribute("class");
-                    classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
-                    if (json.posts[i].author.id.includes("/author/")) {
-                        json.posts[i].author.id = json.posts[i].author.id.split("/author/")[1]
-                    }
-                    if (json.posts[i].id.includes("/posts/")) {
-                        json.posts[i].id = json.posts[i].id.split("/posts/")[1]
-                    }
-                    newElement.setAttributeNode(classAttr);
-                    let url = "{% url 'render_profile' %}" + json.posts[i].author.id
-                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                        '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
-                        '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
-                        '</a>';
-
-                    for (var j in json.posts[i].categories) {
-                        postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
-                    }
-                    postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
-                        json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
-                        '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>';
-                    
-                    if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
-                        postHtml += '<img src=\"' + json.posts[i].content + '\"/>';
-                    } else if (json.posts[i].contentType === "text/markdown") {
-                        postHtml += marked(json.posts[i].content)
-                    } else{
-                        let lines = json.posts[i].content.split('\n');
-                        
-                        postHtml += '<p>';
-                        for (var j of lines) {
-                            postHtml += j + '<br>'
+                    try {
+                        var newElement = document.createElement('div');
+                        var classAttr = document.createAttribute("class");
+                        classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
+                        if (json.posts[i].author.id.includes("/author/")) {
+                            json.posts[i].author.id = json.posts[i].author.id.split("/author/")[1]
                         }
-                        postHtml +='</p>';
-                        // console.log(marked(json.posts[i].content));
-                    }
-                    newElement.innerHTML = postHtml;
+                        if (json.posts[i].id.includes("/posts/")) {
+                            json.posts[i].id = json.posts[i].id.split("/posts/")[1]
+                        }
+                        newElement.setAttributeNode(classAttr);
+                        let url = "{% url 'render_profile' %}" + json.posts[i].author.id
+                        var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
+                            '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
+                            '</a>';
 
-                    document.querySelector(".stream-post").appendChild(newElement);
+                        for (var j in json.posts[i].categories) {
+                            postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
+                        }
+                        postHtml += '</div><a class="card-body card-link" href=../service/author/' + 
+                            json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
+                            '<h6><strong>';
+                        
+                        let lines = json.posts[i].title.split("\n");
+                        for (var j of lines) {
+                            postHtml += j + "<br>"
+                        }
+                                
+                        postHtml += '</strong></h6>';
+                        
+                        if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
+                            postHtml += '<img src=\"' + json.posts[i].content + '\" style="max-width:100%;max-height:100%" alt=""/>';
+                        } else if (json.posts[i].contentType === "text/markdown") {
+                            postHtml += marked(json.posts[i].content)
+                        } else{
+                            let lines = json.posts[i].content.split('\n');
+                            
+                            postHtml += '<p>';
+                            for (var j of lines) {
+                                postHtml += j + '<br>'
+                            }
+                            postHtml +='</p>';
+                            // console.log(marked(json.posts[i].content));
+                        }
+                        newElement.innerHTML = postHtml;
+
+                        document.querySelector(".stream-post").appendChild(newElement);
+                    } catch {
+                        null;
+                    }
                 }
             });
         }
@@ -141,6 +159,7 @@
             var uuid = "{{uuid}}";
             var url = "/service/author/" + uuid + "/github" // :service/author/{AUTHOR_ID}
             fetchJSON(url).then((json) => { // another callback
+                console.log(json)
                 document.querySelector('#githubActivity').style.display = "flex";
                 try{
                     document.querySelector("#gitHubName").innerText = new String ("GitHub Activity for "+json.events[0].name)
@@ -150,6 +169,7 @@
                         var event = formatEvent(json.events[i]);
                         $('#githubBody').append(event + "<br/><br/>");
                     }
+                
                 }catch(err){
                     document.querySelector("#github-header").style.background = "#62afdd";
                     document.querySelector("#githubBody").innerText = "Cannot get GitHub activity";

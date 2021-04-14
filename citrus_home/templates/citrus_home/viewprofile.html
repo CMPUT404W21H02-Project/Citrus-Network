@@ -65,40 +65,51 @@
         fetchJSON(window.location.origin + '/service/author/{{ author.id }}/get-posts').then((json) => {
             console.log(json.posts);
             for(var i in json.posts){
-                var newElement = document.createElement('div');
-                var classAttr = document.createAttribute("class");
-                classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
-                newElement.setAttributeNode(classAttr);
-                let url = "{% url 'render_profile' %}" + json.posts[i].author.id
-                var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                    '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
-                    '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
-                    '</a>';
+                try {
+                    var newElement = document.createElement('div');
+                    var classAttr = document.createAttribute("class");
+                    classAttr.value = "col-md-10 col-sm-12 mt-1 mb-1 position-relative";
+                    newElement.setAttributeNode(classAttr);
+                    let url = "{% url 'render_profile' %}" + json.posts[i].author.id
+                    var postHtml = '<div class="card">' + '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                        '<p style="margin: 0;"><strong>' + json.posts[i].author.displayName + '</strong></p>' +
+                        '<p style="margin: 0;">' + json.posts[i].published + ' | ' + json.posts[i].origin + '</p>' +
+                        '</a>';
 
-                for (var j in json.posts[i].categories) {
-                    postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
-                }
-                postHtml += '</div><a class="card-body card-link" href=../../service/author/' + 
-                    json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
-                    '<h6 class="font-weight-bold">' + json.posts[i].title + '</h6>';
-                
-                if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
-                    postHtml += '<img src=\"' + json.posts[i].content + '\"/>';
-                } else if (json.posts[i].contentType === "text/markdown") {
-                    postHtml += marked(json.posts[i].content)
-                } else{
-                    let lines = json.posts[i].content.split('\n');
-                    
-                    postHtml += '<p>';
-                    for (var j of lines) {
-                        postHtml += j + '<br>'
+                    for (var j in json.posts[i].categories) {
+                        postHtml += '<a class="btn mt-1 btn-sm btn-outline-info rounded-pill" href="#tag">' + json.posts[i].categories[j] + '</a>'
                     }
-                    postHtml +='</p>';
-                    // console.log(marked(json.posts[i].content));
-                }
-                newElement.innerHTML = postHtml;
+                    postHtml += '</div><a class="card-body card-link" href=../../service/author/' + 
+                        json.posts[i].author.id + '/view-post/' + json.posts[i].id + '/>' + 
+                        '<h6><strong>';
+                        
+                        let lines = json.posts[i].title.split("\n");
+                        for (var j of lines) {
+                            postHtml += j + "<br>"
+                        }
+                                
+                        postHtml += '</strong></h6>';
+                    
+                    if (json.posts[i].contentType === "image/png;base64" || json.posts[i].contentType === "image/jpeg;base64"){
+                        postHtml += '<img src=\"' + json.posts[i].content + '\" style="max-width:100%;max-height:100%" alt=""/>';
+                    } else if (json.posts[i].contentType === "text/markdown") {
+                        postHtml += marked(json.posts[i].content)
+                    } else{
+                        let lines = json.posts[i].content.split('\n');
+                        
+                        postHtml += '<p>';
+                        for (var j of lines) {
+                            postHtml += j + '<br>'
+                        }
+                        postHtml +='</p>';
+                        // console.log(marked(json.posts[i].content));
+                    }
+                    newElement.innerHTML = postHtml;
 
-                document.querySelector(".stream-post").appendChild(newElement);
+                    document.querySelector(".stream-post").appendChild(newElement);
+                } catch {
+                    null;
+                }
             }
         });
     }

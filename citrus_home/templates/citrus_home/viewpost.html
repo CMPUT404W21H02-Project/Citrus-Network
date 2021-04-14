@@ -60,9 +60,14 @@
                                                 {{form.content|as_crispy_field}}
                                             </div>
                                         </div>
+                                        <div class="row justify-content-center mt-3" id="sharing" hidden>
+                                            <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.shared_with|as_crispy_field}}
+                                            </div>
+                                        </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <div id="categories" hidden="true"> 
+                                                <div id="categories" hidden> 
                                                     {{form.categories|as_crispy_field}}
                                                 </div>
                                                 <button type="button" class="btn btn-outline-primary" onClick="hideCategory()">
@@ -73,20 +78,9 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="row justify-content-center mt-3" hidden="true">
-                                            <div class="col-md-12 col-sm-12 col-10">
-                                                {{form.shared_with|as_crispy_field}}
-                                            </div>
-                                        </div>
                                         <div class="row justify-content-center mt-3 mb-5">
                                             <div class="col-md-12 col-sm-12 col-10">
-                                                <!-- <button type="button" class="btn btn-outline-primary" disabled>
-                                                    <span class="material-icons">
-                                                        insert_photo
-                                                    </span>
-                                                    Add Image
-                                                </button> -->
-                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden="true">
+                                                <input type="file" name="image" accept="image/*" id="id_image" class="btn btn-outline-primary" hidden>
                                                 </input>
                                             </div>
                                         </div>
@@ -104,14 +98,45 @@
                     <div class="col-md-10 col-sm-12 position-relative">
                         <div class="button-nav">
                             <div class = "header-buttons">
-                                <a  class=  "nav-link"><button id = "post-button" type="button" class="nav-button" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button></a>
-                                <a  class=  "nav-link"><button id = "delete-button" type="button" class="nav-button" onClick="deletePost()">Delete</button></a>
+                                <button id = "post-button" type="button" class="nav-button nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button>
+                                <button id = "delete-button" type="button" class="nav-button nav-link" onClick="deletePost()">Delete</button>
                             </div>
                         </div>
                     </div>
                 </div>
             {% endif %}
-
+            <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="shareModalLabel">Share this post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form>
+                            <div class="modal-body">
+                                <label for="selectVisibility" class="form-label">Visibility:</label>
+                                <select class="form-select" id="selectVisibility">
+                                    <option value="PUBLIC" selected>Public</option>
+                                    <option value="PRIVATE_TO_FRIENDS">Private to Friends</option>
+                                    <option value="PRIVATE_TO_AUTHOR">Private to Author</option>
+                                </select>
+                                <br>
+                                <label for="shareText" class="form-label">Share With (id):</label>
+                                <input type="text" class="form-control" id="shareText" disabled>
+                                <br>
+                               <select class="form-select" id="selectUnlisted">
+                                    <option value="False" selected>Listed in your public posts</option>
+                                    <option value="True">Not listed in your public posts</option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onClick="setupShare()">Share</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <div class="row justify-content-center mt-4 mb-1">
                 <div class="col-md-10 col-sm-12 position-relative">
                     <div class="card mb-5">
@@ -124,15 +149,19 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <h6 class="font-weight-bold post-title"></h6>
+                            <h6><strong class="post-title"></strong></h6>
                             <p class="post-content"></p>
-                            <!-- Like API not yet implemented -->
-                            <!-- <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
-                                <em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em>
-                            </button>
-                            <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill">
-                                <em class="bi-hand-thumbs-up-fill"></em>
-                            </button> -->
+                            <div class="inline">
+                                <button type="button" class="ml-3 btn btn-light btn-lg rounded-pill" id="likeBtn" hidden="true" onClick="handlePostLike()">
+                                    <em class="bi-hand-thumbs-up-fill"></em>
+                                </button>
+                                <small class="like-count">
+                                </small>
+                                
+                                <button type="button" class="btn btn-light btn-lg rounded-pill" id="shareBtn" hidden="true" style="margin-left:1em;" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                    <em class="bi-share-fill"></em>
+                                </button>
+                            </div>
                             <br>
                             <div class="card-body">
                             <form class="needs-validation" novalidate>
@@ -159,10 +188,26 @@
         crossorigin="anonymous">
     </script>
     <script>
+        var postJson = null;
         // Example starter JavaScript for disabling form submissions if there are invalid fields
         (function() {
             'use strict';
             window.addEventListener('load', function() {
+                var visibilitySelect = document.getElementById('selectVisibility');
+                visibilitySelect.addEventListener('change', function() {
+                    if (this.value == "PRIVATE_TO_AUTHOR") {
+                        $("#shareText").removeAttr("disabled");
+                        $("#selectUnlisted").hide();
+                    } else if (this.value == "PRIVATE_TO_FRIENDS") {
+                        $("#shareText").attr("disabled", true);
+                        $("#shareText").val("");
+                        $("#selectUnlisted").hide();
+                    } else {
+                        $("#shareText").attr("disabled", true);
+                        $("#shareText").val("");
+                        $("#selectUnlisted").show();
+                    }
+                });
                 // Fetch all the forms we want to apply custom Bootstrap validation styles to
                 var forms = document.getElementsByClassName('needs-validation');
                 // Loop over them and prevent submission
@@ -184,28 +229,7 @@
                                 contentType: "application/json",
                                 data: JSON.stringify(comment),
                                 success: function(data) {
-                                    $.ajax({
-                                        url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
-                                        type: "GET",
-                                        dataType: 'json',
-                                        success: function(data) {
-                                            var commentHtml = ""
-                                            for (var i in data.comments) {
-                                                let url = "{% url 'render_profile' %}" + data.comments[i].author.id
-                                                commentHtml += '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
-                                                '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                                                '</p></a></div><div class="card-body"><p>' + data.comments[i].comment + '</p>' + 
-
-                                                // Like buttons not yet implemented due to no like API
-                                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                                // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
-                                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                                // '<em class="bi-hand-thumbs-up-fill"></em></button>' + 
-                                                '</div></div>';
-                                            }
-                                            $('.comments').html(commentHtml);
-                                        }
-                                    });
+                                    getComments();
                                 }
                             });
                             event.preventDefault();
@@ -220,7 +244,7 @@
                     type: "GET",
                     dataType: 'json',
                     success: function(post) {
-                        console.log(post);
+                        postJson = post;
                         $('.author-name').html(post.author.displayName)
                         $('.published').html(post.published)
                         var tagHtml = ''; 
@@ -229,31 +253,35 @@
                             post.categories[i] + '</a>';
                         }
                         $('.post-tag').html(tagHtml);
-                        $('.post-title').html(post.title);
+                        let lines = post.title.split("\n")
+                        for (var i of lines) {
+                            $('.post-title').append(i + '<br>')
+                        }
                         if (post.contentType === 'text/markdown'){
                             $('.post-content').html(marked(post.content));
                         } else if (post.contentType === "image/png;base64" || post.contentType === "image/jpeg;base64"){
-                            $('.post-content').html('<img src=\"' + post.content + '\"/>');
+                            $('.post-content').html('<img src=\"' + post.content + '\" style="max-width:100%;max-height:100%" alt=""/>');
                         } else {
                             let lines = post.content.split("\n")
                             for (var i of lines) {
                                 $('.post-content').append(i + '<br>');
                             }
                         }
-                        for (var i in post.comments) {
-                            let url = "{% url 'render_profile' %}" + post.comments[i].author.id
-                            var commentHtml = '<div class="card mt-1 mb-1"><div class="card-header"><a class="card-link" href="' + url + '">' + 
-                                '<p style="margin: 0;"><strong>' + post.comments[i].author.displayName + '</strong> | ' + post.comments[i].published + 
-                                '</p></a></div><div class="card-body"><p>' + post.comments[i].comment + '</p>' + 
-
-                                // Like buttons not yet implemented due to no like API
-                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                // '<em class="bi-hand-thumbs-up-fill" style="color: cornflowerblue;"></em></button>' + 
-                                // '<button type="button" class="ml-3 btn btn-light btn-sm rounded-pill">' + 
-                                // '<em class="bi-hand-thumbs-up-fill"></em></button>' + 
-                                '</div></div>';
-                            $('.comments').append(commentHtml);
-                        }
+                        $.ajax({
+                            url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                            type: "GET",
+                            dataType: 'json',
+                            success: function(data) {   
+                                $(".like-count").text(data.likes);
+                                $("#shareBtn").removeAttr("hidden");
+                                $("#likeBtn").removeAttr("hidden");
+                                if (data.author_liked) {
+                                    $("#likeBtn").attr("style", "color: cornflowerblue;");
+                                    $("#likeBtn").attr("disabled", true);
+                                }
+                                getComments();
+                            }
+                        });
                     },
                     error: function() {
                         window.location.replace('/home')
@@ -261,6 +289,155 @@
                 });
             }, false);
         })();
+
+        function handlePostLike() {
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/likes/",
+                type: "POST",
+                dataType: 'json',
+                success: function(data) {   
+                    $(".like-count").text(data.likes);
+                    if (data.author_liked) {
+                        $("#likeBtn").attr("style", "color: cornflowerblue;");
+                        $("#likeBtn").attr("disabled", true);
+                    }
+                }
+            });
+        }
+
+        function handleCommentLike(comment_id) {
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + comment_id + "/likes/",
+                type: "POST",
+                dataType: 'json',
+                success: function(data) {   
+                    $(".like-count-" + data.id).text(data.likes);
+                    if (data.author_liked) {
+                        $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
+                        $(".liked-" + data.id).attr("disabled", true)
+                    }
+                }
+            });
+        }
+
+        function getComments() {
+            $.ajax({
+                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/",
+                type: "GET",
+                dataType: 'json',
+                success: function(data) {
+                    $('.comments').html("");
+                    for (var i in data.comments) {
+                        try {
+                            let url = "{% url 'render_profile' %}" + data.comments[i].author.id
+                            var newElement = document.createElement('div');
+                            var classAttr = document.createAttribute("class");
+                            classAttr.value = "card mt-1 mb-1";
+                            newElement.setAttributeNode(classAttr);
+                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
+                            '</p></a></div>';
+                            var cardBody = document.createElement('div');
+                            var cardBodyClass = document.createAttribute("class");
+                            cardBodyClass.value = 'card-body';
+                            cardBody.setAttributeNode(cardBodyClass);
+
+                            var commentContent = document.createElement('p');
+                            var commentValue = "";
+                            let comments = data.comments[i].comment.split('\n');
+                            for(var comment of comments) {
+                                commentValue += comment + '<br>'
+                            }
+                            commentContent.innerHTML = commentValue;
+                            // '<div class="card-body"><p>' + data.comments[i].comment + '</p>';
+
+                            var inlineElement = document.createElement('div');
+                            var inlineAttr = document.createAttribute("class");
+                            inlineAttr.value = "inline";
+                            inlineElement.setAttributeNode(inlineAttr);
+
+                            var likedButton = document.createElement('button');
+                            var likedButtonClassAttr = document.createAttribute("class");
+                            var likedButtonIdAttr = document.createAttribute("id");
+                            likedButtonClassAttr.value = 'ml-3 btn btn-light bi-hand-thumbs-up-fill btn-sm rounded-pill liked-' + data.comments[i].id
+                            likedButtonIdAttr.value = data.comments[i].id
+                            likedButton.setAttributeNode(likedButtonClassAttr);
+                            likedButton.setAttributeNode(likedButtonIdAttr);
+                            likedButton.addEventListener('click', function(data) {
+                                console.log(data);
+                                handleCommentLike(data.target.id);
+                            });
+
+                            var likeCounter = document.createElement('small');
+                            var likeCounterClassAttr = document.createAttribute("class");
+                            likeCounterClassAttr.value = 'like-count-' + data.comments[i].id
+                            likeCounter.setAttributeNode(likeCounterClassAttr);
+
+                            inlineElement.appendChild(likedButton);
+                            inlineElement.appendChild(likeCounter);
+
+                            cardBody.appendChild(commentContent)
+                            cardBody.appendChild(inlineElement)
+
+                            newElement.appendChild(cardBody);
+                            $('.comments').append(newElement);
+                            $.ajax({
+                                url: "/service/author/{{author_id}}/view-post/{{post_id}}/comment/" + data.comments[i].id + "/likes/",
+                                type: "GET",
+                                dataType: 'json',
+                                success: function(data) {   
+                                    $(".like-count-" + data.id).text(data.likes);
+                                    if (data.author_liked) {
+                                        $(".liked-" + data.id).attr("style", "color: cornflowerblue;");;
+                                        $(".liked-" + data.id).attr("disabled", true)
+                                    } 
+                                }
+                            });
+                        } catch {
+                            null;
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupShare() {
+            let visibilitySelect = document.getElementById('selectVisibility');
+            let shareText = document.getElementById('shareText');
+            let unlistedSelect = document.getElementById('selectUnlisted');
+            sharePost(visibilitySelect.value, shareText.value, unlistedSelect.value);
+        }
+
+        function sharePost(visibility, shared_with="", unlisted="False") {
+            body = {
+                "title": "Shared post from " + postJson.author.displayName + ":\n" + postJson.title,
+                "description": postJson.description,
+                "categories": "",
+                "content": postJson.content,
+                "origin": postJson.origin,
+                "visibility": visibility,
+                "shared_with": shared_with,
+                "contentType": postJson.contentType,
+                "unlisted": unlisted
+            }
+            try {
+                for (var i of postJson.categories) {
+                    body["categories"] += i + " ";
+                }
+            } catch {
+                null;
+            }
+            $.ajax({
+                url: "/service/author/{{uuid}}/posts/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(body),
+                success: function(data) {
+                    window.location.replace('/home')
+                }
+            })
+        }
     </script>
     <!-- Allow user to edit post only if they are the author -->
     {% if uuid|stringformat:"s" == author_id|stringformat:"s" %}
@@ -282,16 +459,22 @@
                     view.removeAttr('hidden');
                 }
             }
+            $("#id_visibility").change(function(){
+                let shared_w = $("#sharing");
+                if ($("#id_visibility").val() == "PRIVATE_TO_AUTHOR"){
+                    shared_w.removeAttr('hidden');
+                } else {
+                    shared_w.attr('hidden', 'true');
+                }
+            });
             $("#id_contentType").change(function(){
+                let content = $("#div_id_content");
+                let img = $("#id_image");
                 if ($("#id_contentType").val() == "image/jpeg;base64" || $("#id_contentType").val() == "image/png;base64"){
-                    let content = $("#div_id_content");
                     content.parent().hide();
-                    let img = $("#id_image");
                     img.removeAttr('hidden');
                 } else {
-                    let content = $("#div_id_content");
                     content.parent().show();
-                    let img = $("#id_image");
                     img.attr('hidden', 'true');
                 }
             });

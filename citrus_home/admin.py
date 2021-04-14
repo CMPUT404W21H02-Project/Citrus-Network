@@ -38,6 +38,9 @@ class FriendAdmin(admin.ModelAdmin):
 class FollowerAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'followers_uuid',)
 
+#class FollowingAdmin(admin.ModelAdmin):
+    #list_display = ('uuid', 'following_uuid',)
+
 class NodeAdmin(admin.ModelAdmin):
     list_display = ('host', 'node_username', 'node_password',)
 
@@ -52,6 +55,8 @@ admin.site.register(CitrusAuthor, CitrusAuthorAdmin,)
 admin.site.register(Friend, FriendAdmin,)
 
 admin.site.register(Follower, FollowerAdmin,)
+
+#admin.site.register(Following, FollowingAdmin,)
 
 admin.site.register(Post, PostAdmin)
 

@@ -87,9 +87,9 @@
 
                         $("#card_parent") 
                         .append('<div class="card">'+
-                                '<a class="card-link" href="' + url + '"><div class="card-header" id = "card_header">' + 
+                                '<a class="card-link" href="' + url + '"><div class="card-header">' + 
                                 json.items[i].displayName+'</div></a>'+
-                                '<div class="card-body" id = "card_body">'+
+                                '<div class="card-body">'+
                                     '<button id = "'+user_id+'" onClick="removeFriend(this)">Remove Friend</button>'+
                                     '</div>'+
                                 '</div>'); 
@@ -97,66 +97,91 @@
                 }catch(err){
                     //if you have no friends to remove
                     $("#card_parent") 
-                    .append('<div class="card"><div class="card-header" id = "card_header">You Have No Friends!'+
-                            '</div><div class="card-body" id = "card_body"><br></div></div>');
+                    .append('<div class="card"><div class="card-header">You Have No Friends!'+
+                            '</div><div class="card-body"><br></div></div>');
                 }
             });
         }
 
-        /**function called when clicking on button "remove friend" removes both users from each others friends adn followers list**/
+        /**Function called when clicking on button "remove friend" removes both users from each others friends and followers list**/
         function removeFriend(button){
             var uuid = "{{uuid}}";
             
             if (friends_info_dict[button.id] == citrus_network_swag_host || friends_info_dict[button.id] == local_host){
-                var url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
-                remove(url)
-                var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
-                remove(inverse_url)
-                set_button_citrus(button)
+                //delete local author 1 from local authors 2's followers 
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/" // button.id is the author  the current user is now  follow back (making them friends)
+                remove(remove_from_local_url).done(function(json){
+                    console.log("response from our followers API")
+                    console.log(json)
+                    set_button_citrus(button)
+                })
 
+                //delete local author 2 from local author 1's followers
+                var inverse_url ="/service/author/" + button.id + "/followers/" + uuid + "/"
+                remove(inverse_url).done(function(json){
+                    console.log("response from our followers API")
+                    console.log(json)
+                    set_button_citrus(button)
+                })
+            
             }else if (friends_info_dict[button.id] == team_18_host){
-                
-                set_button_18(button)
+               
+                //Delete the remote author from our local authors followers table
+                //button id is the id of the user we are removing from our followers
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/"
+                remove(remove_from_local_url).done(function(json){
+                    console.log("response from our followers API")
+                    console.log(json)
+                    set_button_18(button)
+                })
+           
             }else if (friends_info_dict[button.id] == team_3_host){
-                
-                set_button_3(button)
+
+                //Delete the remote athor from our local authors followers table 
+                //button id is the id of the user we are removing from our followers
+                var remove_from_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/"
+                remove(remove_from_local_url).done(function(json){
+                    console.log("response from our followers API")
+                    console.log(json)
+                    set_button_3(button)
+                })
+
             }else{
-                console.log("following back host that doesnt exist")
+                console.log("Following back host that doesnt exist")
             }
             
         }
 
         function set_button_citrus(button){
-            //set elements after following back*/
+            //set elements after following back
             button.style.background = "transparent";
             button.style.color = "black";
             button.innerText = "you unfriended a citrus author!";
         }
 
         function set_button_18(button){
-            //set elements after following back*/
+            //set elements after following back
             button.style.background = "transparent";
             button.style.color = "black";
-            button.innerText = "you unfriended someone on team 18 (unfriended only on our server) !";
+            button.innerText = "you unfriended someone on team 18 !";
         }
 
         function set_button_3(button){
-            //set elements after following back*/
+            //set elements after following back
             button.style.background = "transparent";
             button.style.color = "black";
-            button.innerText = "you deleted someone on team 3! (unfriended only on our server)";
+            button.innerText = "you unfriended someone on team 3! ";
         }
         
         /**DELETE request remove a friend and follower - need more error handling**/
         function remove(url){
-            $.ajax({
+            return $.ajax({
                 url: url,
                 type: 'DELETE',
                 contentType: "application/json",
                 success: function(result) {
                     console.log(result)
-                }
-            })
+                }})
         }
 
     </script>

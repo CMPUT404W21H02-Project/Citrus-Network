@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <title>Citrus Network</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar-logged-in.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/citrus_home/following.css' %}">
+  </head>
+
+  <body>
+    {% include '../navbar-logged-in.html' %}
+    <div class="container"> 
+        <div class="row justify-content-center mt-1 mb-1">
+            <div class="col-md-10 col-sm-12 position-relative" id = "card_parent" >
+               <!--appending div elements here-->
+            </div>
+        </div>
+    </div>
+    
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous">
+    </script>
+
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+    </script>
+    
+
+    <script>
+        window.onload = getFollowingIds;
+        
+        function fetchJSON(url) {
+            var request = new Request(url)
+            return fetch(request).then((response) => {
+                //leah - add more status codes/return json response no matter what
+                if (response.status === 200 || response.status == 404) { 
+                    return response.json(); // return a Promise
+                } else {
+                    alert("Something went wrong: " + response.status);
+                }
+            });
+        }
+
+
+        /*** function to retrieve a list of people you may follow/ who have no accepted follow request**/
+        var following_info_dict = {}; 
+        var local_host = "http://127.0.0.1:8000/"                                //id = 9d662ec4-deed-44d0-be6a-c45a590eabbd
+        var citrus_network_swag_host = "http://citrusnetwork.herokuapp.com/"     //id = 9d662ec4-deed-44d0-be6a-c45a590eabbd
+        var team_18_host = "https://cmput-404-socialdistribution.herokuapp.com/" //id = https://cmput-404-socialdistribution.herokuapp.com/author/3a21bf7563da414abd5c47a7b3d8ea ..... team_18_alternate_id: authorId = 3a21bf7563da414abd5c47a7b3d8eae2
+        var team_3_host = "https://team3-socialdistribution.herokuapp.com/"      //id= 9d662ec4-deed-44d0-be6a-c45a590eabbd 
+    
+
+        /* function to get a list of people the user is following */
+        function getFollowing() {
+            var uuid = "{{uuid}}" 
+            var url = "/service/author/" + uuid + "/following/"
+            
+            fetchJSON(url).then((json) => { // another callback
+                var user_id;
+                console.log(json)
+                /* forsure wont need all this shit */ 
+                
+                try{
+                    for (var i = 0; i < json.items.length; i++) { 
+                        try{
+                            if ("host" in json.items[i]){
+                                console.log(json.items[i])
+                                if (json.items[i].host == citrus_network_swag_host || json.items[i].host == local_host){
+                                    following_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else if (json.items[i].host == team_18_host){
+                                    following_info_dict[json.items[i].authorID] = json.items[i].host
+                                    user_id = json.items[i].authorID
+                                }else if (json.items[i].host == team_3_host){
+                                    following_info_dict[json.items[i].id] = json.items[i].host
+                                    user_id = json.items[i].id
+                                }else{
+                                    console.log("host was neither team18, team3  or citrus")
+                                }
+                            }else{
+                                console.log("Host was not provided by someone")
+                            }
+                        }catch(err){
+                            console.log(err)
+                        }
+
+                        console.log(following_info_dict)
+
+                        $("#card_parent") 
+                            .append('<div class="card">'+
+                                    '<a class="card-link" href="' + url + '"><div class="card-header">' + 
+                                    json.items[i].displayName+'</div></a>'+
+                                    '<div class="card-body">'+
+                                    '<p id = "'+user_id+'">Already Following</p></div>'+
+                                    '</div>'); 
+                        
+                    } 
+                }catch(err){
+                        //if no one is requesting to be users friend
+                        $("#card_parent") 
+                        .append('<div class="card"><div class="card-header">Following API not setup!'+
+                                '</div><div class="card-body"><br></div></div>');
+                }
+            });
+        }
+
+
+    </script>
+  </body>
+</html>

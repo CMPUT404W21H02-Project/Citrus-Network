@@ -18,7 +18,7 @@
     <div class="container">
         <div class="row justify-content-end">
             <div class="col-sm-1 align-self-end">
-                <div class="btn btn-danger mr-5 mt-5" id="edit-btn" onclick="swapProfileMode()">Edit</div>
+                <button class="btn btn-danger mr-5 mt-5" id="edit-btn" onclick="swapProfileMode()">Edit</button>
             </div>
         </div>
         <div class="row justify-content-center">
@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <div class = "card mt-5 mb-5" id="edit-profile" hidden="true">
+                <div class = "card mt-5 mb-5" id="edit-profile" hidden>
                     <div class="card-header">
                         <h3 class="ml-1 mt-1">Edit Profile</h3>
                     </div>
@@ -77,10 +77,10 @@
                                     <em class="icon-lime"></em>
                                     Edit
                                 </button>
-                                <div class="btn btn-danger ml-1" type="button" onclick="swapProfileMode()">
+                                <button class="btn btn-danger ml-1" type="button" onclick="swapProfileMode()">
                                     <em class="icon-pineapple"></em>
                                     Back
-                                </div>
+                                </button>
                             </div>
                         </form>
                     </div>
