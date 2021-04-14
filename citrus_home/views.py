@@ -2502,7 +2502,7 @@ def handleStream(request):
                         "comments": comments_arr, 
                         "published": post.published,
                         "visibility": post.visibility,
-                        "unlisted": "false"
+                        "unlisted": post.unlisted
                     }
                     json_posts.append(return_data)
                 
