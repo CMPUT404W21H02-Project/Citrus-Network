@@ -2732,6 +2732,8 @@ def handle_inbox(request, author_id):
                 try:
                     if "commentID" not in body:
                         body["commentID"] = ""
+                    else:
+                        body["postID"] = ""
                     Like.objects.create(author=body["author"]["authorID"], post_id=body["postID"], comment_id=body["commentID"]).save()
                 except:
                     None
