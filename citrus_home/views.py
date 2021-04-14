@@ -2176,6 +2176,12 @@ def manage_post(request, id, **kwargs):
             "visibility": body['visibility'],
             "unlisted": post.unlisted
             }
+
+            team_18_post = {
+                "type": "post",
+                "postID": str(pid),
+                "authorID": str(id)
+            }
             # find the id of all friends and store in list
             friends = Friend.objects.get(uuid=author)
             # all friends of author (in our database)
@@ -2191,7 +2197,7 @@ def manage_post(request, id, **kwargs):
                 if author_id in friends_arr:
                     friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
-                requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
