@@ -157,6 +157,13 @@
                     console.log(json);
                     set_button_citrus(button)
                 });
+
+                var follower_local_url = "/service/author/" + uuid + "/followers/" + button.id + "/"
+                AddFollowerBack(follower_local_url).done(function(json) {
+                    console.log("RESPONSE FROM PUT TO followers API")
+                    console.log(json);
+                    set_button_citrus(button)
+                });
                 
 
             } else if (follower_info_dict[button.id] == team_18_host){
