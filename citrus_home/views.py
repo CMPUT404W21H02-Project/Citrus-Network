@@ -1579,6 +1579,7 @@ def make_post_redirect(request):
             categories = str(request.POST['categories'])
             visibility = str(request.POST['visibility'])
             shared_with = str(request.POST['shared_with'])
+            unlisted = str(request.POST['unlisted'])
             post = Post.objects.create(id=post_id, 
                                     title=title, 
                                     description=description, 
@@ -1589,6 +1590,7 @@ def make_post_redirect(request):
                                     origin=str(request.headers['Origin']), 
                                     source=str(request.headers['Origin']), 
                                     visibility=visibility, 
+                                    unlisted=unlisted,
                                     shared_with=shared_with)
             return redirect(home_redirect)
         else:
@@ -1625,7 +1627,7 @@ def get_author_post(request, author_id, post_id):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted,
                 }
             return JsonResponse(return_data, status=200)
         except ObjectDoesNotExist:
@@ -1748,7 +1750,8 @@ def handle_remote_post_likes(request, author_id, post_id):
                         author_likes = False
                         for like in req:
                             like_count += 1
-
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes=True
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     elif request.method == 'POST':
         try:
@@ -1796,11 +1799,21 @@ def handle_remote_post_likes(request, author_id, post_id):
                     req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         # Not yet implemented
+                        body = {
+                            "type": "like",
+                            "author": convertAuthorObj(current_author),
+                            "summary": str(current_author.displayName) + " likes your post",
+                            "object": "https://team3-socialdistribution.herokuapp.com/author/" + str(author_id) + "/posts/" + str(post_id),
+                            "postID": str(post_id),
+                        }
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/inbox', json=body, auth=(node.node_username, node.node_password))
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/likes', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
                         author_likes = False
                         for like in req:
                             like_count += 1
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes=True
 
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     
@@ -1844,7 +1857,15 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
+
     elif request.method == 'POST':
         try:
             author = CitrusAuthor.objects.get(id=author_id)
@@ -1891,7 +1912,23 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        None
+                        body = {
+                            "type": "like",
+                            "author": convertAuthorObj(current_author),
+                            "summary": str(current_author.displayName) + " likes your post",
+                            "object": "https://team3-socialdistribution.herokuapp.com/author/" + str(author_id) + "/posts/" + str(post_id) + '/comments/' + str(comment_id),
+                            "postID": str(post_id),
+                            "commentID": str(comment_id)
+                        }
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/inbox', json=body, auth=(node.node_username, node.node_password))
+                        req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
+                        like_count = 0
+                        author_likes = False
+                        for like in req:
+                            if like["author"]["id"] == str(current_author.id):
+                                author_likes = True
+                            like_count += 1
+                        return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
 
     
 
@@ -1942,6 +1979,7 @@ def post_redirect(request, author_id, post_id):
                 post.contentType = str(request.POST['contentType'])
                 post.categories = str(request.POST['categories'])
                 post.visibility = str(request.POST['visibility'])
+                post.unlisted = str(request.POST['unlisted'])
                 post.shared_with = str(request.POST['shared_with'])
                 post.save()
 
@@ -2018,7 +2056,8 @@ def manage_post(request, id, **kwargs):
                                 origin=body['origin'],
                                 source=body['origin'],
                                 visibility=body['visibility'],
-                                shared_with=body['shared_with'])
+                                shared_with=body['shared_with'],
+                                unlisted=body['unlisted'])
         shared_post = {
             "id": str(post.id),
             "type": "post",
@@ -2066,7 +2105,7 @@ def manage_post(request, id, **kwargs):
             for author_id in team18_friends:
                 friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
-                requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
@@ -2080,15 +2119,15 @@ def manage_post(request, id, **kwargs):
                 # check on citrus network
                 if CitrusAuthor.objects.filter(id=id).exists():
                     print("here")
-                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
                     requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                 else:
-                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
-                    response = requests.get(url)
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                    response = requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                     if response.status_code == 200:
                         # send to team 18 inbox
-                        url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
-                        requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                        requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                           
 
             
@@ -2133,6 +2172,7 @@ def manage_post(request, id, **kwargs):
             post.contentType = body['contentType']
             post.visibility = body['visibility']
             post.shared_with = body['shared_with']
+            post.unlisted = body['unlisted']
             post.save()
             return returnJsonResponse(specific_message="post updated", status_code=200)
         else:
@@ -2166,7 +2206,7 @@ def manage_post(request, id, **kwargs):
                 "comments": comments_arr, 
                 "published": posts.published,
                 "visibility": posts.visibility,
-                "unlisted": "false"
+                "unlisted": posts.unlisted,
             }
             return JsonResponse(return_data, status=200)
         # return all posts of the author ordered by most recent posts
@@ -2174,7 +2214,7 @@ def manage_post(request, id, **kwargs):
             # return all posts of the given user
             author = CitrusAuthor.objects.get(id=id)
             visibility_list = ['PUBLIC']
-            posts = Post.objects.filter(author=author,visibility__in=visibility_list).order_by('-published')
+            posts = Post.objects.filter(author=author, unlisted=False, visibility__in=visibility_list).order_by('-published')
             json_posts = []
             for post in posts:
                 author = post.author
@@ -2198,7 +2238,7 @@ def manage_post(request, id, **kwargs):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted,
                 }
                 json_posts.append(return_data)
 
@@ -2293,7 +2333,7 @@ def convertAuthorObj(author):
             "id": author.id,
             "host": author.host,
             "displayName": author.displayName,
-            "url": "somerandomUrl for now",
+            "url": author.url,
             "github": author.github
         }
         return author_data
@@ -2442,7 +2482,7 @@ def handleStream(request):
                         "comments": comments_arr, 
                         "published": post.published,
                         "visibility": post.visibility,
-                        "unlisted": "false"
+                        "unlisted": post.unlisted,
                     }
                     json_posts.append(return_data)
                 
@@ -2728,10 +2768,10 @@ def browse_posts(request):
         try:
             search_paramaters = request.GET.get('q').split()
             # Post: https://stackoverflow.com/a/4824810 Author: https://stackoverflow.com/users/20862/ignacio-vazquez-abrams referenced: 24/03/2021
-            public_posts = Post.objects.filter(visibility='PUBLIC').filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
+            public_posts = Post.objects.filter(visibility='PUBLIC', unlisted=False).filter(reduce(operator.or_, (Q(title__contains=x)for x in search_paramaters))).order_by("-published")
         except:
             print("here")
-            public_posts = Post.objects.filter(visibility='PUBLIC').order_by('-published')
+            public_posts = Post.objects.filter(visibility='PUBLIC', unlisted=False).order_by('-published')
         json_posts = []
         for post in public_posts:
             author = post.author

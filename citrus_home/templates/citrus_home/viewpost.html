@@ -52,6 +52,11 @@
                                         </div>
                                         <div class="row justify-content-center mt-3">
                                             <div class="col-md-12 col-sm-12 col-10">
+                                                {{form.unlisted|as_crispy_field}}
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center mt-3">
+                                            <div class="col-md-12 col-sm-12 col-10">
                                                 {{form.description|as_crispy_field}}
                                             </div>
                                         </div>
@@ -125,8 +130,8 @@
                                 <input type="text" class="form-control" id="shareText" disabled>
                                 <br>
                                <select class="form-select" id="selectUnlisted">
-                                    <option value="False" selected>Listed in your public posts</option>
-                                    <option value="True">Not listed in your public posts</option>
+                                    <option value="False" selected>Listed</option>
+                                    <option value="True">Unlisted</option>
                                 </select>
                             </div>
                             <div class="modal-footer">
