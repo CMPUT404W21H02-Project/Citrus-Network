@@ -1592,6 +1592,90 @@ def make_post_redirect(request):
                                     visibility=visibility, 
                                     unlisted=unlisted,
                                     shared_with=shared_with)
+
+            
+            categories = post.categories.split()
+            shared_post = {
+            "id": str(post.id),
+            "type": "post",
+            "title": post.title,
+            "source": post.source,
+            "origin": post.origin,
+            "description": post.description,
+            "contentType": post.contentType,
+            "content": post.content,
+            "author": convertAuthorObj(author),
+            "categories": categories,
+            "comments": [],
+            "published": str(post.published),
+            "visibility": post.visibility,
+            "unlisted": post.unlisted
+            }
+
+            if post.visibility == 'PRIVATE_TO_FRIENDS':
+                # create post body
+                team_18_post = {
+                    "type": "post",
+                    "postID": str(post_id),
+                    "authorID": str(user_uuid)
+                }
+                # find the id of all friends and store in list
+                friends = Friend.objects.get(uuid=author)
+                # all friends of author (in our database)
+                friends_arr = friends.friends_uuid.split()
+                for i in friends_arr:
+                    print("friends_arr id: ",i, type(i))
+                team18_friends = get_team18_friends(user_uuid, "https://cmput-404-socialdistribution.herokuapp.com/")
+                
+                for item in team18_friends:
+                    print(item, type(item))
+                # loop through list and make call to inbox function
+                for author_id in team18_friends:
+                    if author_id in friends_arr:
+                        friends_arr.remove(author_id)
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
+                    requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+
+                for author_id in friends_arr:
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
+                    requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+            
+            elif post.visibility == 'PRIVATE_TO_AUTHOR':
+                # get list of author id's
+                author_ids = (post.shared_with.split())
+                # figure out which server each user is on and send to their inbox
+                team_18_post = {
+                    "type": "post",
+                    "postID": str(post_id),
+                    "authorID": str(user_uuid)
+                }
+                for id in author_ids:
+                    # check on citrus network
+                    if CitrusAuthor.objects.filter(id=id).exists():
+                        print("here")
+                        url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
+                        requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    else:
+                        # check to see if the node for team 18 has been added to our server
+                        if Node.objects.filter(host="https://cmput-404-socialdistribution.herokuapp.com/").exists():
+                            # check if user exists on team 18's server
+                            url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/"
+                            response = requests.get(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            if response.status_code == 200:
+                                # send to team 18 inbox
+                                url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                                requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        
+                        # check to see if the node for team 3 has been added to our server
+                        if Node.objects.filter(host="https://team3-socialdistribution.herokuapp.com/").exists():
+                            url = f"https://team3-socialdistribution.herokuapp.com/author/{id}"
+                            response = requests.get(url,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            if response.status_code == 200:
+                                print("user exists!")
+                                url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox/"
+                                requests.post(url,json=shared_post,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                                print(response.status_code)
+                                
             return redirect(home_redirect)
         else:
             data = form.errors.as_json()
@@ -2092,6 +2176,12 @@ def manage_post(request, id, **kwargs):
             "visibility": body['visibility'],
             "unlisted": post.unlisted
             }
+
+            team_18_post = {
+                "type": "post",
+                "postID": str(pid),
+                "authorID": str(id)
+            }
             # find the id of all friends and store in list
             friends = Friend.objects.get(uuid=author)
             # all friends of author (in our database)
@@ -2107,7 +2197,7 @@ def manage_post(request, id, **kwargs):
                 if author_id in friends_arr:
                     friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
-                requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
