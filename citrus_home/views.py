@@ -1579,6 +1579,7 @@ def make_post_redirect(request):
             categories = str(request.POST['categories'])
             visibility = str(request.POST['visibility'])
             shared_with = str(request.POST['shared_with'])
+            unlisted = str(request.POST['unlisted'])
             post = Post.objects.create(id=post_id, 
                                     title=title, 
                                     description=description, 
@@ -1589,6 +1590,7 @@ def make_post_redirect(request):
                                     origin=str(request.headers['Origin']), 
                                     source=str(request.headers['Origin']), 
                                     visibility=visibility, 
+                                    unlisted=unlisted,
                                     shared_with=shared_with)
             return redirect(home_redirect)
         else:
@@ -1625,7 +1627,7 @@ def get_author_post(request, author_id, post_id):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted,
                 }
             return JsonResponse(return_data, status=200)
         except ObjectDoesNotExist:
@@ -1942,6 +1944,7 @@ def post_redirect(request, author_id, post_id):
                 post.contentType = str(request.POST['contentType'])
                 post.categories = str(request.POST['categories'])
                 post.visibility = str(request.POST['visibility'])
+                post.unlisted = str(request.POST['unlisted'])
                 post.shared_with = str(request.POST['shared_with'])
                 post.save()
 
@@ -2166,7 +2169,7 @@ def manage_post(request, id, **kwargs):
                 "comments": comments_arr, 
                 "published": posts.published,
                 "visibility": posts.visibility,
-                "unlisted": "false"
+                "unlisted": posts.unlisted,
             }
             return JsonResponse(return_data, status=200)
         # return all posts of the author ordered by most recent posts
@@ -2198,7 +2201,7 @@ def manage_post(request, id, **kwargs):
                     "comments": comments_arr, 
                     "published": post.published,
                     "visibility": post.visibility,
-                    "unlisted": "false"
+                    "unlisted": post.unlisted,
                 }
                 json_posts.append(return_data)
 
@@ -2442,7 +2445,7 @@ def handleStream(request):
                         "comments": comments_arr, 
                         "published": post.published,
                         "visibility": post.visibility,
-                        "unlisted": "false"
+                        "unlisted": post.unlisted,
                     }
                     json_posts.append(return_data)
                 
