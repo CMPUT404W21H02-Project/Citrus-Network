@@ -2736,6 +2736,12 @@ def handle_inbox(request, author_id):
                 except:
                     None
 
+            elif "post" in body['type'].lower() and "postID" in body and "authorID" in body:
+                body['id'] = body['postID']
+                body['author']['id'] = body['authorID']
+
+
+
                      
             inbox = Inbox.objects.get(author=author)
             items = json.loads(inbox.items)
