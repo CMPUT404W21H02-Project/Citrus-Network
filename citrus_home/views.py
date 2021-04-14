@@ -1855,7 +1855,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
@@ -1910,7 +1910,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         body = {
                             "type": "like",
