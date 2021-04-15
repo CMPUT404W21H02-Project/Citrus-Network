@@ -18,3 +18,8 @@ References:
 ========================
 These are references of all external source code in our code:
 * All of our references to external source code can be found here [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
+
+Assumptions:
+========================
+These are are assumptions made about the user stories/specification:
+* All of our assumptions made about the user stories/specification [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
