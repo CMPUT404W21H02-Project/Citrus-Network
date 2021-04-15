@@ -1675,7 +1675,7 @@ def make_post_redirect(request):
                             response = requests.get(url,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                             if response.status_code == 200:
                                 print("user exists!")
-                                url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox/"
+                                url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox"
                                 requests.post(url,json=shared_post,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                                 print(response.status_code)
                                 
@@ -2241,7 +2241,7 @@ def manage_post(request, id, **kwargs):
                         response = requests.get(url,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                         if response.status_code == 200:
                             print("user exists!")
-                            url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox/"
+                            url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox"
                             requests.post(url,json=shared_post,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                             print(response.status_code)
                           
