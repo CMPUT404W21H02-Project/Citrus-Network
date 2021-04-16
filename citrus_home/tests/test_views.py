@@ -492,7 +492,7 @@ class TestAuthenticateNode(TestCase):
         response = c.get(reverse("manage_comment", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
         self.assertEqual(response.status_code, 200)
 
-    def test_authenticated_post_author_post_like(self):
+    def test_authenticated_post_author_comment(self):
         c = Client()
         request_body = {
             'comment': 'Hello World!'
