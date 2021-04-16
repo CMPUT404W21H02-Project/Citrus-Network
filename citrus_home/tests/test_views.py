@@ -578,7 +578,7 @@ class TestAuthenticateNode(TestCase):
         response = c.get(reverse("manage_comment", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
         self.assertEqual(response.status_code, 200)
 
-    def test_authenticated_post_author_post_like(self):
+    def test_authenticated_post_author_comment(self):
         c = Client()
         request_body = {
             'comment': 'Hello World!'
@@ -589,6 +589,22 @@ class TestAuthenticateNode(TestCase):
         }
         response = c.post(reverse("manage_comment", kwargs=kwargs), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
         self.assertEqual(response.status_code, 200)
+    
+    def test_authenticated_get_author_followers(self):
+        c = Client()
+        kwargs = {
+            "author_id": self.nervousTestMan.id
+        }
+        response = c.get(reverse("followers", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 404)
+
+    def test_authenticated_get_author_friends(self):
+        c = Client()
+        kwargs = {
+            "author_id": self.nervousTestMan.id
+        }
+        response = c.get(reverse("get_friends", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 404)
 
 
     def tearDown(self):
