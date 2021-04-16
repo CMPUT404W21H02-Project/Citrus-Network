@@ -319,7 +319,7 @@ class TestViews(TestCase):
     '''
         Make a new post
     '''
-    def test_make_post(self):
+    def test_make_post_GET(self):
         response = self.c.get(reverse('make_post_url'))
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'citrus_home/makepost.html')
