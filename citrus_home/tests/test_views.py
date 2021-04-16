@@ -484,21 +484,24 @@ class TestAuthenticateNode(TestCase):
     def setUp(self):
         self.host_username = "bcd"
         self.host_password = "bcd"
-        self.testNode = Node.objects.create(host="https://www.testdomain.com", node_username="bcd",node_password="bcd",host_username=self.host_username,host_password=self.host_password,public_posts="1",author_link="1")
+        self.testNode = Node.objects.create(host="https://www.testdomain.com/", node_username="bcd",node_password="bcd",host_username=self.host_username,host_password=self.host_password,public_posts="1",author_link="1")
         self.testNode.save()
     
     def test_unauthenticated_node(self):
         c = Client()
         response = c.get(reverse("authors"))
         self.assertEqual(response.status_code, 401)
-    
 
 
-    # def test_authenticated_node(self):
-    #     c = Client()
-    #     response = c.get(reverse("authors"), HTTP_REFERER = "https://www.testdomain.com", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
-    #     # response = c.get(reverse("authors"), HTTP_HOST='https://www.testdomain.com', auth=("abc", "abc"))
-    #     self.assertEqual(response.status_code, 200)
+    def test_authenticated_node_get_authors(self):
+        c = Client()
+        response = c.get(reverse("authors"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_node_get_posts(self):
+        c = Client()
+        response = c.get(reverse("public_posts"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
 
     def tearDown(self):
         self.testNode.delete()
