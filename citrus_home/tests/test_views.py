@@ -8,16 +8,52 @@ import json, uuid
 class TestViews(TestCase):
     def setUp(self):
         self.mockuuid = str(uuid.uuid4())
-        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc')
-        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id= self.mockuuid, user=user,displayName="nervousMan")
+        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc', is_active=True)
+        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id= self.mockuuid, user=user,displayName="nervousMan",github="https://github.com/1")
         self.nervousTestMan.save()
+
+        self.mockuuid2 = str(uuid.uuid4())
+        user2 = User.objects.create_user('test2', 'man2@nervous.com', '2abc@=1234abc', is_active=True)
+        self.nervousTestMan2 = CitrusAuthor.objects.create(type="Author",id= self.mockuuid2, user=user2,displayName="nervousMan2",github="https://github.com/2")
+        self.nervousTestMan2.save()
+
+        self.mockuuid3 = str(uuid.uuid4())
+        user3 = User.objects.create_user('test3', 'man3@nervous.com', '3abc@=1234abc', is_active=True)
+        self.nervousTestMan3 = CitrusAuthor.objects.create(type="Author",id= self.mockuuid3, user=user3,displayName="nervousMan3")
+        self.nervousTestMan3.save()
+
+        self.new_follower_object = Follower(uuid = self.nervousTestMan,followers_uuid= self.mockuuid2)
+        self.new_follower_object.save()
+
+        self.nodeTeam3 = Node.objects.create(
+            host="https://cmput-404-socialdistribution.herokuapp.com/",
+            node_username = "socialdistribution_t18",
+            node_password = "c404t18",
+            host_username = "CitrusNetwork",
+            host_password = "oranges",
+            public_posts = "1",
+            author_link = "1"
+        )
+        self.nodeTeam3.save()
+
+        self.nodeTeam18 = Node.objects.create(
+            host="https://team3-socialdistribution.herokuapp.com/",
+            node_username = "team3",
+            node_password = "cmput404",
+            host_username = "CitrusNetwork",
+            host_password = "oranges",
+            public_posts = "1",
+            author_link = "1"
+        )
+        self.nodeTeam18.save()
+
         self.c = Client()
         self.client_object = self.c.login(username="test", password="abc@=1234abc")
 
-    # def test_home_redirect_GET(self):
-    #     response = self.c.get(reverse('home_url'))
-    #     self.assertEquals(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'citrus_home/stream.html')
+    def test_home_redirect_GET(self):
+        response = self.c.get(reverse('home_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/stream.html')
     
     # def test_view_post_redirect_GET(self):
     #     test_uuid = str(uuid.uuid4())
@@ -25,21 +61,37 @@ class TestViews(TestCase):
     #     self.assertEquals(response.status_code, 200)
     #     self.assertTemplateUsed(response, 'citrus_home/viewpost.html')
     
-    # def test_render_profile_new_POST(self):
-    #     request_body = {
-    #         'username': 'test1',
-    #         'displayName': 'nervousManTest',
-    #         'github': 'https://github.com/'
-    #     }
-    #     response = self.c.post(reverse('profile'), request_body)
-    #     self.assertEquals(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'citrus_home/profile.html')
+    '''
+        Tests Profile Activities
+    '''
+    def test_render_profile_new_POST(self):
+        request_body = {
+            'username': 'test1',
+            'displayName': 'nervousManTest',
+            'github': 'https://github.com/'
+        }
+        response = self.c.post(reverse('render_profile'), request_body)
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/profile.html')
     
-    # def test_render_profile(self):
-    #     response = self.c.get(reverse('profile'))
-    #     self.assertEquals(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'citrus_home/profile.html')
+    def test_render_profile(self):
+        response = self.c.get(reverse('render_profile'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/profile.html')
     
+    def test_render_author_profile_GET(self):
+        response = self.c.get(reverse('render_author_profile', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 302)
+    
+    def test_render_author_profile_GET_different_author(self):
+        response = self.c.get(reverse('render_author_profile', args=[self.mockuuid2]))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/viewprofile.html')
+    
+    def test_get_authors_public_posts(self):
+        response = self.c.get(reverse('get_authors_posts', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+
     def test_manage_profile_GET(self):
         response = self.c.get(reverse('profile_api', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 200)
@@ -62,8 +114,11 @@ class TestViews(TestCase):
         response = self.c.put(reverse('profile_api', args=[self.mockuuid]), request_body)
         self.assertEquals(response.status_code, 405)
     
+    '''
+        Tests GitHub activity
+    '''
     def test_github_events_wrong_url_GET(self):
-        response = self.c.get(reverse('github', args=[self.mockuuid]))
+        response = self.c.get(reverse('github', args=[self.mockuuid3]))
         self.assertEquals(response.status_code, 404)
     
     def test_github_events_GET(self):
@@ -77,71 +132,203 @@ class TestViews(TestCase):
         response = self.c.get(reverse('github', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 200)
     
-    #TODO test GET get_not_followers
-    # def test_get_not_followers_GET(self):
+    '''
+        Tests Get all Authors
+    '''
+    def test_get_authors(self):
+        response = self.c.get(reverse('authors'))
+        self.assertEquals(response.status_code, 200)
+    
+    def test_get_authors_method_NOT_ALLOWED(self):
+        response = self.c.post(reverse('authors'))
+        self.assertEquals(response.status_code, 405)
+    
+    '''
+        Tests Not Followers
+    '''
+    def test_get_not_followers_GET(self):
+        response = self.c.get(reverse('not_followers', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
 
     def test_get_not_followers_OTHER(self):
         response = self.c.put(reverse('not_followers', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 405)
     
-    def test_get_followers_none_GET(self):
+    '''
+        Tests Followers
+    '''
+    def test_get_followers_none_GET_exists(self):
         response = self.c.get(reverse('followers', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+    
+    def test_get_followers_none_GET(self):
+        response = self.c.get(reverse('followers', args=[self.mockuuid2]))
         self.assertEquals(response.status_code, 404)
 
     def test_get_followers_OTHER(self):
         response = self.c.put(reverse('followers', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 405)
     
-
+    def test_followers_page(self):
+        response = self.c.put(reverse('followers_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/followers.html')
+    
+    '''
+        Tests Edit Followers
+    '''
     def test_edit_followers_none_same(self):
         response = self.c.put(reverse('edit_followers', args=[self.mockuuid, self.mockuuid]))
         self.assertEquals(response.status_code, 400)
+    
+    def test_edit_followers_none_DELETE_author_does_not_exist(self):
+        test_uuid = str(uuid.uuid4())
+        test_uuid2 = str(uuid.uuid4())
+        response = self.c.delete(reverse('edit_followers', args=[test_uuid2, test_uuid]))
+        self.assertEquals(response.status_code, 404)
 
-    def test_edit_followers_none_DELETE(self):
+    def test_edit_followers_none_DELETE_none_existing_user(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.delete(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 304)
     
+    def test_edit_followers_none_DELETE(self):
+        response = self.c.delete(reverse('edit_followers', args=[self.mockuuid, self.mockuuid2]))
+        self.assertEquals(response.status_code, 200)
+    
+    def test_edit_followers_none_PUT_does_not_exist(self):
+        test_uuid = str(uuid.uuid4())
+        test_uuid2 = str(uuid.uuid4())
+        response = self.c.put(reverse('edit_followers', args=[test_uuid2, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+
     def test_edit_followers_none_PUT(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.put(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 404)
     
-    def test_edit_followers_none_GET(self):
+    def test_edit_followers_PUT(self):
+        response = self.c.put(reverse('edit_followers', args=[self.mockuuid, self.mockuuid3]))
+        self.assertEquals(response.status_code, 200)
+        response = self.c.put(reverse('edit_followers', args=[self.mockuuid3, self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+    
+    def test_edit_followers_PUT_already_follower(self):
+        response = self.c.put(reverse('edit_followers', args=[self.mockuuid, self.mockuuid2]))
+        self.assertEquals(response.status_code, 304)
+    
+    def test_edit_followers_GET_not_a_follower(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.get(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 404)
     
-    def test_edit_followers_none_OTHER(self):
+    def test_edit_followers_GET_follower_match(self):
+        response = self.c.get(reverse('edit_followers', args=[self.mockuuid, self.mockuuid2]))
+        self.assertEquals(response.status_code, 200)
+    
+    def test_edit_followers_GET_author_has_no_followers(self):
+        response = self.c.get(reverse('edit_followers', args=[self.mockuuid3, self.mockuuid2]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_followers_OTHER_method_not_allowed(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.post(reverse('edit_followers', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 405)
     
-    def test_get_friends_empty_GET(self):
+    '''
+        Tests Friends
+    '''
+    def test_get_friends_GET(self):
+        self.new_friend_object = Friend(uuid=self.nervousTestMan,friends_uuid=self.mockuuid2)
+        self.new_friend_object.save()
+        response = self.c.get(reverse('get_friends', args=[self.mockuuid]))
+        self.assertEquals(response.status_code, 200)
+        self.new_friend_object.delete()
+
+    def test_get_friends_GET_empty(self):
         response = self.c.get(reverse('get_friends', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 404)
+    
+    def test_get_friends_GET_incorrect_id(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.get(reverse('get_friends', args=[test_uuid]))
+        self.assertEquals(response.status_code, 404)
 
-    def test_get_friends_OTHER(self):
+    def test_get_friends_OTHER_not_allowed(self):
         response = self.c.delete(reverse('get_friends', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 405)
     
-
-    def test_edit_friends_none_same(self):
-        response = self.c.put(reverse('edit_friends', args=[self.mockuuid, self.mockuuid]))
-        self.assertEquals(response.status_code, 400)
-
-    def test_edit_friends_none_GET(self):
+    '''
+        Tests Edit Friends
+        self.new_friend_object = Friend(uuid=self.nervousTestMan,friends_uuid=self.mockuuid2)
+        self.new_friend_object.save()
+    '''
+    def test_edit_friends_GET_no_friends(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.get(reverse('edit_friends', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 404)
+    
+    def test_edit_friends_GET_friends(self):
+        self.new_friend_object = Friend(uuid=self.nervousTestMan,friends_uuid=self.mockuuid2)
+        self.new_friend_object.save()
+        response = self.c.get(reverse('edit_friends', args=[self.mockuuid, self.mockuuid2]))
+        self.assertEquals(response.status_code, 200)
+        self.new_friend_object.delete()
+    
+    def test_edit_friends_GET_not_friends(self):
+        response = self.c.get(reverse('edit_friends', args=[self.mockuuid, self.mockuuid3]))
+        self.assertEquals(response.status_code, 404)
+
+    def test_edit_friends_same_id(self):
+        response = self.c.put(reverse('edit_friends', args=[self.mockuuid, self.mockuuid]))
+        self.assertEquals(response.status_code, 400)
+    
+    def test_edit_friends_id_does_not_exist(self):
+        test_uuid = str(uuid.uuid4())
+        test_uuid2 = str(uuid.uuid4())
+        response = self.c.put(reverse('edit_friends', args=[test_uuid2, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+
+    def test_edit_friends_friend_does_not_exist(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.put(reverse('edit_friends', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 404)
+    
+    def test_edit_friends_local_citrus_author(self):
+        response = self.c.put(reverse('edit_friends', args=[self.mockuuid, self.mockuuid3]))
+        self.assertEquals(response.status_code, 405)
     
     def test_edit_friends_none_OTHER(self):
         test_uuid = str(uuid.uuid4())
         response = self.c.post(reverse('edit_friends', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 405)
+    
+    '''
+        Tests Friend Pages
+    '''
+    def test_render_friends_page(self):
+        response = self.c.get(reverse('friends_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/friends.html')
+    
+    def test_render_find_friends_page(self):
+        response = self.c.get(reverse('findfriends_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/findfriends.html')
+    
+    '''
+        Make a new post
+    '''
+    def test_make_post(self):
+        response = self.c.get(reverse('make_post_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/makepost.html')
 
     def tearDown(self):
         self.nervousTestMan.delete()
+        self.nervousTestMan2.delete()
+        self.nervousTestMan3.delete()
+        self.new_follower_object.delete()
 
 class TestViewsAuthentication(TestCase):
     def setUp(self):
@@ -150,57 +337,62 @@ class TestViewsAuthentication(TestCase):
         self.nervousTestMan.save()
         self.c = Client()
     
-    # def test_login_POST(self):
-    #     self.client_object = self.c.login(username="test", password="abc@=1234abc")
-    #     request_body = {
-    #         'username': 'test',
-    #         'password': 'abc@=1234abc'
-    #     }
-    #     response = self.c.post(reverse('login_url'), request_body)
-    #     self.assertRedirects(response, expected_url=reverse('home_url'), status_code=302, target_status_code=200)
+    def test_login_POST(self):
+        self.client_object = self.c.login(username="test", password="abc@=1234abc")
+        request_body = {
+            'username': 'test',
+            'password': 'abc@=1234abc'
+        }
+        response = self.c.post(reverse('login_url'), request_body)
+        self.assertRedirects(response, expected_url=reverse('home_url'), status_code=302, target_status_code=200)
     
-    # TODO
-    # def test_login_not_authenticated(self):
-    #     self.client_object = self.c.login(username="test", password="abc@=1234abc")
-    #     request_body = {
-    #         'username': '',
-    #         'password': ''
-    #     }
-    #     response = self.c.post(reverse('login_url'), request_body)
-    #     self.assertEquals(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'citrus_home/login.html')
+    def test_login_not_authenticated(self):
+        self.client_object = self.c.login(username="test", password="abc@=1234abc")
+        request_body = {
+            'username': '',
+            'password': ''
+        }
+        response = self.c.post(reverse('login_url'), request_body)
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/login.html')
     
-    # TODO
-    # def test_login_user_still_logged_in(self):
-    #     self.client_object = self.c.login(username="test", password="abc@=1234abc")
-    #     response = self.c.get(reverse('login_url'))
-    #     self.assertRedirects(response, expected_url=reverse('home_url'), status_code=302, target_status_code=200)
+    def test_login_user_still_logged_in(self):
+        self.client_object = self.c.login(username="test", password="abc@=1234abc")
+        response = self.c.get(reverse('login_url'))
+        self.assertRedirects(response, expected_url=reverse('home_url'), status_code=302, target_status_code=200)
     
-    # TODO
-    # def test_login_user_not_authenticated(self):
-    #     response = self.c.get(reverse('login_url'))
-    #     self.assertEquals(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'citrus_home/login.html')
+    def test_login_user_not_authenticated(self):
+        response = self.c.get(reverse('login_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/login.html')
 
-    # TODO    
-    # def test_logout(self):
-    #     response = self.c.get(reverse('logout_url'))
-    #     self.assertRedirects(response, expected_url=reverse('login_url'), status_code=302, target_status_code=200)
+    def test_logout(self):
+        response = self.c.get(reverse('logout_url'))
+        self.assertRedirects(response, expected_url=reverse('login_url'), status_code=302, target_status_code=200)
         
     def tearDown(self):
         self.nervousTestMan.delete()
 
-#     #TODO FIX
-# class TestViewsRegistration(TestCase):
-#     def test_register_POST(self):
-#         request_body = {
-#             'username': 'test1',
-#             'password': 'abc@=1234abc'
-#         }
-#         c = Client()
-#         response = c.post(reverse('register_url'), request_body)
-#         self.client_object = c.login(username="test1", password="abc@=1234abc")
-#         self.assertEqual(response.status_code, 200)
+class TestViewsRegistration(TestCase):
+    def setUp(self) -> None:
+        self.username = 'test1'
+        self.password = 'abc@=1234abc'
+    def test_register_page_url(self):
+        c = Client()
+        response = c.get(reverse('register_url'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, template_name='citrus_home/register.html')
+        
+    def test_register_POST(self):
+        c = Client()
+        response = c.post(reverse('register_url'), data={
+            'username': self.username,
+            'password': self.password,
+        })
+        # self.client_object = c.login(username="test1", password="abc@=1234abc")
+        self.assertEqual(response.status_code, 200)
+    
+
     
 class TestAuthenticateNode(TestCase):
     def setUp(self):
@@ -214,9 +406,14 @@ class TestAuthenticateNode(TestCase):
         response = c.get(reverse("authors"))
         self.assertEqual(response.status_code, 401)
     
-    def test_authenticated_node(self):
-        c = Client()
-        response = c.get(reverse("authors"), HTTP_REFERER = "https://www.testdomain.com", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
-        # response = c.get(reverse("authors"), HTTP_HOST='https://www.testdomain.com', auth=("abc", "abc"))
-        self.assertEqual(response.status_code, 200)
+
+
+    # def test_authenticated_node(self):
+    #     c = Client()
+    #     response = c.get(reverse("authors"), HTTP_REFERER = "https://www.testdomain.com", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+    #     # response = c.get(reverse("authors"), HTTP_HOST='https://www.testdomain.com', auth=("abc", "abc"))
+    #     self.assertEqual(response.status_code, 200)
+
+    def tearDown(self):
+        self.testNode.delete()
 
