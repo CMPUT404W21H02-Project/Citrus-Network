@@ -1,7 +1,7 @@
 from django.test.testcases import TestCase
 from django.test import TestCase, Client
 from django.urls import reverse
-from citrus_home.models import CitrusAuthor, Friend, Follower, Node
+from citrus_home.models import CitrusAuthor, Friend, Follower, Node, Post
 from django.contrib.auth.models import User
 import json, uuid
 
@@ -396,6 +396,24 @@ class TestViewsRegistration(TestCase):
     
 class TestAuthenticateNode(TestCase):
     def setUp(self):
+        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc')
+        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id=str(uuid.uuid4()), user=user,displayName="nervousMan")
+        self.nervousTestMan.save()
+        user2 = User.objects.create_user('test2', 'man2@nervous.com', 'abc@=1234abc1')
+        self.nervousTestMan2 = CitrusAuthor.objects.create(type="Author",id=str(uuid.uuid4()), user=user2,displayName="nervousMan2")
+        self.nervousTestMan2.save()
+        self.nervousTestPost = Post.objects.create(id=str(uuid.uuid4()), 
+                                title="Nervous Post", 
+                                description="",
+                                content="I'm only slightly nervous though!",
+                                contentType="text/plain",
+                                categories="",
+                                author=self.nervousTestMan,
+                                origin="https://citrusnetwork.herokuapp.com/",
+                                source="https://citrusnetwork.herokuapp.com/",
+                                visibility="PUBLIC",
+                                shared_with="",
+                                unlisted=False)
         self.host_username = "bcd"
         self.host_password = "bcd"
         self.testNode = Node.objects.create(host="https://www.testdomain.com/", node_username="bcd",node_password="bcd",host_username=self.host_username,host_password=self.host_password,public_posts="1",author_link="1")
@@ -416,6 +434,76 @@ class TestAuthenticateNode(TestCase):
         c = Client()
         response = c.get(reverse("public_posts"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
         self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_get_author_posts(self):
+        c = Client()
+        kwargs = {
+            "id": self.nervousTestMan.id
+        }
+        response = c.get(reverse("manage_post", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_get_author_post(self):
+        c = Client()
+        kwargs = {
+            "id": self.nervousTestMan.id,
+            "pid": self.nervousTestPost.id
+        }
+        response = c.get(reverse("manage_post", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_get_author_post_likes(self):
+        c = Client()
+        kwargs = {
+            "author_id": self.nervousTestMan.id,
+            "post_id": self.nervousTestPost.id
+        }
+        response = c.get(reverse("post_likes", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_post_author_post_like(self):
+            c = Client()
+            request_body = {
+                'type': 'Like',
+                'summary': 'I like your post!',
+                'author' : {
+                    'type': self.nervousTestMan2.type,
+                    'id': self.nervousTestMan2.id,
+                    'displayName': self.nervousTestMan2.displayName,
+                    'github': self.nervousTestMan2.github,
+                    'host': self.nervousTestMan2.host,
+                    'authorID': self.nervousTestMan2.id
+                },
+                'object': '123',
+                'postID': self.nervousTestPost.id
+            }
+            kwargs = {
+                "author_id": self.nervousTestMan.id
+            }
+            response = c.post(reverse("inbox", kwargs=kwargs), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+            self.assertEqual(response.status_code, 201)
+
+    def test_authenticated_get_author_comments(self):
+        c = Client()
+        kwargs = {
+            "id": self.nervousTestMan.id,
+            "pid": self.nervousTestPost.id
+        }
+        response = c.get(reverse("manage_comment", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_post_author_post_like(self):
+        c = Client()
+        request_body = {
+            'comment': 'Hello World!'
+        }
+        kwargs = {
+            "id": self.nervousTestMan2.id,
+            "pid": self.nervousTestPost.id
+        }
+        response = c.post(reverse("manage_comment", kwargs=kwargs), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+
 
     def tearDown(self):
         self.testNode.delete()
