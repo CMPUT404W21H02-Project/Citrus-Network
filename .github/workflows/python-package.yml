@@ -41,7 +41,7 @@ jobs:
     - name: Test with Django tests
       run: |
         dir
-        python manage.py makemigrations
+        python manage.py makemigrations citrus_home
         python manage.py migrate
         python manage.py test
     - name: Run code coverage and generate report
