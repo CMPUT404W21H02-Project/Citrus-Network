@@ -1,7 +1,8 @@
+from django.http.response import JsonResponse
 from django.test.testcases import TestCase
 from django.test import TestCase, Client
 from django.urls import reverse
-from citrus_home.models import CitrusAuthor, Friend, Follower, Node
+from citrus_home.models import CitrusAuthor, Friend, Follower, Node, Post
 from django.contrib.auth.models import User
 import json, uuid
 
@@ -316,19 +317,104 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'citrus_home/findfriends.html')
     
-    '''
-        Make a new post
-    '''
-    def test_make_post_GET(self):
-        response = self.c.get(reverse('make_post_url'))
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'citrus_home/makepost.html')
-
     def tearDown(self):
         self.nervousTestMan.delete()
         self.nervousTestMan2.delete()
         self.nervousTestMan3.delete()
         self.new_follower_object.delete()
+
+class TestPosts(TestCase):
+    def setUp(self):
+        self.mockuuid = str(uuid.uuid4())
+        user = User.objects.create_user('test', 'man@nervous.com', 'abc@=1234abc', is_active=True)
+        self.nervousTestMan = CitrusAuthor.objects.create(type="Author",id= self.mockuuid, user=user,displayName="nervousMan",github="https://github.com/1")
+        self.nervousTestMan.save()
+
+        self.mockuuid2 = str(uuid.uuid4())
+        user2 = User.objects.create_user('test2', 'man2@nervous.com', '2abc@=1234abc', is_active=True)
+        self.nervousTestMan2 = CitrusAuthor.objects.create(type="Author",id= self.mockuuid2, user=user2,displayName="nervousMan2",github="https://github.com/2")
+        self.nervousTestMan2.save()
+
+        self.mockuuid3 = str(uuid.uuid4())
+        user3 = User.objects.create_user('test3', 'man3@nervous.com', '3abc@=1234abc', is_active=True)
+        self.nervousTestMan3 = CitrusAuthor.objects.create(type="Author",id= self.mockuuid3, user=user3,displayName="nervousMan3")
+        self.nervousTestMan3.save()
+
+        self.new_follower_object = Follower(uuid = self.nervousTestMan,followers_uuid= self.mockuuid2)
+        self.new_follower_object.save()
+
+        self.new_post = str(uuid.uuid4())
+        self.post1 = Post.objects.create(id=self.new_post, 
+            title='title', 
+            description='description', 
+            content='content', 
+            contentType='contentType', 
+            categories='categories', 
+            author=self.nervousTestMan, 
+            origin='Origin', 
+            source='Origin', 
+            visibility='visibility', 
+            unlisted=False,
+            shared_with='shared_with')
+        self.post1.save()
+
+        self.nodeTeam3 = Node.objects.create(
+            host="https://cmput-404-socialdistribution.herokuapp.com/",
+            node_username = "socialdistribution_t18",
+            node_password = "c404t18",
+            host_username = "CitrusNetwork",
+            host_password = "oranges",
+            public_posts = "1",
+            author_link = "1"
+        )
+        self.nodeTeam3.save()
+
+        self.nodeTeam18 = Node.objects.create(
+            host="https://team3-socialdistribution.herokuapp.com/",
+            node_username = "team3",
+            node_password = "cmput404",
+            host_username = "CitrusNetwork",
+            host_password = "oranges",
+            public_posts = "1",
+            author_link = "1"
+        )
+        self.nodeTeam18.save()
+
+        self.c = Client()
+        self.client_object = self.c.login(username="test", password="abc@=1234abc")
+    '''
+        Test Posts
+    '''
+    def test_make_post_GET(self):
+        response = self.c.get(reverse('make_post_url'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/makepost.html')
+    
+    def test_make_post_NOT_SUPPORTED(self):
+        response = self.c.delete(reverse('make_post_url'))
+        self.assertEquals(response.status_code, 405)
+    
+    def test_get_author_post(self):
+        response = self.c.get(reverse('get_author_post', args=[self.mockuuid, self.new_post]))
+        self.assertEquals(response.status_code, 200)
+
+    def test_edit_post_GET(self):
+        response = self.c.get(reverse('view_post_url', args=[self.mockuuid, self.new_post]))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'citrus_home/viewpost.html')
+    
+    def test_make_edit_NOT_SUPPORTED(self):
+        test_uuid = str(uuid.uuid4())
+        response = self.c.delete(reverse('view_post_url', args=[self.mockuuid, test_uuid]))
+        self.assertEquals(response.status_code, 405)
+    
+    def tearDown(self):
+        self.nervousTestMan.delete()
+        self.nervousTestMan2.delete()
+        self.nervousTestMan3.delete()
+        self.post1.delete()
+        self.new_follower_object.delete()
+
 
 class TestViewsAuthentication(TestCase):
     def setUp(self):
