@@ -137,4 +137,5 @@ STATICFILES_DIRS = [
 MAX_UPLOAD_SIZE = "104857600"
 MEDIA_URL = '/images/'
 MEDIA_ROOT = os.path.join(BASE_DIR,"static/images")
-django_on_heroku.settings(locals()) # bottom of the file
+# Configure Django App for Heroku.
+django_on_heroku.settings(locals(), test_runner=False)
