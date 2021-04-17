@@ -13,9 +13,10 @@ Account Credentials & Authentication
 ============================
 [GitHub Wiki Link](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/Account-Credentials-&-Authentication)
 
-CitrusNetwork Promo Video
-=========================
-[Promo Video](https://youtu.be/oQ2qlLydUJ4)
+Video:
+========================
+Here is a video of Citrus Network:
+[Video](https://www.youtube.com/watch?v=oQ2qlLydUJ4)
 
 Documentation
 =============
