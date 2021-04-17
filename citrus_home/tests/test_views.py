@@ -166,6 +166,37 @@ class TestViews(TestCase):
         response = self.c.get(reverse('followers', args=[self.mockuuid2]))
         self.assertEquals(response.status_code, 404)
 
+    # actor_id belongs to team 3 
+    # COULD FAIL if that actor id is removed on remote server
+    def test_handle_inbox_friendrequest_and_get_follower_for_mockuuid2_POST(self):
+        c = Client()
+        request_body = {
+            'type': 'Follow',
+            "actor":{
+                "type":"author",
+                "id": "f6c2179f-1630-4f3c-a22b-84edb96bfd50",
+            },
+            "object":{
+                "type":"author",
+                "id": self.mockuuid2,
+            }
+        }
+        kwargs = {
+            "author_id": self.mockuuid2
+        }
+        # test if mockuuid doesnt have a follower
+        response = self.c.get(reverse('followers', args=[self.mockuuid2]))
+        self.assertEquals(response.status_code, 404)
+
+        # test post friendrequest to mockuuid2 inbox
+        response = c.post(reverse("inbox", kwargs=kwargs), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://team3-socialdistribution.herokuapp.com/", HTTP_AUTHORIZATION = "Basic Q2l0cnVzTmV0d29yazpvcmFuZ2Vz")
+        self.assertEqual(response.status_code, 201)
+        
+        # test if mockuuid2 now has a followers
+        response = self.c.get(reverse('followers', args=[self.mockuuid2]))
+        self.assertEquals(response.status_code, 200)
+
+
     def test_get_followers_OTHER(self):
         response = self.c.put(reverse('followers', args=[self.mockuuid]))
         self.assertEquals(response.status_code, 405)
@@ -605,7 +636,6 @@ class TestAuthenticateNode(TestCase):
         }
         response = c.get(reverse("get_friends", kwargs=kwargs), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
         self.assertEqual(response.status_code, 404)
-
 
     def tearDown(self):
         self.testNode.delete()
