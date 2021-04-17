@@ -1012,6 +1012,7 @@ function to render the followers page
 PARAMS: request
 RETURN: request, followers page, current user id
 '''
+@login_required(login_url="login_url")
 def render_followers_page(request):
     uuid = get_uuid(request)
     return render(request,'citrus_home/followers.html', {'uuid':uuid})
@@ -1455,6 +1456,7 @@ function to render the friends page
 PARAMS: request
 RETURN: request, friends page, current user id
 '''
+@login_required(login_url="login_url")
 def render_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/friends.html', {'uuid':uuid})
@@ -1464,6 +1466,7 @@ function to render the friends page
 PARAMS: request
 RETURN: request, findfriends page, current user id
 '''
+@login_required(login_url="login_url")
 def render_find_friends_page(request):
     uuid = get_uuid(request)
     return render(request, 'citrus_home/findfriends.html', {'uuid':uuid})
@@ -1592,6 +1595,90 @@ def make_post_redirect(request):
                                     visibility=visibility, 
                                     unlisted=unlisted,
                                     shared_with=shared_with)
+
+            
+            categories = post.categories.split()
+            shared_post = {
+            "id": str(post.id),
+            "type": "post",
+            "title": post.title,
+            "source": post.source,
+            "origin": post.origin,
+            "description": post.description,
+            "contentType": post.contentType,
+            "content": post.content,
+            "author": convertAuthorObj(author),
+            "categories": categories,
+            "comments": [],
+            "published": str(post.published),
+            "visibility": post.visibility,
+            "unlisted": post.unlisted
+            }
+
+            if post.visibility == 'PRIVATE_TO_FRIENDS':
+                # create post body
+                team_18_post = {
+                    "type": "post",
+                    "postID": str(post_id),
+                    "authorID": str(user_uuid)
+                }
+                # find the id of all friends and store in list
+                friends = Friend.objects.get(uuid=author)
+                # all friends of author (in our database)
+                friends_arr = friends.friends_uuid.split()
+                for i in friends_arr:
+                    print("friends_arr id: ",i, type(i))
+                team18_friends = get_team18_friends(user_uuid, "https://cmput-404-socialdistribution.herokuapp.com/")
+                
+                for item in team18_friends:
+                    print(item, type(item))
+                # loop through list and make call to inbox function
+                for author_id in team18_friends:
+                    if author_id in friends_arr:
+                        friends_arr.remove(author_id)
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
+                    requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+
+                for author_id in friends_arr:
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
+                    requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+            
+            elif post.visibility == 'PRIVATE_TO_AUTHOR':
+                # get list of author id's
+                author_ids = (post.shared_with.split())
+                # figure out which server each user is on and send to their inbox
+                team_18_post = {
+                    "type": "post",
+                    "postID": str(post_id),
+                    "authorID": str(user_uuid)
+                }
+                for id in author_ids:
+                    # check on citrus network
+                    if CitrusAuthor.objects.filter(id=id).exists():
+                        print("here")
+                        url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
+                        requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    else:
+                        # check to see if the node for team 18 has been added to our server
+                        if Node.objects.filter(host="https://cmput-404-socialdistribution.herokuapp.com/").exists():
+                            # check if user exists on team 18's server
+                            url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/"
+                            response = requests.get(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            if response.status_code == 200:
+                                # send to team 18 inbox
+                                url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                                requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        
+                        # check to see if the node for team 3 has been added to our server
+                        if Node.objects.filter(host="https://team3-socialdistribution.herokuapp.com/").exists():
+                            url = f"https://team3-socialdistribution.herokuapp.com/author/{id}"
+                            response = requests.get(url,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            if response.status_code == 200:
+                                print("user exists!")
+                                url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox"
+                                requests.post(url,json=shared_post,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                                print(response.status_code)
+                                
             return redirect(home_redirect)
         else:
             data = form.errors.as_json()
@@ -1701,9 +1788,12 @@ def handle_remote_comment(request, author_id, post_id):
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
                     req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
-                        # Not yet implemented
-                        # req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
-                        return JsonResponse({"comments": []})
+                        body["summary"] = current_author.displayName + " commented on your post"
+                        body["type"] = "comment"
+                        body["author"] = convertAuthorObj(current_author)
+                        body["author"]["authorID"] = str(current_author.id)
+                        req = requests.post(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments', json=body, auth=(node.node_username, node.node_password))
+                        return returnJsonResponse(specific_message="comment added", status_code=200)
 
 @csrf_exempt
 def handle_remote_post_likes(request, author_id, post_id):
@@ -1750,7 +1840,7 @@ def handle_remote_post_likes(request, author_id, post_id):
                         author_likes = False
                         for like in req:
                             like_count += 1
-                            if like["author"]["id"] == str(current_author.id):
+                            if like["author"] != None and like["author"]["id"] == str(current_author.id):
                                 author_likes=True
                         return JsonResponse({"likes":like_count, "author_liked": author_likes}, status=200)
     elif request.method == 'POST':
@@ -1855,7 +1945,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         req = requests.get(node.host + 'author/' + str(author_id) + '/posts/' + str(post_id) + '/comments/' + str(comment_id) + '/likes', auth=(node.node_username, node.node_password)).json()
                         like_count = 0
@@ -1910,7 +2000,7 @@ def handle_remote_comment_likes(request, author_id, post_id, comment_id):
                             like_count += 1
                         return JsonResponse({"likes":like_count, "author_liked": author_likes, "id": comment_id}, status=200)
                 elif node.host == 'https://team3-socialdistribution.herokuapp.com/':
-                    req = requests.get(node.host + 'author/' + str(author_id) + '/', auth=(node.node_username, node.node_password))
+                    req = requests.get(node.host + 'author/' + str(author_id), auth=(node.node_username, node.node_password))
                     if req.status_code == 200:
                         body = {
                             "type": "like",
@@ -2092,6 +2182,12 @@ def manage_post(request, id, **kwargs):
             "visibility": body['visibility'],
             "unlisted": post.unlisted
             }
+
+            team_18_post = {
+                "type": "post",
+                "postID": str(pid),
+                "authorID": str(id)
+            }
             # find the id of all friends and store in list
             friends = Friend.objects.get(uuid=author)
             # all friends of author (in our database)
@@ -2099,13 +2195,15 @@ def manage_post(request, id, **kwargs):
             for i in friends_arr:
                 print("friends_arr id: ",i, type(i))
             team18_friends = get_team18_friends(id, "https://cmput-404-socialdistribution.herokuapp.com/")
+            
             for item in team18_friends:
                 print(item, type(item))
             # loop through list and make call to inbox function
             for author_id in team18_friends:
-                friends_arr.remove(author_id)
+                if author_id in friends_arr:
+                    friends_arr.remove(author_id)
                 url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{author_id}/inbox/"
-                requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
 
             for author_id in friends_arr:
                 url = f"https://citrusnetwork.herokuapp.com/service/author/{author_id}/inbox/"
@@ -2115,19 +2213,37 @@ def manage_post(request, id, **kwargs):
             # get list of author id's
             author_ids = (body['shared_with'].split())
             # figure out which server each user is on and send to their inbox
+            team_18_post = {
+                "type": "post",
+                "postID": str(pid),
+                "authorID": str(id)
+            }
             for id in author_ids:
                 # check on citrus network
                 if CitrusAuthor.objects.filter(id=id).exists():
                     print("here")
-                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/"
+                    url = f"https://citrusnetwork.herokuapp.com/service/author/{id}/inbox/"
                     requests.post(url, json=shared_post, auth=HTTPBasicAuth("CitrusNetwork", "oranges"),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
                 else:
-                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
-                    response = requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
-                    if response.status_code == 200:
-                        # send to team 18 inbox
-                        url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
-                        requests.post(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    # check to see if the node for team 18 has been added to our server
+                    if Node.objects.filter(host="https://cmput-404-socialdistribution.herokuapp.com/").exists():
+                        # check if user exists on team 18's server
+                        url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/"
+                        response = requests.get(url, json=shared_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        if response.status_code == 200:
+                            # send to team 18 inbox
+                            url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/inbox/"
+                            requests.post(url, json=team_18_post, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    
+                    # check to see if the node for team 3 has been added to our server
+                    if Node.objects.filter(host="https://team3-socialdistribution.herokuapp.com/").exists():
+                        url = f"https://team3-socialdistribution.herokuapp.com/author/{id}"
+                        response = requests.get(url,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                        if response.status_code == 200:
+                            print("user exists!")
+                            url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/inbox"
+                            requests.post(url,json=shared_post,auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                            print(response.status_code)
                           
 
             
@@ -2377,39 +2493,46 @@ def handleStream(request):
                 nodes = Node.objects.all()
                 # list of all hostnames 
                 for server in nodes:
+                    print(server.host)
                     server_list.append(server.host)
+            
             except:
                 pass
-            team18_url = "https://cmput-404-socialdistribution.herokuapp.com"
-            team3_url = "https://team3-socialdistribution.herokuapp.com/"
-            team18_friends = []
-            team3_friendss = []
-            try:      
-                team18_friends = get_team18_friends(friends_uuid_arr, team18_url)
-                team3_friends = get_team3_friends(friends_uuid_arr, team3_url)
-                friends_uuid_arr = set(friends_uuid_arr).difference(team18_friends)
-                friends_uuid_arr = set(friends_uuid_arr).difference(team3_friends)
-            except:
-                pass
+            
+            # handle team 18
+            if "https://cmput-404-socialdistribution.herokuapp.com/" in server_list:
+                team_18_friends = get_team18_friends(citrus_author.id, "https://cmput-404-socialdistribution.herokuapp.com/")
+                for id in team_18_friends:
+                    # remove from friends arr UNCOMMENT THIS
+                    if id in friends_uuid_arr:
+                        friends_uuid_arr.remove(id)
+                    # get all posts of this user on team 18's server
+                    url = f"https://cmput-404-socialdistribution.herokuapp.com/service/author/{id}/posts/"
+                    response = requests.get(url, auth=HTTPBasicAuth(get_team_18_user(), get_team_18_password()),headers={'Referer': "https://citrusnetwork.herokuapp.com/"})
+                    if response.status_code == 200:
+                        content = json.loads(response.content)
+                        # print(content)
+                        post_arr = content.get('posts')
+                        for post in post_arr:
+                            json_posts.append(post)
+            
+            # handle team 3
+            # if "https://team3-socialdistribution.herokuapp.com/" in server_list:
+            #     team_3_friends = get_team3_friends(friends_uuid_arr, "https://team3-socialdistribution.herokuapp.com/")
+            #     for id in team_3_friends:
+            #         # get all posts of this user on team 3's server
+            #         url = f"https://team3-socialdistribution.herokuapp.com/author/{id}/posts"
+            #         response = requests.get(url, auth=HTTPBasicAuth(get_team_3_user(), get_team_3_password()))
+            #         content = json.loads(response.content)
+            #         for post in content:
+            #             json_posts.append(post)
+
             # citrus network database
             for id in friends_uuid_arr:
-                # team 9 stores id's with a hyphen
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
-            
-            # query team18 database
-            if team18_friends:
-                for id in team18_friends:
-                    request = f"{team18_url}/service/author/{id}/posts/"
-                    # print(request)
-                    response = requests.get(request)
-                    # decode the response
-                    content = json.loads(response.content)
-                    post_list = content.get('posts')
-                    for post in post_list:
-                        # check to see if post is private to friends?
-                        if post.get('visibility') == 'PUBLIC' or 'FRIEND':
-                            json_posts.append(post)
+
+
             for id in friends_uuid_arr:
                 author = CitrusAuthor.objects.get(id=id)
                 friends_arr.append(author)
@@ -2482,7 +2605,7 @@ def handleStream(request):
                         "comments": comments_arr, 
                         "published": post.published,
                         "visibility": post.visibility,
-                        "unlisted": post.unlisted,
+                        "unlisted": post.unlisted
                     }
                     json_posts.append(return_data)
                 
@@ -2495,6 +2618,7 @@ def handleStream(request):
     
     else:
         return returnJsonResponse(specific_message="method not available", status_code=400)
+
     
 @csrf_exempt
 def handle_inbox(request, author_id):
@@ -2705,9 +2829,17 @@ def handle_inbox(request, author_id):
                 try:
                     if "commentID" not in body:
                         body["commentID"] = ""
+                    else:
+                        body["postID"] = ""
                     Like.objects.create(author=body["author"]["authorID"], post_id=body["postID"], comment_id=body["commentID"]).save()
                 except:
                     None
+
+            elif "post" in body['type'].lower() and "postID" in body and "authorID" in body:
+                body['id'] = body['postID']
+                body['author']['id'] = body['authorID']
+
+
 
                      
             inbox = Inbox.objects.get(author=author)

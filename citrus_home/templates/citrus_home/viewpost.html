@@ -339,9 +339,13 @@
                             var classAttr = document.createAttribute("class");
                             classAttr.value = "card mt-1 mb-1";
                             newElement.setAttributeNode(classAttr);
-                            newElement.innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
-                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ' + data.comments[i].published + 
-                            '</p></a></div>';
+                            var innerHTML = '<div class="card-header"><a class="card-link" href="' + url + '">' + 
+                            '<p style="margin: 0;"><strong>' + data.comments[i].author.displayName + '</strong> | ';
+                            if (data.comments[i].published != undefined) {
+                                innerHTML += data.comments[i].published;
+                            }
+                            innerHTML += '</p></a></div>';
+                            newElement.innerHTML = innerHTML;
                             var cardBody = document.createElement('div');
                             var cardBodyClass = document.createAttribute("class");
                             cardBodyClass.value = 'card-body';
@@ -349,7 +353,11 @@
 
                             var commentContent = document.createElement('p');
                             var commentValue = "";
-                            let comments = data.comments[i].comment.split('\n');
+                            if (data.comments[i].comment != undefined) {
+                                var comments = data.comments[i].comment.split('\n');
+                            } else {
+                                var comments = data.comments[i].content.split('\n');
+                            }
                             for(var comment of comments) {
                                 commentValue += comment + '<br>'
                             }

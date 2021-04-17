@@ -9,10 +9,24 @@ Heroku
 =============
 [https://citrusnetwork.herokuapp.com/](https://citrusnetwork.herokuapp.com/)
 
+Account Credentials & Authentication
+============================
+[GitHub Wiki Link](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/Account-Credentials-&-Authentication)
+
+Video:
+========================
+Here is a video of Citrus Network:
+[Video](https://www.youtube.com/watch?v=oQ2qlLydUJ4)
+
 Documentation
 =============
 
 * All of our API and AJAX call documentations can be found here [Wiki](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki)
+
+Assumptions:
+========================
+These are are assumptions made about the user stories/specification:
+* All of our assumptions made about the user stories/specification [Assumptions](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/Assumptions)
 
 References:
 ========================
