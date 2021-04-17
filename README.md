@@ -4,10 +4,15 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml/badge.svg)](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml)
 
-
 Heroku
 =============
 [https://citrusnetwork.herokuapp.com/](https://citrusnetwork.herokuapp.com/)
+
+Developers
+===============
+| <img src="https://avatars.githubusercontent.com/u/64504699?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/42952573?s=400&v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/47231346?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/59579748?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/44980447?v=4" width="100" /> |
+| :---:   | :---: | :---: | :---: |  :---: |                                   
+| Alex - alexbali | Joe - jha8 | Kyle - fujishig2 | Leah - leah-is-offline | Nhan - nhtnhan | 
 
 Account Credentials & Authentication
 ============================
@@ -32,3 +37,37 @@ References:
 ========================
 These are references of all external source code in our code:
 * All of our references to external source code can be found here [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
+
+License:
+========================
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+Contributors:
+=========================
+Project.org Functional Requirements
+Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
+All text is licensed under the CC-BY-SA 4.0 http://creativecommons.org/licenses/by-sa/4.0/deed.en_US
+
+```
+Karim Baaba
+Ali Sajedi
+Kyle Richelhoff
+Chris Pavlicek
+Derek Dowling
+Olexiy Berjanskii
+Erin Torbiak
+Abram Hindle
+Braedy Kuzma
+```
