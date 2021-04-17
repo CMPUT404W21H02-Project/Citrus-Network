@@ -11,8 +11,8 @@ Heroku
 
 Video:
 ========================
-Here is a promotional video of Citrus Network:
-* [Video](https://www.youtube.com/watch?v=oQ2qlLydUJ4)
+Here is a video of Citrus Network:
+[Video](https://www.youtube.com/watch?v=oQ2qlLydUJ4)
 
 Documentation
 =============
