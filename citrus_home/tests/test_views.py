@@ -371,8 +371,11 @@ class TestPosts(TestCase):
         self.nervousTestMan3 = CitrusAuthor.objects.create(type="Author",id= self.mockuuid3, user=user3,displayName="nervousMan3")
         self.nervousTestMan3.save()
 
-        self.new_follower_object = Follower(uuid = self.nervousTestMan,followers_uuid= self.mockuuid2)
+        self.new_follower_object = Follower.objects.create(uuid = self.nervousTestMan,followers_uuid= self.mockuuid2)
         self.new_follower_object.save()
+
+        self.new_friend_object2 = Friend.objects.create(uuid = self.nervousTestMan,friends_uuid= self.mockuuid3)
+        self.new_friend_object2.save()
 
         self.new_post = str(uuid.uuid4())
         self.post1 = Post.objects.create(id=self.new_post, 
@@ -389,30 +392,24 @@ class TestPosts(TestCase):
             shared_with='shared_with')
         self.post1.save()
 
-        self.nodeTeam3 = Node.objects.create(
-            host="https://cmput-404-socialdistribution.herokuapp.com/",
-            node_username = "socialdistribution_t18",
-            node_password = "c404t18",
-            host_username = "CitrusNetwork",
-            host_password = "oranges",
-            public_posts = "1",
-            author_link = "1"
-        )
-        self.nodeTeam3.save()
-
-        self.nodeTeam18 = Node.objects.create(
-            host="https://team3-socialdistribution.herokuapp.com/",
-            node_username = "team3",
-            node_password = "cmput404",
-            host_username = "CitrusNetwork",
-            host_password = "oranges",
-            public_posts = "1",
-            author_link = "1"
-        )
-        self.nodeTeam18.save()
+        self.host_username = "bcd"
+        self.host_password = "bcd"
+        self.testNode = Node.objects.create(host="https://www.testdomain.com/", node_username="bcd",node_password="bcd",host_username=self.host_username,host_password=self.host_password,public_posts="1",author_link="1")
+        self.testNode.save()
 
         self.c = Client()
         self.client_object = self.c.login(username="test", password="abc@=1234abc")
+    '''
+        Test Stream
+    '''
+    def test_stream_GET(self):
+        response = self.c.get(reverse("get_stream"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+    
+    def test_stream_NOT_SUPPORTED(self):
+        response = self.c.delete(reverse("get_stream"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 400)
+
     '''
         Test Posts
     '''
@@ -425,6 +422,40 @@ class TestPosts(TestCase):
         response = self.c.delete(reverse('make_post_url'))
         self.assertEquals(response.status_code, 405)
     
+    def test_make_post_POST(self):
+            c = Client()
+            request_body = {
+                'title': 'title',
+                'description': 'description',
+                'content': 'content',
+                'contentType': 'contentType',
+                'categories': 'categories',
+                'visibility': 'visibility',
+                'shared_with': 'shared_with',
+                'unlisted': True
+            }
+            response = c.post(reverse("make_post_url"), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+            self.assertEqual(response.status_code, 302)
+    
+    def test_edit_post_POST(self):
+            c = Client()
+            request_body = {
+                'title': 'title',
+                'description': 'description',
+                'content': 'content',
+                'contentType': 'contentType',
+                'categories': 'categories',
+                'visibility': 'visibility',
+                'shared_with': 'shared_with',
+                'unlisted': True
+            }
+            kwargs = {
+                "author_id": self.nervousTestMan.id,
+                "post_id": self.new_post,
+            }
+            response = c.post(reverse("view_post_url", kwargs=kwargs), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+            self.assertEqual(response.status_code, 302)
+
     def test_get_author_post(self):
         response = self.c.get(reverse('get_author_post', args=[self.mockuuid, self.new_post]))
         self.assertEquals(response.status_code, 200)
@@ -438,11 +469,126 @@ class TestPosts(TestCase):
         test_uuid = str(uuid.uuid4())
         response = self.c.delete(reverse('view_post_url', args=[self.mockuuid, test_uuid]))
         self.assertEquals(response.status_code, 405)
+    '''
+        Test Post API
+    '''
+    def test_make_post_NOT_AUTHENTICATED(self):
+        c = Client()
+        request_body = {
+            'title': 'title',
+            'description': 'description',
+            'content': 'content',
+            'contentType': 'contentType',
+            'origin': 'origin',
+            'source': 'source',
+            'categories': 'categories',
+            'visibility': 'visibility',
+            'shared_with': 'shared_with',
+            'unlisted': True
+        }
+        response = c.post(reverse("manage_post", args=[self.nervousTestMan.id]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YZA==")
+        self.assertEqual(response.status_code, 401)
+
+    def test_make_post_POST_PUBLIC(self):
+        c = Client()
+        request_body = {
+            'title': 'title',
+            'description': 'description',
+            'content': 'content',
+            'contentType': 'contentType',
+            'origin': 'origin',
+            'source': 'source',
+            'categories': 'categories',
+            'visibility': 'visibility',
+            'shared_with': 'shared_with',
+            'unlisted': True
+        }
+        response = c.post(reverse("manage_post", args=[self.nervousTestMan.id]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 201)
+    
+    def test_make_post_POST_PRIVATE_AUTHOR(self):
+        c = Client()
+        request_body = {
+            'title': 'title',
+            'description': 'description',
+            'content': 'content',
+            'contentType': 'contentType',
+            'origin': 'origin',
+            'source': 'source',
+            'categories': 'categories',
+            'visibility': 'PRIVATE_TO_AUTHOR',
+            'shared_with': self.mockuuid2,
+            'unlisted': True
+        }
+        response = c.post(reverse("manage_post", args=[self.nervousTestMan.id]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 201)
+    
+    def test_make_post_POST_PRIVATE_FRIENDS(self):
+        c = Client()
+        request_body = {
+            'title': 'title',
+            'description': 'description',
+            'content': 'content',
+            'contentType': 'contentType',
+            'origin': 'origin',
+            'source': 'source',
+            'categories': 'categories',
+            'visibility': 'PRIVATE_TO_FRIENDS',
+            'shared_with': 'shared_with',
+            'unlisted': True
+        }
+        response = c.post(reverse("manage_post", args=[self.nervousTestMan.id]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 201)
+    
+    def test_make_post_PUT(self):
+            request_body = {
+                'title': 'updated_title',
+                'description': 'updated_description',
+                'content': 'updated_content',
+                'contentType': 'updated_contentType',
+                'origin': 'origin',
+                'source': 'source',
+                'categories': 'updated_categories',
+                'visibility': 'visibility',
+                'shared_with': 'shared_with',
+                'unlisted': True
+            }
+            response = self.c.put(reverse("manage_post", args=[self.nervousTestMan.id, self.new_post]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+            self.assertEqual(response.status_code, 200)
+    
+    def test_make_post_DELETE(self):
+        response = self.c.delete(reverse("manage_post", args=[self.nervousTestMan.id, self.new_post]), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 200)
+    
+    def test_make_post_NOT_SUPPORTED(self):
+        c = Client()
+        request_body = {
+            'title': 'title',
+            'description': 'description',
+            'content': 'content',
+            'contentType': 'contentType',
+            'origin': 'origin',
+            'source': 'source',
+            'categories': 'categories',
+            'visibility': 'visibility',
+            'shared_with': 'shared_with',
+            'unlisted': True
+        }
+        response = c.patch(reverse("manage_post", args=[self.nervousTestMan.id]), json.dumps(request_body), content_type="application/json", HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertEqual(response.status_code, 400)
+    
+    '''
+        Test Public Posts
+    '''
+    def test_public_posts_GET(self):
+        response = self.c.get(reverse("view_public_posts"), HTTP_REFERER = "https://www.testdomain.com/", HTTP_AUTHORIZATION = "Basic YmNkOmJjZA==")
+        self.assertTemplateUsed(response, 'citrus_home/publicposts.html')
     
     def tearDown(self):
         self.nervousTestMan.delete()
         self.nervousTestMan2.delete()
         self.nervousTestMan3.delete()
+        self.testNode.delete()
         self.post1.delete()
         self.new_follower_object.delete()
 
