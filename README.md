@@ -4,10 +4,14 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml/badge.svg)](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml)
 
-
 Heroku
 =============
 [https://citrusnetwork.herokuapp.com/](https://citrusnetwork.herokuapp.com/)
+
+## Developers
+| <img src="https://avatars.githubusercontent.com/u/64504699?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/42952573?s=400&v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/47231346?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/59579748?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/44980447?v=4" width="100" /> |
+| :---:   | :---: | :---: | :---: |  :---: |                                   
+| Alex - alexbali | Joe - jha8 | Kyle - fujishig2 | Leah - leah-is-offline | Nhan - nhtnhan | 
 
 Account Credentials & Authentication
 ============================
@@ -51,15 +55,10 @@ limitations under the License.
 
 Contributors:
 =========================
-| <img src="https://avatars.githubusercontent.com/u/64504699?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/42952573?s=400&v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/47231346?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/59579748?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/44980447?v=4" width="100" /> |
-| :---:   | :---: | :---: | :---: |  :---: |                                   
-| Alex - alexbali | Joe - jha8 | Kyle - fujishig2 | Leah - leah-is-offline | Nhan - nhtnhan | 
-
 Project.org Functional Requirements
 Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
 All text is licensed under the CC-BY-SA 4.0 http://creativecommons.org/licenses/by-sa/4.0/deed.en_US
 
-Contributors:
 ```
 Karim Baaba
 Ali Sajedi
