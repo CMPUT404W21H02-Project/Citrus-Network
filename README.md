@@ -10,7 +10,7 @@
 ## Developers
 | <img src="https://avatars.githubusercontent.com/u/64504699?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/42952573?s=400&v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/47231346?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/59579748?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/44980447?v=4" width="100" /> |
 | :---:   | :---: | :---: | :---: |  :---: |                                   
-| Alex - alexbali | Joe - jha8 | Kyle - fujishig2 | Leah - leah-is-offline | Nhan - nhtnhan | 
+| **Alex - alexbali** | **Joe - jha8** | **Kyle - fujishig2** | **Leah - leah-is-offline** | **Nhan - nhtnhan** | 
 
 ## Account Credentials & Authentication
 [GitHub Wiki Link](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/Account-Credentials-&-Authentication)
