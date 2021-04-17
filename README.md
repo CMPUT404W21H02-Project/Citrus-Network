@@ -32,3 +32,9 @@ References:
 ========================
 These are references of all external source code in our code:
 * All of our references to external source code can be found here [References](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/wiki/References)
+
+Contributors:
+=========================
+| <img src="https://avatars.githubusercontent.com/u/64504699?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/42952573?s=400&v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/47231346?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/59579748?v=4" width="100" /> | <img src="https://avatars.githubusercontent.com/u/44980447?v=4" width="100" /> |
+| :---:   | :---: | :---: | :---: |  :---: |                                   
+| Alex - alexbali | Joe - jha8 | Kyle - fujishig2 | Leah - leah-is-offline | Nhan - nhtnhan | 
