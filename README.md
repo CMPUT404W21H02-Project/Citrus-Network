@@ -1,6 +1,12 @@
-# CMPUT404-project-socialdistribution
 # Citrus Network 🍋🍋🍋
 ## Join the citrusy movement and take control of your own data!
+![Framework Django](https://img.shields.io/badge/Framework-Django-informational?style=flat&logo=django&logoColor=white&color=49af81)
+![Code Python](https://img.shields.io/badge/Code-Python-informational?style=flat&logo=python&logoColor=white&color=yellow)
+![Code Javascript](https://img.shields.io/badge/Code-JavaScript-informational?style=flat&logo=javascript&logoColor=white&color=edd82a)
+![Framework Bootstrap](https://img.shields.io/badge/Framework-Bootstrap-informational?style=flat&logo=bootstrap&logoColor=white&color=553ec1)
+![Tool Codecov](https://img.shields.io/badge/Tools-Codecov-informational?style=flat&logo=codecov&logoColor=white&color=F01F7A)
+![Cloud Heroku](https://img.shields.io/badge/Cloud-Heroku-informational?style=flat&logo=heroku&logoColor=white&color=2bbc8a)
+<br>
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml/badge.svg)](https://github.com/CMPUT404W21H02-Project/CMPUT404-project-socialdistribution/actions/workflows/python-package.yml)
 
